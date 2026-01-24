@@ -1,0 +1,40 @@
+{
+  "name": "@mongol-beauty/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:analyze": "tsc && vite build --mode analyze",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "analyze": "vite-bundle-visualizer"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.8.10",
+    "@chakra-ui/react": "^3.31.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mongol-beauty/types": "*",
+    "@mongol-beauty/ui": "*",
+    "apollo-upload-client": "^17.0.0",
+    "framer-motion": "^12.29.0",
+    "graphql": "^16.8.1",
+    "lucide-react": "^0.303.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vite-bundle-visualizer": "^1.2.1"
+  }
+}

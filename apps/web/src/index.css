@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  
+  body {
+    @apply text-gray-900;
+    background: linear-gradient(to bottom right, rgba(250, 243, 230, 0.4), white, rgba(250, 243, 230, 0.2));
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Mobile-first: prevent text size adjustment */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  /* Safe area insets for mobile */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer components {
+  /* Thumb-reachable button styles */
+  .btn-thumb {
+    @apply fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+  
+  /* Bottom sheet */
+  .bottom-sheet {
+    @apply fixed inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-lg z-50;
+    max-height: 90vh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Toast notification */
+  .toast {
+    @apply fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-3 rounded-lg shadow-lg;
+    top: calc(1rem + env(safe-area-inset-top));
+  }
+}
