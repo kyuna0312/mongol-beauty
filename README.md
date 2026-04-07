@@ -181,6 +181,11 @@ Payment receipts are stored in `apps/api/uploads/receipts/`. In production, use 
 - [ ] SMS notifications
 - [ ] Payment gateway integration (optional)
 
+### Tomorrow task
+- insert logo
+- order product section
+
+
 ## 📄 License
 
 Private - Mongol Beauty LLC

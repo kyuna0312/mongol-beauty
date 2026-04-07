@@ -14,6 +14,7 @@
     "seed": "ts-node -r tsconfig-paths/register src/scripts/seed.ts",
     "seed:prod": "node dist/scripts/seed.js",
     "create-admin": "ts-node -r tsconfig-paths/register src/scripts/create-admin.ts",
+    "create-demo-user": "ts-node -r tsconfig-paths/register src/scripts/create-demo-user.ts",
     "migration:generate": "npx typeorm-ts-node-commonjs -d src/data-source.ts migration:generate",
     "migration:run": "npm run build && npx typeorm migration:run -d dist/data-source.js",
     "migration:revert": "npx typeorm migration:revert -d dist/data-source.js"

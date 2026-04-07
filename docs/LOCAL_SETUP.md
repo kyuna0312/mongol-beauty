@@ -64,12 +64,27 @@ npm run migration:run -w @mongol-beauty/api
 
 If you use migrations only, set `DB_SYNCHRONIZE=false` in `apps/api/.env` and run migrations before the app.
 
-## 4. Seed & admin (optional)
+## 4. Seed & demo accounts (optional)
 
 ```bash
 npm run seed
 npm run create-admin
+npm run create-demo-user
 ```
+
+### Demo credentials (after running the scripts above)
+
+| Role | Where to log in | Default email | Default password |
+|------|-----------------|---------------|------------------|
+| **Admin** | `/admin/login` | `admin@incellderm.mn` | `admin123` |
+| **Storefront user** | `/login` | `demo@mongol-beauty.local` | `demo1234` |
+
+Override via **`apps/api/.env`** (or env when running the script):
+
+- Admin: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`
+- Demo user: `DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`, `DEMO_USER_NAME`
+
+If the admin or demo user already exists, the scripts **update the password** to match your env (or defaults).
 
 ## 5. Run API + web
 

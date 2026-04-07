@@ -1,10 +1,6 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User, UserType } from '../user/user.entity';
-import { Order } from '../order/order.entity';
-import { OrderItem } from '../order/order-item.entity';
-import { Product } from '../product/product.entity';
-import { Category } from '../category/category.entity';
 import * as dotenv from 'dotenv';
 import { join } from 'path';
 
@@ -20,9 +16,7 @@ async function createAdmin() {
     username: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_NAME || 'mongol_beauty',
-    // Include all entities in the relationship chain:
-    // User -> Order -> OrderItem -> Product -> Category
-    entities: [User, Order, OrderItem, Product, Category],
+    entities: [join(__dirname, '../**/*.entity.{ts,js}')],
     synchronize: false,
   });
 

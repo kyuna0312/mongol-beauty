@@ -30,7 +30,8 @@
     "setup-env": "node scripts/setup-env.js",
     "setup": "yarn check-docker && yarn setup-env && yarn docker:up && echo '✅ Setup complete! Run yarn dev to start development servers.'",
     "seed": "yarn workspace @mongol-beauty/api seed",
-    "create-admin": "yarn workspace @mongol-beauty/api create-admin"
+    "create-admin": "yarn workspace @mongol-beauty/api create-admin",
+    "create-demo-user": "yarn workspace @mongol-beauty/api create-demo-user"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
