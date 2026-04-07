@@ -1,12 +1,13 @@
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client';
 import { Link } from 'react-router-dom';
-import { memo, useMemo, useEffect, useState } from 'react';
+import { memo, useMemo, useEffect, useState, useCallback, useRef } from 'react';
 import { ProductCard, setCartToastCallback, ProductListSkeleton, OptimizedImage, CartToast } from '@mongol-beauty/ui';
 import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
 import { Button } from '@mongol-beauty/ui';
 import { ArrowRight, Sparkles, Truck, ShieldCheck } from 'lucide-react';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
+import { PageHead } from '@/features/content/components/PageHead';
 
 const GET_CATEGORIES = gql`
   query GetCategories {
@@ -30,27 +31,38 @@ const GET_FEATURED_PRODUCTS = gql`
 
 export const HomePage = memo(function HomePage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const hasPrefetchedProductsPage = useRef(false);
 
   const { data: categoriesData, loading: categoriesLoading, error: categoriesError } = useQuery(GET_CATEGORIES, {
-    fetchPolicy: 'cache-first',
+    fetchPolicy: 'cache-and-network',
+    nextFetchPolicy: 'cache-first',
     errorPolicy: 'all',
   });
 
   const { data: productsData, loading: productsLoading, error: productsError } = useQuery(GET_FEATURED_PRODUCTS, {
     fetchPolicy: 'cache-and-network',
+    nextFetchPolicy: 'cache-first',
     errorPolicy: 'all',
   });
 
+  const handleCartToast = useCallback((message: string) => {
+    setToastMessage(message);
+  }, []);
+
   useEffect(() => {
-    setCartToastCallback((message: string) => {
-      setToastMessage(message);
-    });
+    setCartToastCallback(handleCartToast);
+  }, [handleCartToast]);
+
+  const prefetchProductsPage = useCallback(() => {
+    if (hasPrefetchedProductsPage.current) return;
+    hasPrefetchedProductsPage.current = true;
+    import('@/features/catalog/pages/ProductsPage');
   }, []);
 
   const categories = useMemo(() => categoriesData?.categories || [], [categoriesData]);
   const products = useMemo(() => productsData?.products || [], [productsData]);
 
-  if (categoriesLoading || productsLoading) {
+  if ((categoriesLoading && !categoriesData) || (productsLoading && !productsData)) {
     return (
       <div className="mb-page">
         <div className="mb-10">
@@ -82,6 +94,15 @@ export const HomePage = memo(function HomePage() {
 
   return (
     <div className="mb-page">
+      <PageHead
+        pageTitle="Нүүр"
+        metaTitle="Mongol Beauty - Гоо сайхны бүтээгдэхүүн"
+        metaDescription="Арьс арчилгааны найдвартай бүтээгдэхүүн, онцлох коллекцууд болон ангиллаар хайлт."
+        contentMarkdown=""
+        canonicalUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+        ogType="website"
+        ogImage={products[0]?.images?.[0]}
+      />
       <section className="mb-10 md:mb-14">
         <div className="relative overflow-hidden rounded-3xl md:rounded-4xl mb-hero-gradient shadow-soft mb-noise ring-1 ring-white/60">
           <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-amber-100/40 blur-3xl" aria-hidden />
@@ -141,9 +162,8 @@ export const HomePage = memo(function HomePage() {
               key={category.id}
               to={`/products/${category.id}`}
               className="mb-focus-ring group mb-card-surface p-3 md:p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-200/90 hover:shadow-lg"
-              onMouseEnter={() => {
-                import('@/features/catalog/pages/ProductsPage');
-              }}
+              onMouseEnter={prefetchProductsPage}
+              onFocus={prefetchProductsPage}
             >
               <div className="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-amber-50/40 to-beige-50 ring-1 ring-rose-100/80">
                 {category.imageUrl ? (

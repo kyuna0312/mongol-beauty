@@ -5,239 +5,300 @@ import { join } from 'path';
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
-// Load environment variables
 config({ path: resolve(__dirname, '../.env') });
 config({ path: resolve(__dirname, '../../.env') });
 
-// Simple seed script that uses direct SQL-like approach
+/** Riman KR reference (official product pages). */
+const riman = (id: string) => `https://kr.riman.com/product/detail/${id}`;
+
 const categories = [
   {
-    name: 'Нүүр арьсны эм',
-    slug: 'facial-skincare',
-    description: 'Нүүр арьсны эм, тос, лосьон',
+    name: 'INCELLDERM',
+    slug: 'incellderm',
+    description: 'INCELLDERM гоо сайхны бүтээгдэхүүн (Riman жагсаалт)',
     imageUrl: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400',
   },
   {
-    name: 'Гоо сайхны бүтээгдэхүүн',
-    slug: 'makeup',
-    description: 'Гоо сайхны бүтээгдэхүүн, будаг',
+    name: 'BOTALAB',
+    slug: 'botalab',
+    description: 'BOTALAB үс, бие, амны эрүүл мэнд (Riman жагсаалт)',
     imageUrl: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=400',
   },
   {
-    name: 'Үс арчилгаа',
-    slug: 'hair-care',
-    description: 'Үсний шампунь, бальзам, маск',
-    imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400',
-  },
-  {
-    name: 'Бие арчилгаа',
-    slug: 'body-care',
-    description: 'Биеийн тос, лосьон, гель',
+    name: 'LIFE',
+    slug: 'life',
+    description: 'LIFE эрүүл мэнд, нэмэлт тэжээл (Riman жагсаалт)',
     imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400',
-  },
-  {
-    name: 'Амралтын бүтээгдэхүүн',
-    slug: 'spa-wellness',
-    description: 'Амралт, тайвшрал, сайхны бүтээгдэхүүн',
-    imageUrl: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=400',
   },
 ];
 
-const products = [
-  // Facial Skincare
+type SeedProduct = {
+  name: string;
+  price: number;
+  stock: number;
+  description: string;
+  skinType: SkinType[];
+  features: Feature[];
+  images: string[];
+  categorySlug: 'incellderm' | 'botalab' | 'life';
+};
+
+const products: SeedProduct[] = [
   {
-    name: 'Hyaluronic Acid Serum',
-    price: 45000,
-    stock: 50,
-    description: 'Чанартай гиалуроны хүчил агуулсан серум. Арьсыг чийгшүүлж, гөлгөр болгодог. Gen Z-д зориулсан шинэлэг томьёо.',
-    skinType: [SkinType.DRY, SkinType.NORMAL, SkinType.COMBINATION],
-    features: [Feature.HYDRATING, Feature.BRIGHTENING, Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600'],
-    categorySlug: 'facial-skincare',
-  },
-  {
-    name: 'Vitamin C Brightening Cream',
-    price: 55000,
-    stock: 30,
-    description: 'C витамин агуулсан гэрэлтүүлэх тос. Арьсыг гэрэлтүүлж, толбо арилгана.',
-    skinType: [SkinType.NORMAL, SkinType.COMBINATION, SkinType.SENSITIVE],
-    features: [Feature.BRIGHTENING, Feature.ANTI_AGING, Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
-    categorySlug: 'facial-skincare',
-  },
-  {
-    name: 'Niacinamide Acne Control Gel',
-    price: 38000,
-    stock: 75,
-    description: 'Ниацинамид агуулсан батганы эсрэг гель. Тослог арьсанд тохиромжтой.',
-    skinType: [SkinType.OILY, SkinType.COMBINATION],
-    features: [Feature.ACNE_FIGHTING, Feature.BRIGHTENING],
-    images: ['https://images.unsplash.com/photo-1571875257727-256c39da42af?w=600'],
-    categorySlug: 'facial-skincare',
-  },
-  {
-    name: 'Retinol Anti-Aging Night Cream',
-    price: 68000,
-    stock: 25,
-    description: 'Ретинол агуулсан шөнийн тос. Насны шинж тэмдгийг бууруулна.',
-    skinType: [SkinType.DRY, SkinType.NORMAL, SkinType.COMBINATION],
-    features: [Feature.ANTI_AGING, Feature.BRIGHTENING],
-    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
-    categorySlug: 'facial-skincare',
-  },
-  {
-    name: 'SPF 50+ Sunscreen Lotion',
-    price: 42000,
-    stock: 60,
-    description: 'SPF 50+ нарны хамгаалалтын лосьон. Өдөр бүр хэрэглэхэд тохиромжтой.',
-    skinType: [SkinType.NORMAL, SkinType.DRY, SkinType.OILY, SkinType.COMBINATION, SkinType.SENSITIVE],
-    features: [Feature.SUNSCREEN, Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
-    categorySlug: 'facial-skincare',
-  },
-  
-  // Makeup
-  {
-    name: 'Matte Lipstick Set (6 colors)',
-    price: 35000,
+    name: 'Dermatology First Package',
+    price: 279_000,
     stock: 40,
-    description: '6 өнгийн мат уруулын будаг. Удаан барьдаг, байгалийн найрлагатай.',
-    skinType: [],
-    features: [Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600'],
-    categorySlug: 'makeup',
+    description: `INCELLDERM — Анхны багц. Лавлагаа: ${riman('7223342')}`,
+    skinType: [SkinType.NORMAL, SkinType.COMBINATION, SkinType.DRY],
+    features: [Feature.HYDRATING, Feature.BRIGHTENING],
+    images: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600'],
+    categorySlug: 'incellderm',
   },
   {
-    name: 'BB Cream Natural Finish',
-    price: 28000,
-    stock: 55,
-    description: 'Байгалийн гэрэлтэлттэй BB крем. Нимгэн давхарга, SPF 30.',
-    skinType: [SkinType.NORMAL, SkinType.DRY, SkinType.COMBINATION],
-    features: [Feature.SUNSCREEN, Feature.BRIGHTENING],
-    images: ['https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600'],
-    categorySlug: 'makeup',
-  },
-  {
-    name: 'Eyeshadow Palette - Sunset Colors',
-    price: 45000,
-    stock: 35,
-    description: '12 өнгийн нүдний будаг. Нар жаргах өнгөтэй палитр. Gen Z-ийн дуртай.',
-    skinType: [],
-    features: [Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1512496015851-a90fb38c796f?w=600'],
-    categorySlug: 'makeup',
-  },
-  {
-    name: 'Mascara Volume & Length',
-    price: 22000,
-    stock: 70,
-    description: 'Хэмжээ, урт нэмэгдүүлэх сурвалжлагч. Удаан барьдаг, усанд тэсвэртэй.',
-    skinType: [],
-    features: [],
-    images: ['https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600'],
-    categorySlug: 'makeup',
-  },
-  
-  // Hair Care
-  {
-    name: 'Argan Oil Hair Mask',
-    price: 32000,
+    name: 'Dermatology Cream',
+    price: 189_000,
     stock: 45,
-    description: 'Арганы тос агуулсан үсний маск. Хатсан үсийг сэргээж, гөлгөр болгодог.',
-    skinType: [],
-    features: [Feature.HYDRATING, Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600'],
-    categorySlug: 'hair-care',
+    description: `Лавлагаа: ${riman('7158374')}`,
+    skinType: [SkinType.DRY, SkinType.NORMAL, SkinType.SENSITIVE],
+    features: [Feature.HYDRATING, Feature.ANTI_AGING],
+    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
+    categorySlug: 'incellderm',
   },
   {
-    name: 'Keratin Repair Shampoo',
-    price: 25000,
-    stock: 80,
-    description: 'Кератин агуулсан сэргээх шампунь. Эвдэрсэн үсийг засварлана.',
+    name: 'Two Phase Oil Mist',
+    price: 109_000,
+    stock: 60,
+    description: `Лавлагаа: ${riman('7234469')}`,
+    skinType: [SkinType.NORMAL, SkinType.COMBINATION],
+    features: [Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1571875257727-256c39da42af?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Calming Balance Gel',
+    price: 109_000,
+    stock: 55,
+    description: `Лавлагаа: ${riman('7357466')}`,
+    skinType: [SkinType.SENSITIVE, SkinType.COMBINATION],
+    features: [Feature.HYDRATING, Feature.ACNE_FIGHTING],
+    images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Cleasing Powder Wash',
+    price: 89_000,
+    stock: 70,
+    description: `Угаалгын нунтаг. Лавлагаа: ${riman('7356577')}`,
+    skinType: [SkinType.OILY, SkinType.COMBINATION],
+    features: [Feature.BRIGHTENING],
+    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Sheer Glow BB',
+    price: 89_000,
+    stock: 65,
+    description: `BB крем. Лавлагаа: ${riman('7353904')}`,
+    skinType: [SkinType.NORMAL, SkinType.DRY, SkinType.COMBINATION],
+    features: [Feature.BRIGHTENING, Feature.SUNSCREEN],
+    images: ['https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Moisture layer sun protector',
+    price: 89_000,
+    stock: 50,
+    description: `Нарны хамгаалалт. Лавлагаа: ${riman('7379270')}`,
+    skinType: [SkinType.NORMAL, SkinType.OILY, SkinType.COMBINATION],
+    features: [Feature.SUNSCREEN, Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Luminous moist cushion',
+    price: 169_000,
+    stock: 35,
+    description: `Кушион. Лавлагаа: ${riman('7889985')}`,
+    skinType: [SkinType.NORMAL, SkinType.COMBINATION],
+    features: [Feature.BRIGHTENING, Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Multi stick balm',
+    price: 79_000,
+    stock: 48,
+    description: `Лавлагаа: ${riman('7379255')}`,
+    skinType: [SkinType.DRY, SkinType.NORMAL],
+    features: [Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Moisture cleansing oil',
+    price: 89_000,
+    stock: 58,
+    description: `Угаалгын тос. Лавлагаа: ${riman('7171995')}`,
+    skinType: [SkinType.NORMAL, SkinType.COMBINATION],
+    features: [Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Collagen 100 melting mask',
+    price: 179_000,
+    stock: 32,
+    description: `Маск. Лавлагаа: ${riman('7589644')}`,
+    skinType: [SkinType.DRY, SkinType.NORMAL, SkinType.COMBINATION],
+    features: [Feature.HYDRATING, Feature.ANTI_AGING],
+    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Lip oil',
+    price: 89_000,
+    stock: 72,
+    description: `Уруулын тос. Лавлагаа: ${riman('7082383')}`,
     skinType: [],
     features: [Feature.HYDRATING],
     images: ['https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600'],
-    categorySlug: 'hair-care',
+    categorySlug: 'incellderm',
   },
   {
-    name: 'Coconut Oil Hair Serum',
-    price: 18000,
-    stock: 90,
-    description: 'Кокосын тос агуулсан үсний серум. Гөлгөр, гэрэлтүүлэх эффект.',
+    name: 'Lip tint',
+    price: 89_000,
+    stock: 68,
+    description: `Лавлагаа: ${riman('7085891')} · ${riman('7085838')}`,
+    skinType: [],
+    features: [Feature.BRIGHTENING],
+    images: ['https://images.unsplash.com/photo-1512496015851-a90fb38c796f?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Radiansome toner',
+    price: 215_000,
+    stock: 28,
+    description: `Лавлагаа: ${riman('7865136')}`,
+    skinType: [SkinType.NORMAL, SkinType.DRY, SkinType.COMBINATION],
+    features: [Feature.HYDRATING, Feature.BRIGHTENING],
+    images: ['https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Radiansome cream',
+    price: 255_000,
+    stock: 26,
+    description: `Лавлагаа: ${riman('7865153')}`,
+    skinType: [SkinType.DRY, SkinType.NORMAL],
+    features: [Feature.HYDRATING, Feature.ANTI_AGING],
+    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Radiansome Essence',
+    price: 285_000,
+    stock: 24,
+    description: `Лавлагаа: ${riman('7865162')}`,
+    skinType: [SkinType.NORMAL, SkinType.COMBINATION, SkinType.DRY],
+    features: [Feature.HYDRATING, Feature.BRIGHTENING, Feature.ANTI_AGING],
+    images: ['https://images.unsplash.com/photo-1571875257727-256c39da42af?w=600'],
+    categorySlug: 'incellderm',
+  },
+  {
+    name: 'Shampoo',
+    price: 99_000,
+    stock: 80,
+    description: `Шампунь. Лавлагаа: ${riman('6821036')}`,
+    skinType: [],
+    features: [Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600'],
+    categorySlug: 'botalab',
+  },
+  {
+    name: 'Conditioner',
+    price: 89_000,
+    stock: 75,
+    description: `Бальзам. Лавлагаа: ${riman('6821036')}`,
+    skinType: [],
+    features: [Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=600'],
+    categorySlug: 'botalab',
+  },
+  {
+    name: 'Hair serum',
+    price: 109_000,
+    stock: 62,
+    description: `Үсний серум. Лавлагаа: ${riman('6821037')}`,
+    skinType: [],
+    features: [Feature.HYDRATING],
+    images: ['https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600'],
+    categorySlug: 'botalab',
+  },
+  {
+    name: 'Body Wash',
+    price: 89_000,
+    stock: 70,
+    description: `Биеийн гель. Лавлагаа: ${riman('6821037')}`,
     skinType: [],
     features: [Feature.HYDRATING, Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
-    categorySlug: 'hair-care',
+    images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600'],
+    categorySlug: 'botalab',
   },
-  
-  // Body Care
   {
-    name: 'Shea Butter Body Lotion',
-    price: 28000,
-    stock: 65,
-    description: 'Ши тос агуулсан биеийн лосьон. Хатсан арьсыг чийгшүүлнэ.',
+    name: 'Body Cream',
+    price: 89_000,
+    stock: 66,
+    description: `Лавлагаа: ${riman('7843212')}`,
     skinType: [SkinType.DRY, SkinType.NORMAL],
-    features: [Feature.HYDRATING, Feature.ORGANIC],
-    images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
-    categorySlug: 'body-care',
-  },
-  {
-    name: 'Exfoliating Body Scrub',
-    price: 35000,
-    stock: 50,
-    description: 'Биеийн арьс хайлуулах скраб. Гөлгөр, цэвэрхэн арьс.',
-    skinType: [SkinType.NORMAL, SkinType.OILY],
-    features: [Feature.BRIGHTENING],
-    images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600'],
-    categorySlug: 'body-care',
-  },
-  {
-    name: 'Lavender Relaxing Body Oil',
-    price: 42000,
-    stock: 40,
-    description: 'Лаванда агуулсан тайвшруулах биеийн тос. Амралт, тайвшрал өгнө.',
-    skinType: [SkinType.DRY, SkinType.NORMAL, SkinType.SENSITIVE],
-    features: [Feature.HYDRATING, Feature.ORGANIC],
+    features: [Feature.HYDRATING],
     images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
-    categorySlug: 'body-care',
-  },
-  
-  // Spa & Wellness
-  {
-    name: 'Rose Quartz Face Roller',
-    price: 38000,
-    stock: 30,
-    description: 'Ягаан кварц нүүрний роллер. Цусны эргэлтийг сайжруулж, хавдалт бууруулна.',
-    skinType: [SkinType.NORMAL, SkinType.SENSITIVE],
-    features: [Feature.ANTI_AGING],
-    images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600'],
-    categorySlug: 'spa-wellness',
+    categorySlug: 'botalab',
   },
   {
-    name: 'Jade Gua Sha Tool',
-    price: 32000,
-    stock: 35,
-    description: 'Нефрит гуа ша багаж. Хуучин соёл, орчин үеийн гоо сайхан.',
-    skinType: [SkinType.NORMAL, SkinType.COMBINATION],
-    features: [Feature.ANTI_AGING, Feature.BRIGHTENING],
+    name: 'Toothpaste 4sh',
+    price: 48_000,
+    stock: 100,
+    description: `Шүдний оо 4ш. Лавлагаа: ${riman('7788866')}`,
+    skinType: [],
+    features: [Feature.ORGANIC],
     images: ['https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600'],
-    categorySlug: 'spa-wellness',
+    categorySlug: 'botalab',
   },
   {
-    name: 'Aromatherapy Essential Oil Set',
-    price: 55000,
-    stock: 25,
-    description: '5 төрлийн эфирийн тосны багц. Амралт, эрч хүч, тайвшрал.',
+    name: 'Toothbrush 4sh',
+    price: 16_000,
+    stock: 120,
+    description: `Сойз 4ш. Лавлагаа: ${riman('7788857')}`,
+    skinType: [],
+    features: [],
+    images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
+    categorySlug: 'botalab',
+  },
+  {
+    name: 'Deep talk Plus',
+    price: 350_000,
+    stock: 20,
+    description: `Лавлагаа: ${riman('6845504')}`,
     skinType: [],
     features: [Feature.ORGANIC],
     images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=600'],
-    categorySlug: 'spa-wellness',
+    categorySlug: 'life',
+  },
+  {
+    name: 'Fit Shake',
+    price: 250_000,
+    stock: 25,
+    description: 'Эрүүл мэндийн нэмэлт. Албан ёсны хуудасны холбоос жагсаалтад ороогүй.',
+    skinType: [],
+    features: [Feature.ORGANIC],
+    images: ['https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600'],
+    categorySlug: 'life',
   },
 ];
 
 async function seed() {
   const dbPort = parseInt(process.env.DB_PORT || '5432', 10);
-  
+
   const dataSource = new DataSource({
     type: 'postgres',
     host: process.env.DB_HOST || 'localhost',
@@ -247,7 +308,7 @@ async function seed() {
     database: process.env.DB_NAME || 'mongol_beauty',
     entities: [join(__dirname, '../**/*.entity.{ts,js}')],
     synchronize: false,
-    logging: false, // Set to true for debugging
+    logging: false,
   });
 
   try {
@@ -257,7 +318,6 @@ async function seed() {
     const categoryRepository = dataSource.getRepository(Category);
     const productRepository = dataSource.getRepository(Product);
 
-    // Clear existing data (respect FK order: cart/order lines before products)
     console.log('🗑️  Clearing existing data...');
     await dataSource.query('DELETE FROM cart_items').catch(() => undefined);
     await dataSource.query('DELETE FROM order_items').catch(() => undefined);
@@ -274,21 +334,19 @@ async function seed() {
     }
     console.log('✅ Existing data cleared');
 
-    // Create categories
     console.log('📦 Creating categories...');
     const createdCategories: Category[] = [];
     for (const catData of categories) {
       const category = categoryRepository.create(catData);
       const saved = await categoryRepository.save(category);
       createdCategories.push(saved);
-      console.log(`  ✅ Created category: ${saved.name}`);
+      console.log(`  ✅ ${saved.name}`);
     }
 
-    // Create products
-    console.log('🛍️  Creating products...');
+    console.log('🛍️  Creating products (INCELLDERM / BOTALAB / LIFE)...');
     let productCount = 0;
     for (const prodData of products) {
-      const category = createdCategories.find(c => c.slug === prodData.categorySlug);
+      const category = createdCategories.find((c) => c.slug === prodData.categorySlug);
       if (!category) {
         console.warn(`  ⚠️  Category not found: ${prodData.categorySlug}`);
         continue;
@@ -300,20 +358,19 @@ async function seed() {
       product.stock = prodData.stock;
       product.description = prodData.description;
       product.categoryId = category.id;
-      product.skinType = prodData.skinType.join(',') as any;
-      product.features = prodData.features.join(',') as any;
-      product.images = prodData.images.join(',') as any;
+      product.skinType = prodData.skinType;
+      product.features = prodData.features;
+      product.images = prodData.images;
 
       await productRepository.save(product);
       productCount++;
-      console.log(`  ✅ Created product: ${product.name} (${product.price}₮)`);
+      console.log(`  ✅ ${product.name} — ${product.price.toLocaleString()}₮`);
     }
 
     console.log('\n🎉 Seeding complete!');
     console.log(`   Categories: ${createdCategories.length}`);
     console.log(`   Products: ${productCount}`);
-    console.log('\n💡 You can now view products in your GraphQL Playground:');
-    console.log('   http://localhost:4000/graphql');
+    console.log('   GraphQL: http://localhost:4000/graphql\n');
 
     await dataSource.destroy();
   } catch (error) {
@@ -322,9 +379,8 @@ async function seed() {
   }
 }
 
-// Run if executed directly
 if (require.main === module) {
-  seed();
+  void seed();
 }
 
 export { seed };

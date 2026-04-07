@@ -1,4 +1,4 @@
-import { useState, memo, useMemo, useEffect } from 'react';
+import { useState, memo, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client';
@@ -7,10 +7,11 @@ import { Button } from '@mongol-beauty/ui';
 import { Filter, Grid3x3, List, ArrowUpDown } from 'lucide-react';
 import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
+import { PageHead } from '@/features/content/components/PageHead';
 
 const GET_PRODUCTS = gql`
-  query GetProducts($categoryId: ID) {
-    products(categoryId: $categoryId) {
+  query GetProducts($categoryId: ID, $limit: Int, $offset: Int) {
+    products(categoryId: $categoryId, limit: $limit, offset: $offset) {
       ...ProductCardFragment
     }
   }
@@ -28,13 +29,56 @@ const GET_CATEGORY = gql`
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
 type ViewMode = 'grid' | 'list';
+const PAGE_SIZE = 24;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+interface ProductCardRaw {
+  id: string;
+  name: string;
+  price: number;
+  discountedPrice?: number | null;
+  stock?: number;
+  images?: string[] | null;
+  category: {
+    id: string;
+  };
+}
+
+interface ProductCardView {
+  id: string;
+  name: string;
+  price: number;
+  discountedPrice?: number | null;
+  image: string;
+  categoryId: string;
+  stock: number;
+}
+
+function toProductCardView(product: ProductCardRaw): ProductCardView {
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    discountedPrice: product.discountedPrice,
+    image: product.images?.[0] || '/placeholder-product.jpg',
+    categoryId: product.category.id,
+    stock: product.stock ?? 0,
+  };
+}
+
+function isUuidLike(value?: string): boolean {
+  return Boolean(value && UUID_PATTERN.test(value));
+}
 
 export const ProductsPage = memo(function ProductsPage() {
   const { categoryId } = useParams();
+  const safeCategoryId = isUuidLike(categoryId) ? categoryId : null;
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('default');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setCartToastCallback((message: string) => {
@@ -42,23 +86,69 @@ export const ProductsPage = memo(function ProductsPage() {
     });
   }, []);
 
-  const { data: productsData, loading: productsLoading, error: productsError } = useQuery(GET_PRODUCTS, {
-    variables: { categoryId: categoryId || null },
+  const {
+    data: productsData,
+    loading: productsLoading,
+    error: productsError,
+    fetchMore,
+    networkStatus,
+  } = useQuery(GET_PRODUCTS, {
+    variables: { categoryId: safeCategoryId, limit: PAGE_SIZE, offset: 0 },
     fetchPolicy: 'cache-and-network',
+    nextFetchPolicy: 'cache-first',
+    notifyOnNetworkStatusChange: true,
     errorPolicy: 'all',
   });
+  const isFetchingMore = networkStatus === 3;
 
   const { data: categoryData } = useQuery(GET_CATEGORY, {
-    variables: { id: categoryId },
-    skip: !categoryId,
+    variables: { id: safeCategoryId },
+    skip: !safeCategoryId,
     fetchPolicy: 'cache-first',
+    nextFetchPolicy: 'cache-first',
     errorPolicy: 'all',
   });
 
-  // Memoize and sort products
+  useEffect(() => {
+    setHasMore(true);
+  }, [safeCategoryId]);
+
+  const loadMoreProducts = useCallback(async () => {
+    if (!hasMore || productsLoading || isFetchingMore) return;
+    const currentCount = productsData?.products?.length || 0;
+    const result = await fetchMore({
+      variables: {
+        categoryId: safeCategoryId,
+        limit: PAGE_SIZE,
+        offset: currentCount,
+      },
+    });
+    const incomingCount = result.data?.products?.length || 0;
+    if (incomingCount < PAGE_SIZE) {
+      setHasMore(false);
+    }
+  }, [hasMore, productsLoading, isFetchingMore, productsData, fetchMore, safeCategoryId]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          loadMoreProducts();
+        }
+      },
+      { rootMargin: '250px 0px' },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMoreProducts, hasMore]);
+
+  // Memoize, map to UI view model and sort products
   const products = useMemo(() => {
-    const allProducts = productsData?.products || [];
-    let sorted = [...allProducts];
+    const allProducts: ProductCardRaw[] = productsData?.products || [];
+    const mapped = allProducts.map(toProductCardView);
+    const sorted = [...mapped];
 
     switch (sortBy) {
       case 'price-asc':
@@ -99,6 +189,14 @@ export const ProductsPage = memo(function ProductsPage() {
 
   return (
     <div className="mb-page">
+      <PageHead
+        pageTitle={categoryData?.category?.name || 'Бүх бүтээгдэхүүн'}
+        metaTitle={categoryData?.category?.name ? `${categoryData.category.name} | Бүтээгдэхүүн` : 'Бүх бүтээгдэхүүн'}
+        metaDescription="Арьс арчилгаа, гоо сайхны бүтээгдэхүүнийг ангиллаар үзэж, үнийн дагуу эрэмбэлэн хайна."
+        contentMarkdown=""
+        canonicalUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+        ogType="website"
+      />
       <div className="mb-6 md:mb-8">
         <div className="mb-card-surface p-4 md:p-6 mb-5">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
@@ -218,21 +316,29 @@ export const ProductsPage = memo(function ProductsPage() {
           ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' 
           : 'space-y-4'
         }>
-          {products.map((product: any) => (
+          {products.map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}
               name={product.name}
               price={product.price}
               discountedPrice={product.discountedPrice}
-              image={product.images?.[0]}
-              categoryId={product.category.id}
+              image={product.image}
+              categoryId={product.categoryId}
               stock={product.stock}
               LinkComponent={Link}
             />
           ))}
         </div>
       )}
+      {products.length >= PAGE_SIZE && <div ref={sentinelRef} className="h-8" aria-hidden />}
+      <div className="py-4 text-center text-sm text-stone-500">
+        {networkStatus === 3
+          ? 'Илүү бүтээгдэхүүн ачаалж байна...'
+          : !hasMore && products.length > 0
+            ? 'Бүх бүтээгдэхүүнийг харууллаа'
+            : ''}
+      </div>
 
       {/* Bottom Sheet Filter - Cute Design */}
       {showFilters && (

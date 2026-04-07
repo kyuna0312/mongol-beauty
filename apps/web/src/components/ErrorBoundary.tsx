@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
           showRem={true}
           showRam={true}
         >
-          {process.env.NODE_ENV === 'development' && this.state.error && (
+          {import.meta.env.DEV && this.state.error && (
             <details className="mt-4 text-left bg-gray-50 p-4 rounded-lg">
               <summary className="cursor-pointer text-sm text-gray-600 font-medium mb-2">
                 🔧 Техникийн мэдээлэл (Development only)

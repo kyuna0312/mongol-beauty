@@ -7,6 +7,23 @@ interface OptimizedImageProps {
   aspectRatio?: 'square' | 'wide' | 'tall'; // Reserved for future use
   sizes?: string;
   loading?: 'lazy' | 'eager';
+  srcSet?: string;
+}
+
+const DEFAULT_RESPONSIVE_WIDTHS = [320, 480, 640, 768, 1024, 1280];
+
+function buildResponsiveSrcSet(baseSrc: string): string | undefined {
+  if (!baseSrc || baseSrc.startsWith('/placeholder')) return undefined;
+
+  // For now we only generate responsive variants for same-origin image endpoints.
+  // External/CDN URLs should provide `srcSet` directly from callers.
+  const isAbsolute = /^https?:\/\//i.test(baseSrc);
+  if (isAbsolute) return undefined;
+
+  return DEFAULT_RESPONSIVE_WIDTHS.map((width) => {
+    const separator = baseSrc.includes('?') ? '&' : '?';
+    return `${baseSrc}${separator}w=${width}&fit=cover&auto=format ${width}w`;
+  }).join(', ');
 }
 
 export const OptimizedImage = memo(function OptimizedImage({
@@ -16,20 +33,12 @@ export const OptimizedImage = memo(function OptimizedImage({
   aspectRatio: _aspectRatio = 'square', // Reserved for future responsive image sizing
   sizes = '(max-width: 768px) 50vw, 25vw',
   loading = 'lazy',
+  srcSet,
 }: OptimizedImageProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Generate srcset for responsive images
-  const generateSrcSet = (baseSrc: string) => {
-    // If it's a placeholder or external URL, return as-is
-    if (!baseSrc || baseSrc.startsWith('http') || baseSrc.startsWith('/placeholder')) {
-      return undefined;
-    }
-    // In production, you'd generate multiple sizes
-    // For now, return undefined to use single src
-    return undefined;
-  };
+  const resolvedSrcSet = srcSet || buildResponsiveSrcSet(src);
 
   const handleError = () => {
     setImageError(true);
@@ -63,7 +72,7 @@ export const OptimizedImage = memo(function OptimizedImage({
         onError={handleError}
         onLoad={handleLoad}
         sizes={sizes}
-        srcSet={generateSrcSet(src)}
+        srcSet={resolvedSrcSet}
       />
     </div>
   );

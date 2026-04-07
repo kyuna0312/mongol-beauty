@@ -1,12 +1,21 @@
-import { ReactNode } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import { Button } from '@mongol-beauty/ui';
-import { Home, RefreshCw, AlertCircle } from 'lucide-react';
+import { Home, RefreshCw, AlertCircle, ArrowLeft, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ErrorDisplayProps {
   title?: string;
   message?: string;
-  actionLabel?: string;
-  onAction?: () => void;
+  actionLabel?: string; // Legacy prop; maps to home action label
+  onAction?: () => void; // Legacy prop; maps to home action callback
+  onRetry?: () => void;
+  onBack?: () => void;
+  onSearch?: (query: string) => void;
+  showBack?: boolean;
+  showRetry?: boolean;
+  showSearch?: boolean;
+  searchPlaceholder?: string;
+  homePath?: string;
   showRem?: boolean;
   showRam?: boolean;
   children?: ReactNode;
@@ -17,129 +26,107 @@ export function ErrorDisplay({
   message = 'Ямар нэгэн зүйл буруу болсон байна. Дахин оролдоно уу.',
   actionLabel = 'Нүүр хуудас руу буцах',
   onAction,
+  onRetry,
+  onBack,
+  onSearch,
+  showBack = true,
+  showRetry = true,
+  showSearch = true,
+  searchPlaceholder = 'Бүтээгдэхүүн хайх...',
+  homePath = '/',
   showRem = true,
   showRam = false,
   children,
 }: ErrorDisplayProps) {
-  const handleAction = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleHome = () => {
     if (onAction) {
       onAction();
-    } else {
-      window.location.href = '/';
+      return;
     }
+    navigate(homePath);
+  };
+
+  const handleRetry = () => {
+    if (onRetry) {
+      onRetry();
+      return;
+    }
+    window.location.reload();
+  };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    navigate(-1);
+  };
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) return;
+    if (onSearch) {
+      onSearch(query);
+      return;
+    }
+    navigate(`/products?search=${encodeURIComponent(query)}`);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
-      <div className="max-w-2xl w-full">
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border-2 border-pink-200">
-          {/* Anime Girl Images */}
-          <div className="relative bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 p-8">
-            <div className="flex items-center justify-center gap-4 mb-6">
-              {showRem && (
-                <div className="relative animate-bounce" style={{ animationDuration: '2s', animationDelay: '0s' }}>
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-pink-300 to-pink-500 flex items-center justify-center shadow-lg border-4 border-white overflow-hidden">
-                    <img
-                      src="/rem-anime.png"
-                      alt="Rem"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to emoji if image fails
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent && !parent.querySelector('.fallback-emoji')) {
-                          const fallback = document.createElement('span');
-                          fallback.className = 'fallback-emoji text-6xl';
-                          fallback.textContent = '💙';
-                          parent.appendChild(fallback);
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                    Rem
-                  </div>
-                </div>
-              )}
-              {showRam && (
-                <div className="relative animate-bounce" style={{ animationDuration: '2s', animationDelay: '0.5s' }}>
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-300 to-purple-500 flex items-center justify-center shadow-lg border-4 border-white overflow-hidden">
-                    <img
-                      src="/ram-anime.png"
-                      alt="Ram"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback to emoji if image fails
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent && !parent.querySelector('.fallback-emoji')) {
-                          const fallback = document.createElement('span');
-                          fallback.className = 'fallback-emoji text-6xl';
-                          fallback.textContent = '💜';
-                          parent.appendChild(fallback);
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                    Ram
-                  </div>
-                </div>
-              )}
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 p-4 md:p-8">
+      <div className="mx-auto max-w-2xl">
+        <div className="rounded-3xl border border-rose-100 bg-white shadow-soft">
+          <div className="p-6 md:p-8 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+              <AlertCircle className="h-7 w-7" />
             </div>
+            <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-stone-900">{title}</h2>
+            <p className="mt-3 text-sm md:text-base text-stone-600 leading-relaxed">{message}</p>
+            {(showRem || showRam) && (
+              <p className="mt-3 text-xs text-stone-500">
+                {showRem && showRam ? 'Түр хугацаанд саатал гарлаа.' : 'Системийн саатлыг засаж байна.'}
+              </p>
+            )}
           </div>
 
-          {/* Error Content */}
-          <div className="p-8 text-center">
-            <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-                <AlertCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                {title}
-              </h2>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                {message}
-              </p>
-            </div>
-
-            {children && (
-              <div className="mb-6">
-                {children}
-              </div>
+          <div className="border-t border-rose-100 p-5 md:p-6">
+            {showSearch && (
+              <form onSubmit={handleSearch} className="mb-4 flex gap-2">
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="flex-1 rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100"
+                />
+                <Button type="submit" variant="outline">
+                  <Search className="h-4 w-4" />
+                </Button>
+              </form>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button
-                onClick={handleAction}
-                variant="primary"
-                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
-              >
-                <Home className="w-4 h-4 mr-2" />
+            {children ? <div className="mb-4">{children}</div> : null}
+
+            <div className="flex flex-wrap gap-2">
+              {showBack && (
+                <Button onClick={handleBack} variant="outline">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Буцах
+                </Button>
+              )}
+              {showRetry && (
+                <Button onClick={handleRetry} variant="outline">
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Дахин оролдох
+                </Button>
+              )}
+              <Button onClick={handleHome} variant="primary">
+                <Home className="mr-2 h-4 w-4" />
                 {actionLabel}
               </Button>
-              <Button
-                onClick={() => window.location.reload()}
-                variant="outline"
-                className="border-2 border-pink-300 text-pink-600 hover:bg-pink-50"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Дахин ачаалах
-              </Button>
-            </div>
-
-            {/* Cute message from Rem/Ram */}
-            <div className="mt-8 p-4 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-200">
-              <p className="text-sm text-gray-600 italic">
-                {showRem && showRam 
-                  ? "💙 Rem & 💜 Ram: 'Уучлаарай, бид энэ алдааг засах гэж хичээж байна!'"
-                  : showRem
-                  ? "💙 Rem: 'Уучлаарай, би энэ алдааг засах гэж хичээж байна!'"
-                  : "💜 Ram: 'Уучлаарай, би энэ алдааг засах гэж хичээж байна!'"
-                }
-              </p>
             </div>
           </div>
         </div>

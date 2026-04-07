@@ -34,8 +34,23 @@ export const ResetPasswordPage = lazy(() =>
 export const ProfilePage = lazy(() =>
   import('@/features/account/pages/ProfilePage').then((m) => ({ default: m.ProfilePage })),
 );
-export const ContentPage = lazy(() =>
-  import('@/features/content/pages/ContentPage').then((m) => ({ default: m.ContentPage })),
+export const FaqPage = lazy(() =>
+  import('@/features/content/pages/FaqPage').then((m) => ({ default: m.FaqPage })),
+);
+export const ShippingPage = lazy(() =>
+  import('@/features/content/pages/ShippingPage').then((m) => ({ default: m.ShippingPage })),
+);
+export const ReturnsPage = lazy(() =>
+  import('@/features/content/pages/ReturnsPage').then((m) => ({ default: m.ReturnsPage })),
+);
+export const PrivacyPage = lazy(() =>
+  import('@/features/content/pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
+);
+export const AboutPage = lazy(() =>
+  import('@/features/about/pages/AboutPage').then((m) => ({ default: m.AboutPage })),
+);
+export const NotFoundPage = lazy(() =>
+  import('@/features/shared/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 );
 
 export const AdminLoginPage = lazy(() =>

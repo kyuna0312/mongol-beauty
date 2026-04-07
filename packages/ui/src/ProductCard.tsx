@@ -37,7 +37,8 @@ export const ProductCard = memo(function ProductCard({
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const displayPrice = discountedPrice || price;
-  const hasDiscount = discountedPrice && discountedPrice < price;
+  const hasDiscount = Boolean(discountedPrice && discountedPrice < price);
+  const discountPercent = hasDiscount ? Math.round(((price - (discountedPrice as number)) / price) * 100) : 0;
 
   const toggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,7 +47,7 @@ export const ProductCard = memo(function ProductCard({
     // TODO: Implement wishlist functionality
   };
 
-  const productUrl = href || `/products/${categoryId}/${id}`;
+  const productUrl = href || `/products/detail/${id}`;
 
   const cardContent = (
     <Card className="overflow-hidden border border-rose-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95">
@@ -75,6 +76,7 @@ export const ProductCard = memo(function ProductCard({
 
         {/* Wishlist Button */}
         <button
+          type="button"
           onClick={toggleWishlist}
           className="absolute top-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 opacity-0 shadow-md backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           aria-label="Хүслийн жагсаалтад нэмэх"
@@ -112,7 +114,7 @@ export const ProductCard = memo(function ProductCard({
               )}
             </div>
             {hasDiscount && (
-              <p className="mt-0.5 text-xs font-medium text-emerald-600">10% хөнгөлөлттэй</p>
+              <p className="mt-0.5 text-xs font-medium text-emerald-600">{discountPercent}% хөнгөлөлттэй</p>
             )}
             {stock > 0 && !hasDiscount && (
               <p className="mt-0.5 text-xs text-stone-500">Нөөц: {stock}</p>

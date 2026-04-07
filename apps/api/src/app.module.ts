@@ -6,7 +6,6 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
-import { createComplexityRule, simpleEstimator } from 'graphql-query-complexity';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { OrderModule } from './order/order.module';
@@ -119,13 +118,10 @@ import type { Request, Response } from 'express';
         }),
         formatError: formatGraphqlError,
         cache: 'bounded',
-        validationRules: [
-          depthLimit(10),
-          createComplexityRule({
-            maximumComplexity: 2000,
-            estimators: [simpleEstimator({ defaultComplexity: 1 })],
-          }),
-        ],
+        // graphql-query-complexity as a validation rule breaks variable coercion (calls
+        // getVariableValues without request variables) — all $variable queries return 400.
+        // Re-introduce complexity via an Apollo plugin or a fixed library version if needed.
+        validationRules: [depthLimit(10)],
         fieldResolverEnhancers: ['interceptors'],
       }),
     }),

@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client';
-import { Button, ProductCard, CartToast } from '@mongol-beauty/ui';
+import { Button, ProductCard, CartToast, OptimizedImage } from '@mongol-beauty/ui';
 import { ShoppingCart, Share2, Heart, Check } from 'lucide-react';
 import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
+import { PageHead } from '@/features/content/components/PageHead';
+import { ErrorDisplay } from '@/components/ErrorDisplay';
 
 const GET_PRODUCT = gql`
-  query GetProduct($id: ID!, $categoryId: ID) {
-    product(id: $id, categoryId: $categoryId) {
+  query GetProduct($id: ID!) {
+    product(id: $id) {
       id
       name
       price
@@ -35,7 +37,7 @@ function isUuidLike(value?: string): boolean {
 }
 
 const GET_RELATED_PRODUCTS = gql`
-  query GetRelatedProducts($categoryId: ID!, $excludeId: ID!) {
+  query GetRelatedProducts($categoryId: ID!) {
     products(categoryId: $categoryId) {
       ...ProductCardFragment
     }
@@ -43,8 +45,36 @@ const GET_RELATED_PRODUCTS = gql`
   ${PRODUCT_CARD_FRAGMENT}
 `;
 
+interface ProductDetailView {
+  id: string;
+  name: string;
+  price: number;
+  discountedPrice?: number | null;
+  stock: number;
+  description?: string | null;
+  images: string[];
+  skinType: string[];
+  features: string[];
+  category: {
+    id: string;
+    name: string;
+  };
+}
+
+interface ProductCardRelated {
+  id: string;
+  name: string;
+  price: number;
+  discountedPrice?: number | null;
+  stock?: number;
+  images?: string[];
+  category: {
+    id: string;
+  };
+}
+
 export function ProductDetailPage() {
-  const { productId: rawProductId, categoryId: rawCategoryId } = useParams();
+  const { productId } = useParams();
   const location = useLocation();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -54,42 +84,66 @@ export function ProductDetailPage() {
   const { setItem, items } = useCart();
   const { isAuthenticated } = useAuth();
 
-  // Defensive param handling: old/shared links can swap id order.
-  const effectiveProductId =
-    isUuidLike(rawProductId) ? rawProductId : isUuidLike(rawCategoryId) ? rawCategoryId : rawProductId;
-  const effectiveCategoryRef =
-    effectiveProductId === rawProductId ? rawCategoryId : rawProductId;
+  const effectiveProductId = isUuidLike(productId) ? productId : undefined;
 
   const { data, loading, error } = useQuery(GET_PRODUCT, {
-    variables: {
-      id: effectiveProductId,
-      categoryId: effectiveCategoryRef || null,
-    },
+    variables: { id: effectiveProductId! },
     skip: !effectiveProductId,
-    onError: (queryError) => {
-      console.error('ProductDetail query failed', {
-        rawCategoryId,
-        rawProductId,
-        effectiveCategoryRef,
-        effectiveProductId,
-        errors: queryError.message,
-      });
-    },
+    fetchPolicy: 'cache-and-network',
+    nextFetchPolicy: 'cache-first',
   });
+
+  const relatedCategoryId = isUuidLike(data?.product?.category?.id ?? undefined)
+    ? data?.product?.category?.id
+    : null;
 
   const { data: relatedData } = useQuery(GET_RELATED_PRODUCTS, {
     variables: { 
-      categoryId: data?.product?.category?.id || rawCategoryId,
-      excludeId: effectiveProductId 
+      categoryId: relatedCategoryId
     },
-    skip: !data?.product?.category?.id && !rawCategoryId,
+    skip: !relatedCategoryId,
+    fetchPolicy: 'cache-first',
+    nextFetchPolicy: 'cache-first',
   });
 
-  const product = data?.product;
-  const relatedProducts =
-    relatedData?.products?.filter((p: any) => p.id !== effectiveProductId).slice(0, 4) || [];
+  const product = data?.product as ProductDetailView | undefined;
+  const discountPercent = product?.discountedPrice
+    ? Math.round(((product.price - product.discountedPrice) / product.price) * 100)
+    : 0;
+  const relatedProducts = useMemo(
+    () =>
+      ((relatedData?.products as ProductCardRelated[] | undefined) || [])
+        .filter((p) => p.id !== effectiveProductId)
+        .slice(0, 4),
+    [relatedData, effectiveProductId],
+  );
+
+  useEffect(() => {
+    if (selectedImage > (product?.images?.length ?? 1) - 1) {
+      setSelectedImage(0);
+    }
+  }, [product, selectedImage]);
+
+  useEffect(() => {
+    if (!addedToCart) return;
+    const timeoutId = window.setTimeout(() => {
+      setAddedToCart(false);
+    }, 2000);
+    return () => window.clearTimeout(timeoutId);
+  }, [addedToCart]);
+
+  useEffect(() => {
+    if (!error) return;
+    console.error('ProductDetail query failed', {
+      productId,
+      effectiveProductId,
+      errors: error.message,
+      graphQLErrors: (error as any).graphQLErrors,
+    });
+  }, [error, productId, effectiveProductId]);
 
   const addToCart = async () => {
+    if (!product || !effectiveProductId) return;
     if (product.stock === 0) return;
     const current = (items.find((item: any) => item.productId === effectiveProductId)?.quantity ?? 0) as number;
     const nextQuantity = current + quantity;
@@ -98,7 +152,7 @@ export function ProductDetailPage() {
       return;
     }
 
-    await setItem(effectiveProductId as string, nextQuantity, product.price);
+    await setItem(effectiveProductId, nextQuantity, product.price);
     
     setAddedToCart(true);
     setToastMessage(
@@ -106,18 +160,15 @@ export function ProductDetailPage() {
         ? `${product.name} сагсанд нэмэгдлээ (базад хадгалагдлаа)!`
         : `${product.name} сагсанд нэмэгдлээ!`,
     );
-    
-    setTimeout(() => {
-      setAddedToCart(false);
-    }, 2000);
   };
 
   const handleShare = async () => {
+    if (!product) return;
     if (navigator.share) {
       try {
         await navigator.share({
           title: product.name,
-          text: product.description,
+          text: product.description ?? undefined,
           url: window.location.href,
         });
       } catch (err) {
@@ -131,11 +182,26 @@ export function ProductDetailPage() {
   };
 
   if (loading) {
-    return <div className="p-4">Уншиж байна...</div>;
+    return (
+      <div className="mb-page">
+        <div className="mb-card-surface p-4 md:p-6 animate-pulse">
+          <div className="aspect-square rounded-2xl bg-stone-200/70 mb-4" />
+          <div className="h-6 w-2/3 rounded bg-stone-200/70 mb-3" />
+          <div className="h-4 w-full rounded bg-stone-200/60" />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4">Бүтээгдэхүүн ачаалахад алдаа гарлаа</div>;
+    return (
+      <ErrorDisplay
+        title="Бүтээгдэхүүн ачаалахад алдаа гарлаа"
+        message="Бүтээгдэхүүний дэлгэрэнгүй мэдээллийг авахад алдаа гарлаа. Дахин оролдоно уу."
+        showRem={true}
+        showRam={false}
+      />
+    );
   }
 
   if (!effectiveProductId) {
@@ -144,27 +210,36 @@ export function ProductDetailPage() {
 
   if (!product) {
     console.warn('Product not found for URL params', {
-      rawCategoryId,
-      rawProductId,
-      effectiveCategoryRef,
+      productId,
       effectiveProductId,
     });
     return <div className="p-4">Бүтээгдэхүүн олдсонгүй</div>;
   }
 
-  const canonicalPath = `/products/${product.category.id}/${product.id}`;
+  const canonicalPath = `/products/detail/${product.id}`;
   if (location.pathname !== canonicalPath) {
     return <Navigate to={`${canonicalPath}${location.search}`} replace />;
   }
 
   return (
     <div className="max-w-6xl mx-auto px-0 sm:px-4 pb-28 sm:pb-32 md:pb-10">
+      <PageHead
+        pageTitle={product.name}
+        metaTitle={`${product.name} | ${product.category.name}`}
+        metaDescription={product.description || `${product.category.name} ангиллын бүтээгдэхүүн.`}
+        contentMarkdown={product.description || ''}
+        canonicalUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+        ogType="product"
+        ogImage={product.images?.[0]}
+      />
       <div className="mb-card-surface overflow-hidden rounded-b-3xl sm:rounded-3xl border-0 sm:border shadow-none sm:shadow-soft">
         <div className="aspect-square bg-gradient-to-br from-beige-50 via-beige-100 to-beige-50 relative overflow-hidden">
-          <img
+          <OptimizedImage
             src={product.images?.[selectedImage] || '/placeholder-product.jpg'}
             alt={product.name}
             className="w-full h-full object-cover"
+            loading="eager"
+            sizes="(max-width: 768px) 100vw, 50vw"
           />
           {/* Decorative gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
@@ -173,6 +248,7 @@ export function ProductDetailPage() {
           <div className="flex gap-3 p-4 overflow-x-auto bg-white">
             {product.images.map((img: string, idx: number) => (
               <button
+                type="button"
                 key={idx}
                 onClick={() => setSelectedImage(idx)}
                 className={`flex-shrink-0 w-20 h-20 rounded-xl border-2 transition-all duration-300 transform ${
@@ -181,7 +257,13 @@ export function ProductDetailPage() {
                     : 'border-gray-200 hover:border-primary-300 hover:scale-105'
                 }`}
               >
-                <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover rounded-lg" />
+                <OptimizedImage
+                  src={img}
+                  alt={`${product.name} ${idx + 1}`}
+                  className="w-full h-full object-cover rounded-lg"
+                  sizes="80px"
+                  loading="lazy"
+                />
               </button>
             ))}
           </div>
@@ -205,6 +287,7 @@ export function ProductDetailPage() {
           </div>
           <div className="flex items-center gap-2 ml-4">
             <button
+              type="button"
               onClick={() => setIsWishlisted(!isWishlisted)}
               className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
                 isWishlisted
@@ -216,6 +299,7 @@ export function ProductDetailPage() {
               <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
             </button>
             <button
+              type="button"
               onClick={handleShare}
               className="w-10 h-10 rounded-xl bg-beige-50 text-gray-600 hover:bg-beige-100 flex items-center justify-center transition-all"
               aria-label="Хуваалцах"
@@ -238,7 +322,7 @@ export function ProductDetailPage() {
           <span className="text-sm text-gray-500">/ ширхэг</span>
           {product.discountedPrice && (
             <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              10% хөнгөлөлт
+              {discountPercent}% хөнгөлөлт
             </span>
           )}
         </div>
@@ -280,7 +364,9 @@ export function ProductDetailPage() {
           </h3>
           <div className="flex items-center gap-4">
             <button
+              type="button"
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              disabled={quantity <= 1}
               className="w-12 h-12 rounded-xl bg-white border-2 border-beige-300 flex items-center justify-center text-primary-600 font-bold text-xl hover:bg-beige-50 hover:border-primary-400 hover:scale-110 active:scale-95 transition-all duration-200 shadow-sm hover:shadow-md"
             >
               −
@@ -291,7 +377,9 @@ export function ProductDetailPage() {
               </span>
             </div>
             <button
+              type="button"
               onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+              disabled={quantity >= product.stock || product.stock === 0}
               className="w-12 h-12 rounded-xl bg-white border-2 border-beige-300 flex items-center justify-center text-primary-600 font-bold text-xl hover:bg-beige-50 hover:border-primary-400 hover:scale-110 active:scale-95 transition-all duration-200 shadow-sm hover:shadow-md"
             >
               +
@@ -329,7 +417,7 @@ export function ProductDetailPage() {
         </section>
       )}
 
-      <div className="fixed left-0 right-0 z-[60] border-t border-beige-200/90 bg-white/95 backdrop-blur-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-nav bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-0 md:rounded-t-2xl md:mx-auto md:max-w-6xl md:left-4 md:right-4 md:bottom-4 md:border md:border-beige-200/80">
+      <div className="fixed left-0 right-0 z-[60] border-t border-beige-200/90 bg-white/95 backdrop-blur-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-nav bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:rounded-t-2xl md:mx-auto md:max-w-6xl md:left-4 md:right-4 md:bottom-4 md:border md:border-beige-200/80">
         <Button
           fullWidth
           size="lg"

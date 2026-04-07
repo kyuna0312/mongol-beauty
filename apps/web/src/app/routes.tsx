@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { MainLayout } from '@/layouts/MainLayout';
 import { RouteFallback } from '@/app/RouteFallback';
 import * as Pages from '@/app/lazy-pages';
@@ -26,7 +26,9 @@ export function AppRoutes() {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<Pages.HomePage />} />
           <Route path="products" element={<Pages.ProductsPage />} />
+          <Route path="products/detail" element={<Navigate to="/products" replace />} />
           <Route path="products/:categoryId" element={<Pages.ProductsPage />} />
+          <Route path="products/detail/:productId" element={<Pages.ProductDetailPage />} />
           <Route path="products/:categoryId/:productId" element={<Pages.ProductDetailPage />} />
           <Route path="cart" element={<Pages.CartPage />} />
           <Route path="checkout" element={<Pages.CheckoutPage />} />
@@ -36,14 +38,16 @@ export function AppRoutes() {
           <Route path="forgot-password" element={<Pages.ForgotPasswordPage />} />
           <Route path="reset-password" element={<Pages.ResetPasswordPage />} />
           <Route path="profile" element={<Pages.ProfilePage />} />
-          <Route path="about" element={<Pages.ContentPage slug="about" />} />
-          <Route path="faq" element={<Pages.ContentPage slug="faq" />} />
-          <Route path="shipping" element={<Pages.ContentPage slug="shipping" />} />
-          <Route path="returns" element={<Pages.ContentPage slug="returns" />} />
-          <Route path="privacy" element={<Pages.ContentPage slug="privacy" />} />
+          <Route path="about" element={<Pages.AboutPage />} />
+          <Route path="faq" element={<Pages.FaqPage />} />
+          <Route path="shipping" element={<Pages.ShippingPage />} />
+          <Route path="returns" element={<Pages.ReturnsPage />} />
+          <Route path="privacy" element={<Pages.PrivacyPage />} />
+          <Route path="*" element={<Pages.NotFoundPage />} />
         </Route>
 
         <Route path="/admin/login" element={<Pages.AdminLoginPage />} />
+        <Route path="*" element={<Pages.NotFoundPage />} />
 
         <Route element={<ProtectedAdminRoute />}>
           <Route path="admin" element={<AdminLayout />}>

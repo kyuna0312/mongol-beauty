@@ -1,5 +1,4 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { MarkdownProse } from './MarkdownProse';
 
 interface MarkdownContentProps {
   markdown: string;
@@ -7,9 +6,5 @@ interface MarkdownContentProps {
 }
 
 export function MarkdownContent({ markdown, className = '' }: MarkdownContentProps) {
-  return (
-    <div className={`mb-markdown max-w-none text-stone-700 leading-relaxed ${className}`}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-    </div>
-  );
+  return <MarkdownProse markdown={markdown} className={className} />;
 }
