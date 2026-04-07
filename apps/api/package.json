@@ -39,7 +39,7 @@
     "graphql-depth-limit": "^1.1.0",
     "graphql-query-complexity": "^1.1.0",
     "graphql-upload": "^13.0.0",
-    "nodemailer": "^7.0.12",
+    "nodemailer": "^8.0.4",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
