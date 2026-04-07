@@ -112,7 +112,7 @@ export const HomePage = memo(function HomePage() {
                 </Link>
                 <Link
                   to="/products"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-300/80 bg-white/50 px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-white/90 transition-colors shadow-sm"
+                  className="mb-focus-ring inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-300/80 bg-white/50 px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-white/90 transition-colors shadow-sm"
                 >
                   Онцлох бүтээгдэхүүн
                 </Link>
@@ -140,7 +140,7 @@ export const HomePage = memo(function HomePage() {
             <Link
               key={category.id}
               to={`/products/${category.id}`}
-              className="group mb-card-surface p-3 md:p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-200/90 hover:shadow-lg"
+              className="mb-focus-ring group mb-card-surface p-3 md:p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-200/90 hover:shadow-lg"
               onMouseEnter={() => {
                 import('@/features/catalog/pages/ProductsPage');
               }}

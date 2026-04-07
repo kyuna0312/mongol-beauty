@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args, ID, Int, Context, ResolveField, Root } from '@nestjs/graphql';
-import { NotFoundException, UseGuards } from '@nestjs/common';
+import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { Product } from './product.entity';
 import { ProductService } from './product.service';
 import { CreateProductInput, UpdateProductInput } from './dto/create-product.input';
@@ -14,6 +14,8 @@ import type { GraphqlContext } from '../types/graphql-context';
 @Resolver(() => Product)
 @UseGuards(GqlOptionalAuthGuard)
 export class ProductResolver {
+  private readonly logger = new Logger(ProductResolver.name);
+
   constructor(
     private productService: ProductService,
     private authService: AuthService,
@@ -51,10 +53,16 @@ export class ProductResolver {
   @Query(() => Product, { nullable: true })
   async product(
     @Args('id', { type: () => ID }) id: string,
+    @Args('categoryId', { type: () => ID, nullable: true }) categoryId?: string,
     @Context() context?: GraphqlContext,
   ): Promise<Product | null> {
-    const product = await this.productService.findOne(id);
-    if (!product) return null;
+    const product = await this.productService.findOne(id, categoryId);
+    if (!product) {
+      this.logger.warn(
+        `Product lookup miss for id="${id}" categoryRef="${categoryId ?? ''}"`,
+      );
+      return null;
+    }
 
     // Apply discount for subscribed users
     const user = await this.requestUser(context);

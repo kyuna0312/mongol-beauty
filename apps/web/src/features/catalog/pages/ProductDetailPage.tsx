@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { gql } from '@apollo/client';
 import { Button, ProductCard, CartToast } from '@mongol-beauty/ui';
@@ -9,8 +9,8 @@ import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 
 const GET_PRODUCT = gql`
-  query GetProduct($id: ID!) {
-    product(id: $id) {
+  query GetProduct($id: ID!, $categoryId: ID) {
+    product(id: $id, categoryId: $categoryId) {
       id
       name
       price
@@ -28,6 +28,12 @@ const GET_PRODUCT = gql`
   }
 `;
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuidLike(value?: string): boolean {
+  return Boolean(value && UUID_PATTERN.test(value));
+}
+
 const GET_RELATED_PRODUCTS = gql`
   query GetRelatedProducts($categoryId: ID!, $excludeId: ID!) {
     products(categoryId: $categoryId) {
@@ -38,7 +44,8 @@ const GET_RELATED_PRODUCTS = gql`
 `;
 
 export function ProductDetailPage() {
-  const { productId, categoryId } = useParams();
+  const { productId: rawProductId, categoryId: rawCategoryId } = useParams();
+  const location = useLocation();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -47,31 +54,51 @@ export function ProductDetailPage() {
   const { setItem, items } = useCart();
   const { isAuthenticated } = useAuth();
 
-  const { data, loading } = useQuery(GET_PRODUCT, {
-    variables: { id: productId },
+  // Defensive param handling: old/shared links can swap id order.
+  const effectiveProductId =
+    isUuidLike(rawProductId) ? rawProductId : isUuidLike(rawCategoryId) ? rawCategoryId : rawProductId;
+  const effectiveCategoryRef =
+    effectiveProductId === rawProductId ? rawCategoryId : rawProductId;
+
+  const { data, loading, error } = useQuery(GET_PRODUCT, {
+    variables: {
+      id: effectiveProductId,
+      categoryId: effectiveCategoryRef || null,
+    },
+    skip: !effectiveProductId,
+    onError: (queryError) => {
+      console.error('ProductDetail query failed', {
+        rawCategoryId,
+        rawProductId,
+        effectiveCategoryRef,
+        effectiveProductId,
+        errors: queryError.message,
+      });
+    },
   });
 
   const { data: relatedData } = useQuery(GET_RELATED_PRODUCTS, {
     variables: { 
-      categoryId: data?.product?.category?.id || categoryId,
-      excludeId: productId 
+      categoryId: data?.product?.category?.id || rawCategoryId,
+      excludeId: effectiveProductId 
     },
-    skip: !data?.product?.category?.id && !categoryId,
+    skip: !data?.product?.category?.id && !rawCategoryId,
   });
 
   const product = data?.product;
-  const relatedProducts = relatedData?.products?.filter((p: any) => p.id !== productId).slice(0, 4) || [];
+  const relatedProducts =
+    relatedData?.products?.filter((p: any) => p.id !== effectiveProductId).slice(0, 4) || [];
 
   const addToCart = async () => {
     if (product.stock === 0) return;
-    const current = (items.find((item: any) => item.productId === productId)?.quantity ?? 0) as number;
+    const current = (items.find((item: any) => item.productId === effectiveProductId)?.quantity ?? 0) as number;
     const nextQuantity = current + quantity;
     if (nextQuantity > product.stock) {
       setToastMessage('Нөөц хүрэлцэхгүй байна');
       return;
     }
 
-    await setItem(productId as string, nextQuantity, product.price);
+    await setItem(effectiveProductId as string, nextQuantity, product.price);
     
     setAddedToCart(true);
     setToastMessage(
@@ -107,8 +134,27 @@ export function ProductDetailPage() {
     return <div className="p-4">Уншиж байна...</div>;
   }
 
+  if (error) {
+    return <div className="p-4">Бүтээгдэхүүн ачаалахад алдаа гарлаа</div>;
+  }
+
+  if (!effectiveProductId) {
+    return <div className="p-4">Буруу бүтээгдэхүүний холбоос байна</div>;
+  }
+
   if (!product) {
+    console.warn('Product not found for URL params', {
+      rawCategoryId,
+      rawProductId,
+      effectiveCategoryRef,
+      effectiveProductId,
+    });
     return <div className="p-4">Бүтээгдэхүүн олдсонгүй</div>;
+  }
+
+  const canonicalPath = `/products/${product.category.id}/${product.id}`;
+  if (location.pathname !== canonicalPath) {
+    return <Navigate to={`${canonicalPath}${location.search}`} replace />;
   }
 
   return (

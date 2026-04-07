@@ -63,12 +63,12 @@ export const ProductCard = memo(function ProductCard({
         
         {/* Stock Badge */}
         {stock === 0 && (
-          <div className="absolute top-2 left-2 z-20 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+          <div className="absolute top-2 left-2 z-20 rounded-full border border-rose-200/90 bg-rose-50/95 px-2.5 py-1 text-xs font-semibold text-rose-700 backdrop-blur-sm">
             Нөөц дууссан
           </div>
         )}
         {stock > 0 && stock < 10 && (
-          <div className="absolute top-2 left-2 z-20 bg-gold-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+          <div className="absolute top-2 left-2 z-20 rounded-full border border-amber-200/90 bg-amber-50/95 px-2.5 py-1 text-xs font-semibold text-amber-700 backdrop-blur-sm">
             Сүүлийн {stock} ширхэг
           </div>
         )}
@@ -76,7 +76,7 @@ export const ProductCard = memo(function ProductCard({
         {/* Wishlist Button */}
         <button
           onClick={toggleWishlist}
-          className="absolute top-2 right-2 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:bg-white transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110"
+          className="absolute top-2 right-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 opacity-0 shadow-md backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           aria-label="Хүслийн жагсаалтад нэмэх"
         >
           <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-primary-600 text-primary-600' : 'text-gray-600'}`} />
@@ -95,30 +95,30 @@ export const ProductCard = memo(function ProductCard({
           </div>
         )}
       </div>
-      <div className="p-4 bg-white flex-1 flex flex-col">
-        <h3 className="font-semibold text-sm mb-2 line-clamp-2 text-gray-800 group-hover:text-primary-600 transition-colors flex-1">
+      <div className="flex flex-1 flex-col bg-white p-4">
+        <h3 className="mb-2 line-clamp-2 flex-1 text-sm font-semibold text-stone-800 transition-colors group-hover:text-primary-700">
           {name}
         </h3>
-                <div className="flex items-center justify-between mt-auto">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className={`font-bold text-xl ${hasDiscount ? 'text-emerald-600' : 'text-primary-600'}`}>
-                        {displayPrice.toLocaleString()}₮
-                      </p>
-                      {hasDiscount && (
-                        <p className="text-sm text-gray-400 line-through">
-                          {price.toLocaleString()}₮
-                        </p>
-                      )}
-                    </div>
-                    {hasDiscount && (
-                      <p className="text-xs text-green-600 font-medium mt-0.5">10% хөнгөлөлттэй</p>
-                    )}
-                    {stock > 0 && !hasDiscount && (
-                      <p className="text-xs text-gray-500 mt-0.5">Нөөц: {stock}</p>
-                    )}
-                  </div>
-          <span className="text-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform group-hover:translate-x-1">
+        <div className="mt-auto flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <p className={`text-xl font-bold ${hasDiscount ? 'text-emerald-600' : 'text-primary-600'}`}>
+                {displayPrice.toLocaleString()}₮
+              </p>
+              {hasDiscount && (
+                <p className="text-sm text-stone-400 line-through">
+                  {price.toLocaleString()}₮
+                </p>
+              )}
+            </div>
+            {hasDiscount && (
+              <p className="mt-0.5 text-xs font-medium text-emerald-600">10% хөнгөлөлттэй</p>
+            )}
+            {stock > 0 && !hasDiscount && (
+              <p className="mt-0.5 text-xs text-stone-500">Нөөц: {stock}</p>
+            )}
+          </div>
+          <span className="text-2xl opacity-0 transform transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100">
             →
           </span>
         </div>
@@ -129,7 +129,10 @@ export const ProductCard = memo(function ProductCard({
   if (LinkComponent) {
     return (
       <div className="relative">
-        <LinkComponent to={productUrl} className="block">
+        <LinkComponent
+          to={productUrl}
+          className="mb-focus-ring block rounded-2xl"
+        >
           {cardContent}
         </LinkComponent>
       </div>
@@ -138,7 +141,10 @@ export const ProductCard = memo(function ProductCard({
 
   return (
     <div className="relative">
-      <a href={productUrl} className="block">
+      <a
+        href={productUrl}
+        className="mb-focus-ring block rounded-2xl"
+      >
         {cardContent}
       </a>
     </div>

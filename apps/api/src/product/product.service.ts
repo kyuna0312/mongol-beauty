@@ -5,6 +5,11 @@ import { Product } from './product.entity';
 
 @Injectable()
 export class ProductService {
+  private isUuid(value?: string): boolean {
+    if (!value) return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  }
+
   constructor(
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
@@ -16,7 +21,11 @@ export class ProductService {
       .orderBy('product.createdAt', 'DESC'); // Default ordering
 
     if (categoryId) {
-      query.where('product.categoryId = :categoryId', { categoryId });
+      if (this.isUuid(categoryId)) {
+        query.where('product.categoryId = :categoryId', { categoryId });
+      } else {
+        query.where('category.slug = :categorySlug', { categorySlug: categoryId });
+      }
     }
 
     // Default pagination
@@ -28,11 +37,21 @@ export class ProductService {
     return query.getMany();
   }
 
-  async findOne(id: string): Promise<Product> {
-    return this.productRepository.findOne({
-      where: { id },
-      relations: ['category'],
-    });
+  async findOne(id: string, categoryRef?: string): Promise<Product | null> {
+    const query = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .where('product.id = :id', { id });
+
+    if (categoryRef) {
+      if (this.isUuid(categoryRef)) {
+        query.andWhere('category.id = :categoryIdRef', { categoryIdRef: categoryRef });
+      } else {
+        query.andWhere('category.slug = :categorySlugRef', { categorySlugRef: categoryRef });
+      }
+    }
+
+    return query.getOne();
   }
 
   async create(input: any): Promise<Product> {

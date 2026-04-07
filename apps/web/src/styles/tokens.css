@@ -41,12 +41,12 @@
   }
 
   .mb-btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-500 text-white font-semibold px-6 py-3 shadow-sm hover:bg-primary-600 active:scale-[0.98] transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-500 text-white font-semibold px-6 py-3 shadow-sm hover:bg-primary-600 active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fdf8f6];
     box-shadow: 0 4px 18px -4px rgba(209, 74, 98, 0.28);
   }
 
   .mb-chip {
-    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium border border-rose-100/90 bg-white/80 text-stone-600 transition-colors;
+    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium border border-rose-100/90 bg-white/80 text-stone-600 transition-colors hover:bg-rose-50/60;
   }
 
   .mb-hero-gradient {
@@ -164,5 +164,9 @@
 
   .mb-markdown img {
     @apply my-4 max-w-full rounded-xl border border-rose-100/80;
+  }
+
+  .mb-focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fdf8f6];
   }
 }

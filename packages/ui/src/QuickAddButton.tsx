@@ -55,7 +55,7 @@ export function QuickAddButton({ productId, productName, price, stock, onAdd }: 
   if (stock === 0) {
     return (
       <button
-        className="absolute bottom-2 right-2 w-10 h-10 rounded-full bg-gray-300 text-gray-500 flex items-center justify-center opacity-50 cursor-not-allowed"
+        className="absolute bottom-2 right-2 flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-rose-200/90 bg-rose-50/90 text-rose-300 opacity-70"
         disabled
         aria-label="Нөөц дууссан"
       >
@@ -67,10 +67,10 @@ export function QuickAddButton({ productId, productName, price, stock, onAdd }: 
   return (
     <button
       onClick={handleQuickAdd}
-      className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
+      className={`absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${
         added
-          ? 'bg-green-500 text-white shadow-lg'
-          : 'bg-primary-500 text-white hover:bg-primary-600 shadow-sm'
+          ? 'bg-emerald-500 text-white shadow-md'
+          : 'bg-primary-500 text-white hover:bg-primary-600 shadow-sm hover:shadow-md'
       }`}
       aria-label="Сагсанд нэмэх"
     >
