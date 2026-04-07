@@ -17,8 +17,8 @@ const GET_ME = gql`
 `;
 
 const USER_LOGIN = gql`
-  mutation UserLogin($email: String!, $password: String!) {
-    userLogin(email: $email, password: $password) {
+  mutation UserLogin($input: UserLoginInput!) {
+    userLogin(input: $input) {
       access_token
       user {
         id
@@ -33,8 +33,8 @@ const USER_LOGIN = gql`
 `;
 
 const REGISTER = gql`
-  mutation Register($email: String!, $password: String!, $name: String!, $phone: String) {
-    register(email: $email, password: $password, name: $name, phone: $phone) {
+  mutation Register($input: RegisterInput!) {
+    register(input: $input) {
       id
       email
       name
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     try {
       const { data } = await client.mutate({
         mutation: USER_LOGIN,
-        variables: { email, password },
+        variables: { input: { email, password } },
       });
 
       if (data?.userLogin) {
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
     try {
       const { data } = await client.mutate({
         mutation: REGISTER,
-        variables: { email, password, name, phone },
+        variables: { input: { email, password, name, phone } },
       });
 
       if (data?.register) {

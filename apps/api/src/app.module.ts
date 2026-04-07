@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { join } from 'path';
+import { createComplexityRule, simpleEstimator } from 'graphql-query-complexity';
 import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { OrderModule } from './order/order.module';
@@ -15,6 +17,12 @@ import { AuthModule } from './auth/auth.module';
 import { DateTimeScalar } from './scalars/date-time.scalar';
 import { HealthModule } from './health/health.module';
 import depthLimit from 'graphql-depth-limit';
+import { DataloaderModule } from './common/dataloaders/dataloader.module';
+import { ProductLoader } from './common/dataloaders/product.loader';
+import { CategoryLoader } from './common/dataloaders/category.loader';
+import { formatGraphqlError } from './common/graphql/graphql-format-error';
+import type { GraphqlContext } from './types/graphql-context';
+import type { Request } from 'express';
 
 @Module({
   imports: [
@@ -42,7 +50,6 @@ import depthLimit from 'graphql-depth-limit';
           username: process.env.DB_USER || 'postgres',
           password: process.env.DB_PASSWORD || 'postgres',
           database: process.env.DB_NAME || 'mongol_beauty',
-          entities: [join(__dirname, '**', '*.entity.{ts,js}')],
           synchronize: process.env.NODE_ENV !== 'production',
           logging: process.env.NODE_ENV === 'development',
           retryAttempts: 10,
@@ -61,38 +68,54 @@ import depthLimit from 'graphql-depth-limit';
           },
         };
         
-        // Log connection details in development
         if (process.env.NODE_ENV === 'development') {
-          console.log('🔌 Database connection config:', {
-            host: config.host,
-            port: config.port,
-            database: config.database,
-            username: config.username,
-          });
+          console.log('🔌 Database:', config.host, config.port, config.database);
         }
         
         return config;
       },
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // Time window in milliseconds
-      limit: 100, // Max requests per window
-    }]),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const ttlRaw = parseInt(String(config.get('THROTTLE_TTL', 60_000)), 10);
+        const limitRaw = parseInt(String(config.get('THROTTLE_LIMIT', 100)), 10);
+        return [
+          {
+            ttl: Number.isFinite(ttlRaw) ? ttlRaw : 60_000,
+            limit: Number.isFinite(limitRaw) ? limitRaw : 100,
+          },
+        ];
+      },
+    }),
+    GraphQLModule.forRootAsync<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      sortSchema: true,
-      playground: process.env.NODE_ENV !== 'production',
-      introspection: process.env.NODE_ENV !== 'production',
-      context: ({ req }) => ({ req }),
-      // Performance optimizations
-      cache: 'bounded', // Enable query result caching
-      // Query depth limit to prevent deep nested queries
-      validationRules: [
-        depthLimit(10), // Maximum query depth of 10
-      ],
-      // Optimize schema generation
-      fieldResolverEnhancers: ['interceptors'],
+      imports: [DataloaderModule],
+      inject: [ProductLoader, CategoryLoader],
+      useFactory: (productLoader: ProductLoader, categoryLoader: CategoryLoader) => ({
+        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+        sortSchema: true,
+        playground: process.env.NODE_ENV !== 'production',
+        introspection: process.env.NODE_ENV !== 'production',
+        context: ({ req }: { req: Request }): GraphqlContext => ({
+          req,
+          loaders: {
+            product: productLoader.createLoader(),
+            category: categoryLoader.createLoader(),
+          },
+        }),
+        formatError: formatGraphqlError,
+        cache: 'bounded',
+        validationRules: [
+          depthLimit(10),
+          createComplexityRule({
+            maximumComplexity: 2000,
+            estimators: [simpleEstimator({ defaultComplexity: 1 })],
+          }),
+        ],
+        fieldResolverEnhancers: ['interceptors'],
+      }),
     }),
     ProductModule,
     CategoryModule,
@@ -102,7 +125,11 @@ import depthLimit from 'graphql-depth-limit';
     AdminModule,
     AuthModule,
     HealthModule,
+    DataloaderModule,
   ],
-  providers: [DateTimeScalar],
+  providers: [
+    DateTimeScalar,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

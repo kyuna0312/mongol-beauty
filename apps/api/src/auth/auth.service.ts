@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -57,7 +63,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new Error('Admin user with this email already exists');
+      throw new ConflictException('Admin user with this email already exists');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -72,16 +78,29 @@ export class AuthService {
     return this.userRepository.save(admin);
   }
 
-  async verifyToken(token: string): Promise<User | null> {
+  /**
+   * Validates a JWT and returns the corresponding user (any role).
+   * Use this for `me`, optional auth on product queries, etc.
+   */
+  async validateAccessToken(token: string | undefined | null): Promise<User | null> {
+    if (!token?.trim()) {
+      return null;
+    }
     try {
-      const payload = this.jwtService.verify(token);
-      const user = await this.userRepository.findOne({
-        where: { id: payload.sub, isAdmin: true },
+      const payload = this.jwtService.verify<{ sub: string }>(token);
+      return await this.userRepository.findOne({
+        where: { id: payload.sub },
       });
-      return user;
     } catch {
       return null;
     }
+  }
+
+  async loadUserWithOrders(id: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['orders'],
+    });
   }
 
   // User registration

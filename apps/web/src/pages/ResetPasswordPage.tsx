@@ -33,8 +33,8 @@ export function ResetPasswordPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Нууц үг хамгийн багадаа 6 тэмдэгт байх ёстой');
+    if (password.length < 8) {
+      setError('Нууц үг хамгийн багадаа 8 тэмдэгт байх ёстой');
       return;
     }
 
@@ -45,7 +45,7 @@ export function ResetPasswordPage() {
 
     try {
       await resetPassword({
-        variables: { token, email, newPassword: password },
+        variables: { input: { token, email, newPassword: password } },
       });
       setSuccess(true);
       setTimeout(() => {

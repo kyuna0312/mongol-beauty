@@ -1,5 +1,12 @@
-import { plainToInstance } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, validateSync } from 'class-validator';
+import { plainToInstance, Transform } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  validateSync,
+} from 'class-validator';
 
 class EnvironmentVariables {
   @IsString()
@@ -7,6 +14,7 @@ class EnvironmentVariables {
   DB_HOST: string;
 
   @IsNumber()
+  @Min(1)
   DB_PORT: number;
 
   @IsString()
@@ -22,13 +30,33 @@ class EnvironmentVariables {
   DB_NAME: string;
 
   @IsNumber()
+  @Min(1)
   PORT: number;
 
   @IsString()
   NODE_ENV: string;
 
   @IsString()
+  @IsNotEmpty()
   FRONTEND_URL: string;
+
+  /** Required when NODE_ENV=production */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  JWT_SECRET?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1000)
+  @Transform(({ value }) => (value !== undefined ? parseInt(String(value), 10) : 60_000))
+  THROTTLE_TTL?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Transform(({ value }) => (value !== undefined ? parseInt(String(value), 10) : 100))
+  THROTTLE_LIMIT?: number;
 }
 
 export function validate(config: Record<string, unknown>) {
@@ -42,6 +70,13 @@ export function validate(config: Record<string, unknown>) {
 
   if (errors.length > 0) {
     throw new Error(errors.toString());
+  }
+
+  if (validatedConfig.NODE_ENV === 'production') {
+    const secret = String(config.JWT_SECRET ?? '').trim();
+    if (!secret) {
+      throw new Error('JWT_SECRET is required in production');
+    }
   }
 
   return validatedConfig;

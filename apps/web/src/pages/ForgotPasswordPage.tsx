@@ -18,7 +18,7 @@ export function ForgotPasswordPage() {
     setSuccess(false);
 
     try {
-      await forgotPassword({ variables: { email } });
+      await forgotPassword({ variables: { input: { email } } });
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || 'Алдаа гарлаа');

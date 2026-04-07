@@ -1,6 +1,18 @@
 import { Resolver, Mutation, Args, Query, Context, ObjectType, Field } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { User, UserType } from '../user/user.entity';
+import { GqlOptionalAuthGuard } from '../common/guards/gql-optional-auth.guard';
+import { GqlJwtAuthGuard } from '../common/guards/gql-jwt-auth.guard';
+import { GqlAdminGuard } from '../common/guards/gql-admin.guard';
+import {
+  AdminLoginInput,
+  UserLoginInput,
+  RegisterInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
+} from './dto/auth.inputs';
 
 @ObjectType()
 class AdminUser {
@@ -66,80 +78,61 @@ class MessageResponse {
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Mutation(() => LoginResponse)
-  async adminLogin(
-    @Args('email') email: string,
-    @Args('password') password: string,
-  ): Promise<LoginResponse> {
-    return this.authService.login(email, password);
-  }
-
-  @Mutation(() => User)
-  async createAdmin(
-    @Args('email') email: string,
-    @Args('password') password: string,
-    @Args('name') name: string,
-  ): Promise<User> {
-    return this.authService.createAdmin(email, password, name);
+  async adminLogin(@Args('input') input: AdminLoginInput): Promise<LoginResponse> {
+    return this.authService.login(input.email, input.password);
   }
 
   @Query(() => User, { nullable: true })
+  @UseGuards(GqlOptionalAuthGuard)
   async adminMe(@Context() context: any): Promise<User | null> {
-    const token = context.req?.headers?.authorization?.replace('Bearer ', '');
-    if (!token) {
+    const user = context.req?.user as User | null;
+    if (!user?.isAdmin) {
       return null;
     }
-    return this.authService.verifyToken(token);
+    return user;
   }
 
   // User registration
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Mutation(() => User)
-  async register(
-    @Args('email') email: string,
-    @Args('password') password: string,
-    @Args('name') name: string,
-    @Args('phone', { nullable: true }) phone?: string,
-  ): Promise<User> {
-    return this.authService.register(email, password, name, phone);
+  async register(@Args('input') input: RegisterInput): Promise<User> {
+    return this.authService.register(input.email, input.password, input.name, input.phone);
   }
 
-  // User login
+  @Throttle({ default: { limit: 15, ttl: 60_000 } })
   @Mutation(() => UserLoginResponse)
-  async userLogin(
-    @Args('email') email: string,
-    @Args('password') password: string,
-  ): Promise<UserLoginResponse> {
-    return this.authService.userLogin(email, password);
+  async userLogin(@Args('input') input: UserLoginInput): Promise<UserLoginResponse> {
+    return this.authService.userLogin(input.email, input.password);
   }
 
-  // Forgot password
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Mutation(() => MessageResponse)
-  async forgotPassword(@Args('email') email: string): Promise<MessageResponse> {
-    return this.authService.forgotPassword(email);
+  async forgotPassword(@Args('input') input: ForgotPasswordInput): Promise<MessageResponse> {
+    return this.authService.forgotPassword(input.email);
   }
 
-  // Reset password
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Mutation(() => MessageResponse)
-  async resetPassword(
-    @Args('token') token: string,
-    @Args('email') email: string,
-    @Args('newPassword') newPassword: string,
-  ): Promise<MessageResponse> {
-    return this.authService.resetPassword(token, email, newPassword);
+  async resetPassword(@Args('input') input: ResetPasswordInput): Promise<MessageResponse> {
+    return this.authService.resetPassword(input.token, input.email, input.newPassword);
   }
 
   // Get current user (for any authenticated user)
   @Query(() => User, { nullable: true })
+  @UseGuards(GqlOptionalAuthGuard)
   async me(@Context() context: any): Promise<User | null> {
-    const token = context.req?.headers?.authorization?.replace('Bearer ', '');
-    if (!token) {
+    const u = context.req?.user as User | null;
+    if (!u) {
       return null;
     }
-    return this.authService.verifyToken(token);
+    return this.authService.loadUserWithOrders(u.id);
   }
 
   // Update user subscription (admin only)
   @Mutation(() => User)
+  @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)
   async updateUserSubscription(
     @Args('userId') userId: string,
     @Args('userType', { type: () => UserType }) userType: UserType,

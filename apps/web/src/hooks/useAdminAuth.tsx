@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode, JSX } from 'react';
 import { useApolloClient } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { ADMIN_LOGIN, GET_ADMIN_ME } from '../graphql/queries';
+import { GET_ADMIN_ME } from '../graphql/queries';
 import { ADMIN_LOGIN as ADMIN_LOGIN_MUTATION } from '../graphql/mutations';
 
 interface AdminUser {
@@ -74,7 +74,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }): JSX.El
       setLoading(true);
       const { data, errors } = await client.mutate({
         mutation: ADMIN_LOGIN_MUTATION,
-        variables: { email, password },
+        variables: { input: { email, password } },
         errorPolicy: 'all', // Get both data and errors
       });
 

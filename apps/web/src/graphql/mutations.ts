@@ -131,8 +131,8 @@ export const DELETE_CATEGORY = gql`
 
 // Admin Auth Mutations
 export const ADMIN_LOGIN = gql`
-  mutation AdminLogin($email: String!, $password: String!) {
-    adminLogin(email: $email, password: $password) {
+  mutation AdminLogin($input: AdminLoginInput!) {
+    adminLogin(input: $input) {
       access_token
       user {
         id
@@ -144,21 +144,10 @@ export const ADMIN_LOGIN = gql`
   }
 `;
 
-export const CREATE_ADMIN = gql`
-  mutation CreateAdmin($email: String!, $password: String!, $name: String!) {
-    createAdmin(email: $email, password: $password, name: $name) {
-      id
-      email
-      name
-      isAdmin
-    }
-  }
-`;
-
 // User Auth Mutations
 export const REGISTER = gql`
-  mutation Register($email: String!, $password: String!, $name: String!, $phone: String) {
-    register(email: $email, password: $password, name: $name, phone: $phone) {
+  mutation Register($input: RegisterInput!) {
+    register(input: $input) {
       id
       email
       name
@@ -169,8 +158,8 @@ export const REGISTER = gql`
 `;
 
 export const USER_LOGIN = gql`
-  mutation UserLogin($email: String!, $password: String!) {
-    userLogin(email: $email, password: $password) {
+  mutation UserLogin($input: UserLoginInput!) {
+    userLogin(input: $input) {
       access_token
       user {
         id
@@ -185,16 +174,16 @@ export const USER_LOGIN = gql`
 `;
 
 export const FORGOT_PASSWORD = gql`
-  mutation ForgotPassword($email: String!) {
-    forgotPassword(email: $email) {
+  mutation ForgotPassword($input: ForgotPasswordInput!) {
+    forgotPassword(input: $input) {
       message
     }
   }
 `;
 
 export const RESET_PASSWORD = gql`
-  mutation ResetPassword($token: String!, $email: String!, $newPassword: String!) {
-    resetPassword(token: $token, email: $email, newPassword: $newPassword) {
+  mutation ResetPassword($input: ResetPasswordInput!) {
+    resetPassword(input: $input) {
       message
     }
   }

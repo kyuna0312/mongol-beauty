@@ -15,6 +15,7 @@ registerEnumType(OrderStatus, { name: 'OrderStatus' });
 
 @ObjectType()
 @Entity('orders')
+@Index('IDX_orders_userId_createdAt', ['userId', 'createdAt'])
 export class Order {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
@@ -46,7 +47,6 @@ export class Order {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Index()
   @Column({ nullable: true })
   userId: string;
 

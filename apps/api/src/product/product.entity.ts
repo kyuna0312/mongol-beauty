@@ -24,6 +24,7 @@ registerEnumType(Feature, { name: 'Feature' });
 
 @ObjectType()
 @Entity('products')
+@Index('IDX_products_categoryId_createdAt', ['categoryId', 'createdAt'])
 export class Product {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
@@ -39,7 +40,6 @@ export class Product {
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
-  @Index()
   @Column()
   categoryId: string;
 
