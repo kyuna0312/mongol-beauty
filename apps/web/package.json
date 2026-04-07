@@ -16,7 +16,6 @@
     "@chakra-ui/react": "^3.31.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mongol-beauty/types": "*",
     "@mongol-beauty/ui": "*",
     "apollo-upload-client": "^17.0.0",
     "framer-motion": "^12.29.0",
