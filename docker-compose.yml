@@ -1,3 +1,12 @@
+# Mongol Beauty — local PostgreSQL only.
+# Compose loads variables from a `.env` file in this directory (repo root) automatically.
+#
+# Start:  npm run docker:up   OR   yarn docker:up   OR   ./scripts/docker-compose.sh up -d
+# Logs:   npm run docker:logs
+# Reset:  npm run docker:clean   (removes the volume — deletes all local DB data)
+
+name: mongol-beauty
+
 services:
   postgres:
     image: postgres:15-alpine

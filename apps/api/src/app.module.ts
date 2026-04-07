@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
 import { createComplexityRule, simpleEstimator } from 'graphql-query-complexity';
 import { ProductModule } from './product/product.module';
@@ -21,8 +21,11 @@ import { DataloaderModule } from './common/dataloaders/dataloader.module';
 import { ProductLoader } from './common/dataloaders/product.loader';
 import { CategoryLoader } from './common/dataloaders/category.loader';
 import { formatGraphqlError } from './common/graphql/graphql-format-error';
+import { GqlThrottlerGuard } from './common/guards/gql-throttler.guard';
+import { CartModule } from './cart/cart.module';
+import { ContentModule } from './content/content.module';
 import type { GraphqlContext } from './types/graphql-context';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 @Module({
   imports: [
@@ -43,6 +46,14 @@ import type { Request } from 'express';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: () => {
+        const syncEnv = process.env.DB_SYNCHRONIZE;
+        const synchronize =
+          syncEnv === 'true'
+            ? true
+            : syncEnv === 'false'
+              ? false
+              : process.env.NODE_ENV !== 'production';
+
         const config = {
           type: 'postgres' as const,
           host: process.env.DB_HOST || 'localhost',
@@ -50,7 +61,7 @@ import type { Request } from 'express';
           username: process.env.DB_USER || 'postgres',
           password: process.env.DB_PASSWORD || 'postgres',
           database: process.env.DB_NAME || 'mongol_beauty',
-          synchronize: process.env.NODE_ENV !== 'production',
+          synchronize,
           logging: process.env.NODE_ENV === 'development',
           retryAttempts: 10,
           retryDelay: 3000,
@@ -98,8 +109,9 @@ import type { Request } from 'express';
         sortSchema: true,
         playground: process.env.NODE_ENV !== 'production',
         introspection: process.env.NODE_ENV !== 'production',
-        context: ({ req }: { req: Request }): GraphqlContext => ({
+        context: ({ req, res }: { req: Request; res?: Response }): GraphqlContext => ({
           req,
+          res,
           loaders: {
             product: productLoader.createLoader(),
             category: categoryLoader.createLoader(),
@@ -124,12 +136,14 @@ import type { Request } from 'express';
     UserModule,
     AdminModule,
     AuthModule,
+    CartModule,
+    ContentModule,
     HealthModule,
     DataloaderModule,
   ],
   providers: [
     DateTimeScalar,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: GqlThrottlerGuard },
   ],
 })
 export class AppModule {}

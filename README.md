@@ -41,6 +41,8 @@ mongol-beauty/
 ## 🚀 Quick Start
 
 See [QUICK_START.md](./QUICK_START.md) for a 5-minute setup guide.
+For full local setup and troubleshooting, see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
+For all docs, see [docs/README.md](./docs/README.md).
 
 ### Prerequisites
 
@@ -76,7 +78,7 @@ See [QUICK_START.md](./QUICK_START.md) for a 5-minute setup guide.
    - **Frontend**: http://localhost:5173
    - **GraphQL Playground**: http://localhost:4000/graphql
 
-For detailed setup instructions, see [DEVELOPMENT.md](./DEVELOPMENT.md).
+For detailed setup instructions, see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
 
 ## 📱 Features
 

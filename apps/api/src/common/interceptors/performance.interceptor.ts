@@ -9,14 +9,22 @@ export class PerformanceInterceptor implements NestInterceptor {
   private readonly slowQueryThreshold = 1000; // 1 second
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const ctx = GqlExecutionContext.create(context);
-    const info = ctx.getInfo();
-    
-    if (!info) {
+    const contextType = context.getType<'http' | 'graphql' | 'rpc' | 'ws'>();
+    let operationName = 'anonymous';
+
+    if (contextType === 'graphql') {
+      const ctx = GqlExecutionContext.create(context);
+      const info = ctx.getInfo();
+      operationName = info?.operation?.name?.value || info?.fieldName || 'anonymous';
+    } else if (contextType === 'http') {
+      const request = context.switchToHttp().getRequest();
+      if (request?.method && request?.url) {
+        operationName = `${request.method} ${request.url}`;
+      }
+    } else {
       return next.handle();
     }
 
-    const operationName = info.operation.name?.value || 'anonymous';
     const startTime = Date.now();
 
     return next.handle().pipe(
@@ -25,14 +33,14 @@ export class PerformanceInterceptor implements NestInterceptor {
           const duration = Date.now() - startTime;
           if (duration > this.slowQueryThreshold) {
             this.logger.warn(
-              `Slow GraphQL query detected: ${operationName} took ${duration}ms`,
+              `Slow request detected: ${operationName} took ${duration}ms`,
             );
           }
         },
         error: () => {
           const duration = Date.now() - startTime;
           this.logger.error(
-            `GraphQL query failed: ${operationName} after ${duration}ms`,
+            `Request failed: ${operationName} after ${duration}ms`,
           );
         },
       }),

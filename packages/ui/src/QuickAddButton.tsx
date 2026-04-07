@@ -70,7 +70,7 @@ export function QuickAddButton({ productId, productName, price, stock, onAdd }: 
       className={`absolute bottom-2 right-2 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-110 ${
         added
           ? 'bg-green-500 text-white shadow-lg'
-          : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md'
+          : 'bg-primary-500 text-white hover:bg-primary-600 shadow-sm'
       }`}
       aria-label="Сагсанд нэмэх"
     >

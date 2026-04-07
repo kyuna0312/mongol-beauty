@@ -3,10 +3,40 @@
 /**
  * Wait for PostgreSQL to be ready
  * Usage: node scripts/wait-for-db.js
+ *
+ * Loads `.env` and `apps/api/.env` from the repo root when present (no extra deps).
  */
 
+const fs = require('fs');
+const path = require('path');
 const { Client } = require('pg');
 const readline = require('readline');
+
+function loadEnvFile(relativePath) {
+  const full = path.join(process.cwd(), relativePath);
+  if (!fs.existsSync(full)) return;
+  const raw = fs.readFileSync(full, 'utf8');
+  for (const line of raw.split('\n')) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eq = trimmed.indexOf('=');
+    if (eq === -1) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let val = trimmed.slice(eq + 1).trim();
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1);
+    }
+    if (process.env[key] === undefined) {
+      process.env[key] = val;
+    }
+  }
+}
+
+loadEnvFile('.env');
+loadEnvFile('apps/api/.env');
 
 const rl = readline.createInterface({
   input: process.stdin,

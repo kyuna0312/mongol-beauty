@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import type DataLoader from 'dataloader';
 import type { Product } from '../product/product.entity';
 import type { Category } from '../category/category.entity';
@@ -12,5 +12,6 @@ export interface GraphqlLoaders {
 
 export interface GraphqlContext {
   req: Request;
+  res?: Response;
   loaders: GraphqlLoaders;
 }

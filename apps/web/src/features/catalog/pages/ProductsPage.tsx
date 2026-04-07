@@ -1,0 +1,284 @@
+import { useState, memo, useMemo, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
+import { ProductCard, setCartToastCallback, ProductListSkeleton, CartToast } from '@mongol-beauty/ui';
+import { Button } from '@mongol-beauty/ui';
+import { Filter, Grid3x3, List, ArrowUpDown } from 'lucide-react';
+import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
+import { ErrorDisplay } from '@/components/ErrorDisplay';
+
+const GET_PRODUCTS = gql`
+  query GetProducts($categoryId: ID) {
+    products(categoryId: $categoryId) {
+      ...ProductCardFragment
+    }
+  }
+  ${PRODUCT_CARD_FRAGMENT}
+`;
+
+const GET_CATEGORY = gql`
+  query GetCategory($id: ID!) {
+    category(id: $id) {
+      id
+      name
+    }
+  }
+`;
+
+type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
+type ViewMode = 'grid' | 'list';
+
+export const ProductsPage = memo(function ProductsPage() {
+  const { categoryId } = useParams();
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCartToastCallback((message: string) => {
+      setToastMessage(message);
+    });
+  }, []);
+
+  const { data: productsData, loading: productsLoading, error: productsError } = useQuery(GET_PRODUCTS, {
+    variables: { categoryId: categoryId || null },
+    fetchPolicy: 'cache-and-network',
+    errorPolicy: 'all',
+  });
+
+  const { data: categoryData } = useQuery(GET_CATEGORY, {
+    variables: { id: categoryId },
+    skip: !categoryId,
+    fetchPolicy: 'cache-first',
+    errorPolicy: 'all',
+  });
+
+  // Memoize and sort products
+  const products = useMemo(() => {
+    const allProducts = productsData?.products || [];
+    let sorted = [...allProducts];
+
+    switch (sortBy) {
+      case 'price-asc':
+        sorted.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => b.price - a.price);
+        break;
+      case 'name-asc':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      default:
+        // Keep original order
+        break;
+    }
+
+    return sorted;
+  }, [productsData, sortBy]);
+
+  if (productsLoading && !productsData) {
+    return (
+      <div className="mb-page">
+        <ProductListSkeleton />
+      </div>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <ErrorDisplay
+        title="Бүтээгдэхүүн ачаалахад алдаа гарлаа"
+        message="Бүтээгдэхүүний мэдээллийг ачаалахад алдаа гарсан байна. Дахин оролдоно уу."
+        showRem={true}
+        showRam={false}
+      />
+    );
+  }
+
+  return (
+    <div className="mb-page">
+      <div className="mb-6 md:mb-8">
+        <div className="mb-card-surface p-4 md:p-6 mb-5">
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <div>
+              <p className="mb-section-eyebrow">Дэлгүүр</p>
+              <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-stone-900">
+                {categoryData?.category?.name || 'Бүх бүтээгдэхүүн'}
+              </h1>
+              {products.length > 0 && (
+                <p className="mt-1 text-sm text-stone-500">{products.length} бүтээгдэхүүн</p>
+              )}
+            </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden md:flex items-center gap-1 rounded-xl border border-beige-200/90 bg-beige-50/80 p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all ${
+                  viewMode === 'grid'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-600 hover:bg-beige-100'
+                }`}
+                aria-label="Grid view"
+              >
+                <Grid3x3 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all ${
+                  viewMode === 'list'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-600 hover:bg-beige-100'
+                }`}
+                aria-label="List view"
+              >
+                <List className="w-4 h-4" />
+              </button>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(true)}
+              className="flex items-center gap-2 rounded-full border-beige-300 font-semibold text-primary-800 hover:bg-beige-50"
+            >
+              <Filter className="w-4 h-4" />
+              <span className="hidden sm:inline">Шүүлт</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+          <span className="text-sm text-stone-600 whitespace-nowrap flex items-center gap-1.5 shrink-0">
+            <ArrowUpDown className="w-4 h-4 text-stone-400" />
+            Эрэмбэлэх
+          </span>
+          <button
+            type="button"
+            onClick={() => setSortBy('default')}
+            className={`mb-chip shrink-0 ${
+              sortBy === 'default'
+                ? 'border-primary-600 bg-primary-600 text-white'
+                : 'border-beige-200 bg-white text-stone-700 hover:border-beige-300'
+            }`}
+          >
+            Анхны
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortBy('price-asc')}
+            className={`mb-chip shrink-0 ${
+              sortBy === 'price-asc'
+                ? 'border-primary-600 bg-primary-600 text-white'
+                : 'border-beige-200 bg-white text-stone-700 hover:border-beige-300'
+            }`}
+          >
+            Үнэ ↑
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortBy('price-desc')}
+            className={`mb-chip shrink-0 ${
+              sortBy === 'price-desc'
+                ? 'border-primary-600 bg-primary-600 text-white'
+                : 'border-beige-200 bg-white text-stone-700 hover:border-beige-300'
+            }`}
+          >
+            Үнэ ↓
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortBy('name-asc')}
+            className={`mb-chip shrink-0 ${
+              sortBy === 'name-asc'
+                ? 'border-primary-600 bg-primary-600 text-white'
+                : 'border-beige-200 bg-white text-stone-700 hover:border-beige-300'
+            }`}
+          >
+            Нэр А–Я
+          </button>
+        </div>
+        </div>
+      </div>
+
+      {/* Products Grid/List */}
+      {products.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="text-6xl mb-4">😔</div>
+          <p className="text-xl font-semibold text-gray-700 mb-2">Бүтээгдэхүүн олдсонгүй</p>
+          <p className="text-gray-500 mb-6">Уучлаарай, одоогоор бүтээгдэхүүн байхгүй байна</p>
+          <Link to="/">
+            <Button className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white">
+              Нүүр хуудас руу буцах
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <div className={viewMode === 'grid' 
+          ? 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4' 
+          : 'space-y-4'
+        }>
+          {products.map((product: any) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              name={product.name}
+              price={product.price}
+              discountedPrice={product.discountedPrice}
+              image={product.images?.[0]}
+              categoryId={product.category.id}
+              stock={product.stock}
+              LinkComponent={Link}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Bottom Sheet Filter - Cute Design */}
+      {showFilters && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-in fade-in" onClick={() => setShowFilters(false)}>
+          <div className="fixed inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-2xl z-50 max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b-2 border-beige-200 bg-gradient-to-r from-beige-50 to-beige-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">🔍</span>
+                  <h3 className="text-xl font-bold text-gray-800">Шүүлт</h3>
+                </div>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="w-10 h-10 rounded-full bg-white border-2 border-beige-300 flex items-center justify-center text-primary-600 hover:bg-beige-50 hover:scale-110 transition-all duration-200"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="text-center py-8">
+                <span className="text-4xl mb-3 block">🎨</span>
+                <p className="text-gray-600">Шүүлтийн сонголтууд энд байна</p>
+                <p className="text-sm text-gray-400 mt-2">Удахгүй нэмэгдэх болно</p>
+              </div>
+            </div>
+            <div className="p-6 border-t-2 border-beige-200 bg-white sticky bottom-0">
+              <Button
+                fullWidth
+                onClick={() => setShowFilters(false)}
+                className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Хэрэглэх ✨
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Toast Notification */}
+      {toastMessage && (
+        <CartToast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+    </div>
+  );
+});

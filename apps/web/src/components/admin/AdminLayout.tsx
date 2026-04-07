@@ -1,10 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Folder, ShoppingBag, Users, ArrowLeft, LogOut } from 'lucide-react';
-import { useAdminAuth } from '../../hooks/useAdminAuth';
-
-interface AdminLayoutProps {
-  children: React.ReactNode;
-}
+import { Link, Outlet, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Package, Folder, ShoppingBag, Users, ArrowLeft, LogOut, FileText } from 'lucide-react';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const adminNavItems = [
   { path: '/admin', label: 'Самбар', icon: LayoutDashboard },
@@ -12,9 +8,10 @@ const adminNavItems = [
   { path: '/admin/categories', label: 'Ангилал', icon: Folder },
   { path: '/admin/orders', label: 'Захиалга', icon: ShoppingBag },
   { path: '/admin/users', label: 'Хэрэглэгчид', icon: Users },
+  { path: '/admin/content', label: 'Контент', icon: FileText },
 ];
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout() {
   const location = useLocation();
   const { user, logout } = useAdminAuth();
 
@@ -89,7 +86,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Mobile Bottom Navigation */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-10 shadow-lg">
-          <div className="grid grid-cols-4 gap-1 px-2 py-2">
+          <div className="grid grid-cols-6 gap-1 px-2 py-2">
             {adminNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path || 
@@ -115,7 +112,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Main Content */}
         <main className="flex-1 pb-20 lg:pb-4">
-          {children}
+          <Outlet />
         </main>
       </div>
     </div>

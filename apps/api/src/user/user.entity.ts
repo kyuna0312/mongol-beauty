@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { Order } from '../order/order.entity';
+import { CartItem } from '../cart/cart-item.entity';
 
 export enum UserType {
   USER = 'USER',
@@ -51,6 +52,9 @@ export class User {
   @Field(() => [Order])
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
+
+  @OneToMany(() => CartItem, (cartItem) => cartItem.user)
+  cartItems: CartItem[];
 
   @Field()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

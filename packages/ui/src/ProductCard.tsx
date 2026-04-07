@@ -49,8 +49,8 @@ export const ProductCard = memo(function ProductCard({
   const productUrl = href || `/products/${categoryId}/${id}`;
 
   const cardContent = (
-    <Card className="overflow-hidden border-2 border-beige-200 hover:border-primary-400 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 h-full flex flex-col group">
-      <div className="aspect-square bg-gradient-to-br from-beige-50 via-beige-100 to-beige-50 relative overflow-hidden">
+    <Card className="overflow-hidden border border-rose-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95">
+      <div className="aspect-square bg-gradient-to-br from-rose-50/90 via-amber-50/40 to-beige-50/80 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent z-10"></div>
         <OptimizedImage
           src={image || '/placeholder-product.jpg'}
@@ -102,7 +102,7 @@ export const ProductCard = memo(function ProductCard({
                 <div className="flex items-center justify-between mt-auto">
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className={`font-bold text-xl ${hasDiscount ? 'text-green-600' : 'text-primary-600'}`}>
+                      <p className={`font-bold text-xl ${hasDiscount ? 'text-emerald-600' : 'text-primary-600'}`}>
                         {displayPrice.toLocaleString()}₮
                       </p>
                       {hasDiscount && (

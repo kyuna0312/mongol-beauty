@@ -1,77 +1,183 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { useEffect, useState } from 'react';
+import { useAuth } from './useAuth';
 
-interface CartItem {
-  productId: string;
-  quantity: number;
-  price: number;
-}
+const GET_MY_CART = gql`
+  query GetMyCart {
+    myCart {
+      productId
+      quantity
+      product {
+        id
+        name
+        price
+        images
+        stock
+      }
+    }
+  }
+`;
 
-const CART_STORAGE_KEY = 'cart';
+const SET_CART_ITEM = gql`
+  mutation SetCartItem($productId: ID!, $quantity: Int!) {
+    setCartItem(productId: $productId, quantity: $quantity) {
+      productId
+      quantity
+    }
+  }
+`;
+
+const REMOVE_CART_ITEM = gql`
+  mutation RemoveCartItem($productId: ID!) {
+    removeCartItem(productId: $productId) {
+      productId
+      quantity
+    }
+  }
+`;
+
+const CLEAR_CART = gql`
+  mutation ClearCart {
+    clearCart
+  }
+`;
+
+const MERGE_CART = gql`
+  mutation MergeCart($items: [CartItemInput!]!) {
+    mergeCart(items: $items) {
+      productId
+      quantity
+    }
+  }
+`;
+
+type LocalCartItem = { productId: string; quantity: number; price?: number };
 
 export function useCart() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const { isAuthenticated } = useAuth();
+
+  const { data, loading, refetch } = useQuery(GET_MY_CART, {
+    skip: !isAuthenticated,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const [setCartItemMutation] = useMutation(SET_CART_ITEM);
+  const [removeCartItemMutation] = useMutation(REMOVE_CART_ITEM);
+  const [clearCartMutation] = useMutation(CLEAR_CART);
+  const [mergeCartMutation] = useMutation(MERGE_CART);
+
+  const [localCart, setLocalCart] = useState<LocalCartItem[]>([]);
 
   useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
-    setCart(savedCart);
+    if (typeof window === 'undefined') return;
+    const load = () => setLocalCart(JSON.parse(localStorage.getItem('cart') || '[]'));
+    load();
+    window.addEventListener('cartUpdated', load);
+    return () => window.removeEventListener('cartUpdated', load);
   }, []);
 
-  const addToCart = useCallback((item: CartItem) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((i) => i.productId === item.productId);
-      let newCart: CartItem[];
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isAuthenticated) return;
+    const refresh = () => {
+      refetch();
+    };
+    window.addEventListener('cartUpdated', refresh);
+    return () => window.removeEventListener('cartUpdated', refresh);
+  }, [isAuthenticated, refetch]);
 
-      if (existingItem) {
-        newCart = prevCart.map((i) =>
-          i.productId === item.productId
-            ? { ...i, quantity: i.quantity + item.quantity }
-            : i
-        );
+  const items = isAuthenticated
+    ? (data?.myCart ?? []).map((item: any) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.product?.price ?? 0,
+        product: item.product,
+      }))
+    : localCart;
+
+  const getCount = () => items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+
+  const setItem = async (productId: string, quantity: number, fallbackPrice?: number) => {
+    if (isAuthenticated) {
+      await setCartItemMutation({ variables: { productId, quantity } });
+      await refetch();
+      window.dispatchEvent(new Event('cartUpdated'));
+      return;
+    }
+
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const existing = cart.find((i: LocalCartItem) => i.productId === productId);
+    const normalizedQty = Math.max(0, quantity);
+    if (existing) {
+      if (normalizedQty === 0) {
+        const filtered = cart.filter((i: LocalCartItem) => i.productId !== productId);
+        localStorage.setItem('cart', JSON.stringify(filtered));
+        setLocalCart(filtered);
       } else {
-        newCart = [...prevCart, item];
+        existing.quantity = normalizedQty;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        setLocalCart(cart);
       }
+    } else if (normalizedQty > 0) {
+      cart.push({ productId, quantity: normalizedQty, price: fallbackPrice || 0 });
+      localStorage.setItem('cart', JSON.stringify(cart));
+      setLocalCart(cart);
+    }
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
 
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newCart));
-      return newCart;
+  const removeItem = async (productId: string) => {
+    if (isAuthenticated) {
+      await removeCartItemMutation({ variables: { productId } });
+      await refetch();
+      window.dispatchEvent(new Event('cartUpdated'));
+      return;
+    }
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]').filter(
+      (i: LocalCartItem) => i.productId !== productId,
+    );
+    localStorage.setItem('cart', JSON.stringify(cart));
+    setLocalCart(cart);
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
+  const clear = async () => {
+    if (isAuthenticated) {
+      await clearCartMutation();
+      await refetch();
+      window.dispatchEvent(new Event('cartUpdated'));
+      return;
+    }
+    localStorage.removeItem('cart');
+    setLocalCart([]);
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
+
+  const mergeLocalCartToServer = async () => {
+    if (!isAuthenticated || typeof window === 'undefined') return;
+    const local = JSON.parse(localStorage.getItem('cart') || '[]') as LocalCartItem[];
+    if (!local.length) return;
+    await mergeCartMutation({
+      variables: {
+        items: local.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      },
     });
-  }, []);
-
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    setCart((prevCart) => {
-      const newCart = quantity <= 0
-        ? prevCart.filter((i) => i.productId !== productId)
-        : prevCart.map((i) =>
-            i.productId === productId ? { ...i, quantity } : i
-          );
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newCart));
-      return newCart;
-    });
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prevCart) => {
-      const newCart = prevCart.filter((i) => i.productId !== productId);
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newCart));
-      return newCart;
-    });
-  }, []);
-
-  const clearCart = useCallback(() => {
-    setCart([]);
-    localStorage.removeItem(CART_STORAGE_KEY);
-  }, []);
-
-  const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
-  
-  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
+    localStorage.removeItem('cart');
+    setLocalCart([]);
+    await refetch();
+    window.dispatchEvent(new Event('cartUpdated'));
+  };
 
   return {
-    cart,
-    cartCount,
-    cartTotal,
-    addToCart,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
+    items,
+    loading,
+    refetch,
+    getCount,
+    setItem,
+    removeItem,
+    clear,
+    mergeLocalCartToServer,
   };
 }

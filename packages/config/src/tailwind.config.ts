@@ -7,20 +7,31 @@ export const tailwindConfig: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Quicksand"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        soft: '0 2px 28px -6px rgba(209, 74, 98, 0.07), 0 10px 24px -12px rgba(0, 0, 0, 0.05)',
+        nav: '0 -6px 28px -8px rgba(209, 74, 98, 0.06), 0 -2px 8px rgba(0, 0, 0, 0.03)',
+      },
+      borderRadius: {
+        '4xl': '2rem',
+      },
       colors: {
         // INCELLDERM MONGOLIA Color Palette
         primary: {
-          // Deep Maroon (main brand color)
-          50: '#fdf2f2',
-          100: '#fce7e7',
-          200: '#f9d1d1',
-          300: '#f4a8a8',
-          400: '#ed7a7a',
-          500: '#e14d4d', // Deep maroon base
-          600: '#c93a3a', // Deep maroon
-          700: '#a82d2d',
-          800: '#8b2525',
-          900: '#722020',
+          // Soft dusty rose (beauty e‑commerce — gentle, not harsh)
+          50: '#fff8f8',
+          100: '#ffefef',
+          200: '#ffd9df',
+          300: '#ffb8c4',
+          400: '#f4879a',
+          500: '#e85d75',
+          600: '#d14a62',
+          700: '#b03d52',
+          800: '#923545',
+          900: '#7a3042',
         },
         gold: {
           // Gold accents (swirls, sparkles)

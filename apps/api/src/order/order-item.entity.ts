@@ -1,10 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Order } from './order.entity';
 import { Product } from '../product/product.entity';
 
 @ObjectType()
 @Entity('order_items')
+@Index(['orderId'])
+@Index(['productId'])
 export class OrderItem {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')

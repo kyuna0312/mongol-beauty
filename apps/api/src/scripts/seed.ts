@@ -236,7 +236,7 @@ const products = [
 ];
 
 async function seed() {
-  const dbPort = parseInt(process.env.DB_PORT || '5433', 10); // Default to 5433 (Docker port)
+  const dbPort = parseInt(process.env.DB_PORT || '5432', 10);
   
   const dataSource = new DataSource({
     type: 'postgres',
@@ -257,11 +257,15 @@ async function seed() {
     const categoryRepository = dataSource.getRepository(Category);
     const productRepository = dataSource.getRepository(Product);
 
-    // Clear existing data (optional - comment out if you want to keep existing data)
+    // Clear existing data (respect FK order: cart/order lines before products)
     console.log('🗑️  Clearing existing data...');
+    await dataSource.query('DELETE FROM cart_items').catch(() => undefined);
+    await dataSource.query('DELETE FROM order_items').catch(() => undefined);
+    await dataSource.query('DELETE FROM orders').catch(() => undefined);
+
     const existingProducts = await productRepository.find();
     const existingCategories = await categoryRepository.find();
-    
+
     if (existingProducts.length > 0) {
       await productRepository.remove(existingProducts);
     }

@@ -2,6 +2,8 @@
 
 Get up and running in 5 minutes!
 
+For a **full local stack runbook** (Docker, env, migrations, troubleshooting), see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
+
 ## Prerequisites
 
 - **Node.js** 18+ and **Yarn** 1.22+
@@ -88,4 +90,4 @@ yarn docker:logs
 - Change `PORT` in `apps/api/.env`
 - Change `DB_PORT` in `.env` and `docker-compose.yml`
 
-**Need help?** See [DEVELOPMENT.md](./DEVELOPMENT.md) for detailed guide.
+**Need help?** See [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md) for the full guide.

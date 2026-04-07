@@ -4,13 +4,10 @@ import { Order } from './order.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderService } from './order.service';
 import { OrderResolver } from './order.resolver';
-import { ProductModule } from '../product/product.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Order, OrderItem]),
-    ProductModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Order, OrderItem]), AuthModule],
   providers: [OrderService, OrderResolver],
   exports: [OrderService],
 })

@@ -48,8 +48,9 @@ async function bootstrap() {
     app.useGlobalInterceptors(new LoggingInterceptor());
   }
   
-  // Add performance monitoring in all environments
-  app.useGlobalInterceptors(new PerformanceInterceptor());
+  if (process.env.NODE_ENV !== 'production') {
+    app.useGlobalInterceptors(new PerformanceInterceptor());
+  }
   
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
