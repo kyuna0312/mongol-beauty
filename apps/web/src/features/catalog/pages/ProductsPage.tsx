@@ -8,6 +8,7 @@ import { Filter, Grid3x3, List, ArrowUpDown } from 'lucide-react';
 import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
 import { PageHead } from '@/features/content/components/PageHead';
+import { useCart } from '@/hooks/useCart';
 
 const GET_PRODUCTS = gql`
   query GetProducts($categoryId: ID, $limit: Int, $offset: Int) {
@@ -79,6 +80,7 @@ export const ProductsPage = memo(function ProductsPage() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const { items: cartItems, setItem } = useCart();
 
   useEffect(() => {
     setCartToastCallback((message: string) => {
@@ -128,6 +130,19 @@ export const ProductsPage = memo(function ProductsPage() {
       setHasMore(false);
     }
   }, [hasMore, productsLoading, isFetchingMore, productsData, fetchMore, safeCategoryId]);
+
+  const handleQuickAdd = useCallback(
+    async (productId: string, price: number, stock: number) => {
+      const current = (cartItems.find((item: any) => item.productId === productId)?.quantity ?? 0) as number;
+      if (current >= stock) {
+        setToastMessage('Нөөц хүрэлцэхгүй байна');
+        return false;
+      }
+      await setItem(productId, current + 1, price);
+      return true;
+    },
+    [cartItems, setItem],
+  );
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -327,6 +342,7 @@ export const ProductsPage = memo(function ProductsPage() {
               categoryId={product.categoryId}
               stock={product.stock}
               LinkComponent={Link}
+              onQuickAdd={handleQuickAdd}
             />
           ))}
         </div>

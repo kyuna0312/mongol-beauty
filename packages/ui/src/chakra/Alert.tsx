@@ -19,10 +19,10 @@ const statusColors = {
     icon: '✓',
   },
   error: {
-    bg: 'red.50',
-    border: 'red.200',
-    title: 'red.800',
-    text: 'red.700',
+    bg: 'orange.50',
+    border: 'orange.200',
+    title: 'orange.800',
+    text: 'orange.700',
     icon: '✕',
   },
   warning: {
@@ -33,10 +33,10 @@ const statusColors = {
     icon: '⚠',
   },
   info: {
-    bg: 'blue.50',
-    border: 'blue.200',
-    title: 'blue.800',
-    text: 'blue.700',
+    bg: 'teal.50',
+    border: 'teal.200',
+    title: 'teal.800',
+    text: 'teal.700',
     icon: 'ℹ',
   },
 };

@@ -18,10 +18,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <ChakraInput
         ref={ref}
         width={fullWidth ? '100%' : undefined}
-        borderColor={error ? 'red.500' : 'gray.300'}
+        borderColor={error ? 'orange.500' : 'gray.300'}
         _focus={{
-          borderColor: 'red.500',
-          boxShadow: '0 0 0 1px red.500',
+          borderColor: 'teal.500',
+          boxShadow: '0 0 0 1px teal.500',
         }}
         {...props}
       />
@@ -40,7 +40,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         {input}
         {error && (
-          <Text fontSize="xs" color="red.500" mt={1}>
+          <Text fontSize="xs" color="orange.600" mt={1}>
             {error}
           </Text>
         )}

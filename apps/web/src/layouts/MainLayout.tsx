@@ -45,11 +45,11 @@ export function MainLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b border-rose-100/80 bg-white/85 shadow-soft backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-primary-100/80 bg-white/85 shadow-soft backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex items-center justify-between gap-4 py-3 md:py-4">
             <Link to="/" className="group flex shrink-0 items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 to-amber-50/50 p-1 shadow-sm ring-1 ring-rose-100/90 transition-all duration-300 group-hover:ring-primary-200/80 md:h-12 md:w-12">
+              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 to-amber-50/50 p-1 shadow-sm ring-1 ring-primary-100/90 transition-all duration-300 group-hover:ring-primary-200/80 md:h-12 md:w-12">
                 <img
                   src="/incellderm-logo.png"
                   alt="INCELLDERM MONGOLIA Logo"
@@ -82,7 +82,7 @@ export function MainLayout() {
               <Link
                 to="/"
                 className={`rounded-xl px-3 py-2 transition-colors ${
-                  location.pathname === '/' ? 'bg-primary-500/10 text-primary-800' : 'hover:bg-rose-50/80'
+                  location.pathname === '/' ? 'bg-primary-500/10 text-primary-800' : 'hover:bg-primary-50/80'
                 }`}
               >
                 Нүүр
@@ -92,7 +92,7 @@ export function MainLayout() {
                 className={`rounded-xl px-3 py-2 transition-colors ${
                   location.pathname.startsWith('/products')
                     ? 'bg-primary-500/10 text-primary-800'
-                    : 'hover:bg-rose-50/80'
+                    : 'hover:bg-primary-50/80'
                 }`}
               >
                 Бүтээгдэхүүн
@@ -106,7 +106,7 @@ export function MainLayout() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Бүтээгдэхүүн хайх..."
-                  className="w-full rounded-full border border-rose-100/90 bg-white/70 py-2.5 pl-11 pr-4 text-stone-800 placeholder:text-stone-400 transition-shadow focus:border-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-200/80"
+                  className="w-full rounded-full border border-primary-100/90 bg-white/70 py-2.5 pl-11 pr-4 text-stone-800 placeholder:text-stone-400 transition-shadow focus:border-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-200/80"
                 />
                 <Search className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-stone-400" />
               </div>
@@ -115,7 +115,7 @@ export function MainLayout() {
             <div className="hidden shrink-0 items-center gap-2 md:flex">
               <Link
                 to="/cart"
-                className="relative rounded-xl p-2.5 text-primary-700 transition-colors hover:bg-rose-50/90"
+                className="relative rounded-xl p-2.5 text-primary-700 transition-colors hover:bg-primary-50/90"
                 aria-label="Сагс"
               >
                 <ShoppingCart className="h-[22px] w-[22px]" />
@@ -131,7 +131,7 @@ export function MainLayout() {
                   <button
                     type="button"
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 rounded-xl p-2 transition-colors duration-200 hover:bg-rose-50/90"
+                    className="flex items-center gap-2 rounded-xl p-2 transition-colors duration-200 hover:bg-primary-50/90"
                     aria-label="Профайл"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white">
@@ -141,8 +141,8 @@ export function MainLayout() {
                   {showUserMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-rose-100/90 bg-white py-2 shadow-soft">
-                        <div className="border-b border-rose-100/80 px-4 py-2">
+                      <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-primary-100/90 bg-white py-2 shadow-soft">
+                        <div className="border-b border-primary-100/80 px-4 py-2">
                           <p className="text-sm font-semibold text-gray-900">{user?.name || 'Хэрэглэгч'}</p>
                           <p className="text-xs text-gray-500">{user?.email}</p>
                           {user?.userType === 'SUBSCRIBED_USER' && (
@@ -153,7 +153,7 @@ export function MainLayout() {
                         </div>
                         <Link
                           to="/profile"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-rose-50/80"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-primary-50/80"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <User className="h-4 w-4" />
@@ -165,7 +165,7 @@ export function MainLayout() {
                             logout();
                             setShowUserMenu(false);
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-primary-700 transition-colors hover:bg-primary-50"
                         >
                           <LogOut className="h-4 w-4" />
                           Гарах
@@ -187,7 +187,7 @@ export function MainLayout() {
             <button
               type="button"
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className="rounded-xl p-2 text-primary-800 transition-colors hover:bg-rose-50/90 md:hidden"
+              className="rounded-xl p-2 text-primary-800 transition-colors hover:bg-primary-50/90 md:hidden"
               aria-label="Цэс"
             >
               {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -195,7 +195,7 @@ export function MainLayout() {
           </div>
 
           {showMobileMenu && (
-            <div className="border-t border-rose-100/70 pb-4 pt-4 md:hidden">
+            <div className="border-t border-primary-100/70 pb-4 pt-4 md:hidden">
               <form onSubmit={handleSearch} className="mb-4">
                 <div className="relative">
                   <input
@@ -203,7 +203,7 @@ export function MainLayout() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Бүтээгдэхүүн хайх..."
-                    className="w-full rounded-full border border-rose-100/90 bg-white/70 py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-200/80"
+                    className="w-full rounded-full border border-primary-100/90 bg-white/70 py-2.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary-200/80"
                   />
                   <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400" />
                 </div>
@@ -213,7 +213,7 @@ export function MainLayout() {
                   <>
                     <Link
                       to="/profile"
-                      className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-rose-50/80"
+                      className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-primary-50/80"
                       onClick={() => setShowMobileMenu(false)}
                     >
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white">
@@ -230,7 +230,7 @@ export function MainLayout() {
                         logout();
                         setShowMobileMenu(false);
                       }}
-                      className="flex w-full items-center gap-2 rounded-xl p-2 text-red-600 transition-colors hover:bg-red-50"
+                      className="flex w-full items-center gap-2 rounded-xl p-2 text-primary-700 transition-colors hover:bg-primary-50"
                     >
                       <LogOut className="h-5 w-5" />
                       <span className="font-medium">Гарах</span>
@@ -247,7 +247,7 @@ export function MainLayout() {
                 )}
                 <Link
                   to="/cart"
-                  className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-rose-50/80"
+                  className="flex items-center gap-2 rounded-xl p-2 transition-colors hover:bg-primary-50/80"
                   onClick={() => setShowMobileMenu(false)}
                 >
                   <ShoppingCart className="h-6 w-6 text-primary-700" />
@@ -274,7 +274,7 @@ export function MainLayout() {
 
       {showMobileNav && (
         <nav className="fixed bottom-3 left-3 right-3 z-50 pb-safe-bottom md:hidden">
-          <div className="flex justify-around rounded-2xl border border-rose-100/90 bg-white/92 py-2 shadow-nav backdrop-blur-xl">
+          <div className="flex justify-around rounded-2xl border border-primary-100/90 bg-white/92 py-2 shadow-nav backdrop-blur-xl">
             <Link
               to="/"
               onClick={() => setShowMobileMenu(false)}

@@ -77,6 +77,7 @@ export function CartPage() {
   }
 
   const itemCount = displayItems.reduce((sum, item) => sum + item.quantity, 0);
+  const canCheckout = itemCount > 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pb-32">
@@ -145,7 +146,7 @@ export function CartPage() {
                     </button>
                     <button
                       onClick={() => handleRemoveItem(item.productId)}
-                      className="ml-auto w-10 h-10 rounded-xl bg-red-50 border-2 border-red-200 flex items-center justify-center text-red-500 hover:bg-red-100 hover:scale-110 active:scale-95 transition-all duration-200"
+                      className="ml-auto w-10 h-10 rounded-xl bg-primary-50 border-2 border-primary-200 flex items-center justify-center text-primary-600 hover:bg-primary-100 hover:scale-110 active:scale-95 transition-all duration-200"
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -192,6 +193,7 @@ export function CartPage() {
             fullWidth
             size="lg"
             onClick={() => navigate('/checkout')}
+            disabled={!canCheckout}
             className="bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 hover:from-primary-700 hover:via-primary-800 hover:to-primary-900 text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
           >
             Захиалах ✨

@@ -11,7 +11,7 @@ export interface SpinnerProps extends ChakraSpinnerProps {
  * Optimized Spinner component built on Chakra UI
  * Includes optional label support
  */
-export function Spinner({ label, size = 'md', color = 'red.500', ...props }: SpinnerProps) {
+export function Spinner({ label, size = 'md', color = 'teal.500', ...props }: SpinnerProps) {
   const spinner = <ChakraSpinner size={size} color={color} {...props} />;
 
   if (!label) {

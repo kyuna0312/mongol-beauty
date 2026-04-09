@@ -5,7 +5,7 @@ export interface ButtonProps extends Omit<ChakraButtonProps, 'colorScheme'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
-  colorScheme?: 'red' | 'gray' | 'green' | 'blue' | 'yellow';
+  colorScheme?: 'teal' | 'gray' | 'green' | 'blue' | 'yellow';
 }
 
 /**
@@ -16,7 +16,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', size = 'md', fullWidth, colorScheme, children, ...props }, ref) => {
     // Map custom variants to Chakra props
     const chakraVariant = variant === 'primary' ? 'solid' : variant === 'secondary' ? 'solid' : variant;
-    const chakraColorScheme = colorScheme || (variant === 'primary' ? 'red' : 'gray');
+    const chakraColorScheme = colorScheme || (variant === 'primary' ? 'teal' : 'gray');
     const width = fullWidth ? '100%' : undefined;
 
     return (

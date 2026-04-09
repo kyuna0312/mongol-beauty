@@ -7,11 +7,11 @@
     --mb-elevated: #ffffff;
     --mb-ink: #44403c;
     --mb-muted: #a8a29e;
-    --mb-brand: #d14a62;
-    --mb-brand-soft: rgba(209, 74, 98, 0.09);
+    --mb-brand: #3e725c;
+    --mb-brand-soft: rgba(62, 114, 92, 0.1);
     --mb-blush: #fce7ec;
     --mb-peach: #fff0e8;
-    --mb-ring: rgba(251, 207, 216, 0.65);
+    --mb-ring: rgba(158, 197, 178, 0.7);
     --mb-radius-lg: 1.35rem;
     --mb-radius-xl: 1.85rem;
     /* Mirrors tailwind `fontFamily.display` — use here instead of @apply font-display */
@@ -34,19 +34,19 @@
   }
 
   .mb-card-surface {
-    @apply bg-white/95 rounded-[1.35rem] border border-rose-100/90 backdrop-blur-[2px];
+    @apply bg-white/95 rounded-[1.35rem] border border-primary-100/90 backdrop-blur-[2px];
     box-shadow:
-      0 2px 20px -4px rgba(209, 74, 98, 0.06),
+      0 2px 20px -4px rgba(62, 114, 92, 0.09),
       0 8px 28px -14px rgba(120, 53, 15, 0.05);
   }
 
   .mb-btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-500 text-white font-semibold px-6 py-3 shadow-sm hover:bg-primary-600 active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fdf8f6];
-    box-shadow: 0 4px 18px -4px rgba(209, 74, 98, 0.28);
+    box-shadow: 0 4px 18px -4px rgba(62, 114, 92, 0.3);
   }
 
   .mb-chip {
-    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium border border-rose-100/90 bg-white/80 text-stone-600 transition-colors hover:bg-rose-50/60;
+    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium border border-primary-100/90 bg-white/80 text-stone-600 transition-colors hover:bg-primary-50/60;
   }
 
   .mb-hero-gradient {
@@ -134,15 +134,15 @@
   }
 
   .mb-markdown hr {
-    @apply my-8 border-rose-100;
+    @apply my-8 border-primary-100;
   }
 
   .mb-markdown code {
-    @apply rounded-md bg-rose-50/90 px-1.5 py-0.5 text-[0.9em] font-mono text-stone-800;
+    @apply rounded-md bg-primary-50/90 px-1.5 py-0.5 text-[0.9em] font-mono text-stone-800;
   }
 
   .mb-markdown pre {
-    @apply my-4 overflow-x-auto rounded-xl border border-rose-100/90 bg-stone-50 p-4 text-sm;
+    @apply my-4 overflow-x-auto rounded-xl border border-primary-100/90 bg-stone-50 p-4 text-sm;
   }
 
   .mb-markdown pre code {
@@ -155,15 +155,15 @@
 
   .mb-markdown th,
   .mb-markdown td {
-    @apply border border-rose-100 px-3 py-2 text-left;
+    @apply border border-primary-100 px-3 py-2 text-left;
   }
 
   .mb-markdown th {
-    @apply bg-rose-50/80 font-semibold text-stone-800;
+    @apply bg-primary-50/80 font-semibold text-stone-800;
   }
 
   .mb-markdown img {
-    @apply my-4 max-w-full rounded-xl border border-rose-100/80;
+    @apply my-4 max-w-full rounded-xl border border-primary-100/80;
   }
 
   .mb-focus-ring {

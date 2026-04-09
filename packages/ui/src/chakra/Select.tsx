@@ -22,12 +22,12 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         width={fullWidth ? '100%' : undefined}
         p={2}
         borderWidth="1px"
-        borderColor={error ? 'red.500' : 'gray.300'}
+        borderColor={error ? 'orange.500' : 'gray.300'}
         borderRadius="md"
         _focus={{
           outline: 'none',
-          borderColor: 'red.500',
-          boxShadow: '0 0 0 1px red.500',
+          borderColor: 'teal.500',
+          boxShadow: '0 0 0 1px teal.500',
         }}
         className={className}
         {...props}
@@ -55,7 +55,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         )}
         {select}
         {error && (
-          <Text fontSize="xs" color="red.500" mt={1}>
+          <Text fontSize="xs" color="orange.600" mt={1}>
             {error}
           </Text>
         )}

@@ -26,7 +26,7 @@ export function Card({ children, onClick, hover = false, ...props }: CardProps) 
       transition="all 0.2s"
       _hover={hover || onClick ? {
         boxShadow: 'lg',
-        borderColor: 'red.300',
+        borderColor: 'teal.300',
         transform: 'translateY(-2px)',
       } : undefined}
       {...props}

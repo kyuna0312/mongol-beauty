@@ -12,8 +12,8 @@ export const tailwindConfig: Config = {
         display: ['"Quicksand"', '"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        soft: '0 2px 28px -6px rgba(209, 74, 98, 0.07), 0 10px 24px -12px rgba(0, 0, 0, 0.05)',
-        nav: '0 -6px 28px -8px rgba(209, 74, 98, 0.06), 0 -2px 8px rgba(0, 0, 0, 0.03)',
+        soft: '0 2px 28px -6px rgba(62, 114, 92, 0.08), 0 10px 24px -12px rgba(0, 0, 0, 0.05)',
+        nav: '0 -6px 28px -8px rgba(62, 114, 92, 0.07), 0 -2px 8px rgba(0, 0, 0, 0.03)',
       },
       borderRadius: {
         '4xl': '2rem',
@@ -21,17 +21,17 @@ export const tailwindConfig: Config = {
       colors: {
         // INCELLDERM MONGOLIA Color Palette
         primary: {
-          // Soft dusty rose (beauty e‑commerce — gentle, not harsh)
-          50: '#fff8f8',
-          100: '#ffefef',
-          200: '#ffd9df',
-          300: '#ffb8c4',
-          400: '#f4879a',
-          500: '#e85d75',
-          600: '#d14a62',
-          700: '#b03d52',
-          800: '#923545',
-          900: '#7a3042',
+          // Brand green scale based on #3E725C
+          50: '#f3f8f5',
+          100: '#e3efe8',
+          200: '#c6ded2',
+          300: '#9ec5b2',
+          400: '#72a68e',
+          500: '#4f8a6f',
+          600: '#3e725c',
+          700: '#355d4d',
+          800: '#2d4b3f',
+          900: '#273e35',
         },
         gold: {
           // Gold accents (swirls, sparkles)

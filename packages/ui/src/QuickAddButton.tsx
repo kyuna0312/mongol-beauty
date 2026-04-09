@@ -7,13 +7,21 @@ interface QuickAddButtonProps {
   price: number;
   stock: number;
   onAdd?: (message: string) => void;
+  onQuickAdd?: (productId: string, price: number, stock: number) => Promise<boolean> | boolean;
 }
 
-export function QuickAddButton({ productId, productName, price, stock, onAdd }: QuickAddButtonProps) {
+export function QuickAddButton({
+  productId,
+  productName,
+  price,
+  stock,
+  onAdd,
+  onQuickAdd,
+}: QuickAddButtonProps) {
   const [added, setAdded] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
+  const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -26,23 +34,33 @@ export function QuickAddButton({ productId, productName, price, stock, onAdd }: 
 
     setIsAdding(true);
     
-    // Add to cart
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-    const existingItem = cart.find((item: any) => item.productId === productId);
-
-    if (existingItem) {
-      if (existingItem.quantity < stock) {
-        existingItem.quantity += 1;
-      } else {
-        setIsAdding(false);
-        return; // Stock limit reached
-      }
+    let didAdd = false;
+    if (onQuickAdd) {
+      const result = await onQuickAdd(productId, price, stock);
+      didAdd = Boolean(result);
     } else {
-      cart.push({ productId, quantity: 1, price });
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const existingItem = cart.find((item: any) => item.productId === productId);
+      if (existingItem) {
+        if (existingItem.quantity < stock) {
+          existingItem.quantity += 1;
+          didAdd = true;
+        }
+      } else {
+        cart.push({ productId, quantity: 1, price });
+        didAdd = true;
+      }
+
+      if (didAdd) {
+        localStorage.setItem('cart', JSON.stringify(cart));
+        window.dispatchEvent(new Event('cartUpdated'));
+      }
     }
 
-    localStorage.setItem('cart', JSON.stringify(cart));
-    window.dispatchEvent(new Event('cartUpdated'));
+    if (!didAdd) {
+      setIsAdding(false);
+      return;
+    }
 
     setAdded(true);
     setIsAdding(false);
@@ -55,7 +73,7 @@ export function QuickAddButton({ productId, productName, price, stock, onAdd }: 
   if (stock === 0) {
     return (
       <button
-        className="absolute bottom-2 right-2 flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-rose-200/90 bg-rose-50/90 text-rose-300 opacity-70"
+        className="absolute bottom-2 right-2 flex h-10 w-10 cursor-not-allowed items-center justify-center rounded-full border border-primary-200/90 bg-primary-50/90 text-primary-300 opacity-70"
         disabled
         aria-label="Нөөц дууссан"
       >

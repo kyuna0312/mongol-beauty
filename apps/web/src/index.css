@@ -6,14 +6,14 @@
 
 @layer base {
   * {
-    @apply border-rose-100/50;
+    @apply border-primary-100/50;
   }
   
   body {
     @apply text-stone-700 font-sans antialiased;
     background-color: var(--mb-surface);
     background-image:
-      radial-gradient(ellipse 100% 70% at 50% -15%, rgba(252, 231, 236, 0.85), transparent 52%),
+      radial-gradient(ellipse 100% 70% at 50% -15%, rgba(198, 222, 210, 0.85), transparent 52%),
       radial-gradient(ellipse 70% 50% at 100% 5%, rgba(255, 237, 213, 0.55), transparent 48%),
       radial-gradient(ellipse 55% 45% at 0% 80%, rgba(254, 243, 199, 0.25), transparent 50%);
     min-height: 100dvh;

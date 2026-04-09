@@ -38,6 +38,8 @@ export function CheckoutPage() {
 
   const [createOrder] = useMutation(CREATE_ORDER);
   const [uploadReceipt] = useMutation(UPLOAD_RECEIPT);
+  const hasCartItems = cart.length > 0;
+  const isPhoneValid = !phone.trim() || /^[0-9]{8}$/.test(phone.trim());
 
   useEffect(() => {
     mergeLocalCartToServer();
@@ -45,6 +47,17 @@ export function CheckoutPage() {
   }, []);
 
   const handleCreateOrder = async () => {
+    if (!hasCartItems) {
+      setToastMessage('Сагс хоосон байна. Эхлээд бүтээгдэхүүн нэмнэ үү.');
+      setShowToast(true);
+      return;
+    }
+    if (!isPhoneValid) {
+      setToastMessage('Утасны дугаар 8 оронтой байх шаардлагатай.');
+      setShowToast(true);
+      return;
+    }
+
     try {
       const { data } = await createOrder({
         variables: {
@@ -181,12 +194,19 @@ export function CheckoutPage() {
             </div>
           </div>
 
+          {!isPhoneValid && (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Утасны дугаар буруу байна. 8 оронтой тоо оруулна уу.
+            </div>
+          )}
+
           {/* Create Order Button - INCELLDERM Style */}
           <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-beige-200 p-4 shadow-2xl">
             <Button
               fullWidth
               size="lg"
               onClick={handleCreateOrder}
+              disabled={!hasCartItems || !isPhoneValid}
               className="bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 hover:from-primary-700 hover:via-primary-800 hover:to-primary-900 text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
             >
               Захиалга үүсгэх ✨

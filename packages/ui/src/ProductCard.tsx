@@ -22,6 +22,7 @@ interface ProductCardProps {
   // Flexible routing - accepts a Link component from react-router-dom or any routing library
   LinkComponent?: React.ComponentType<any>;
   href?: string;
+  onQuickAdd?: (productId: string, price: number, stock: number) => Promise<boolean> | boolean;
 }
 
 export const ProductCard = memo(function ProductCard({ 
@@ -33,7 +34,8 @@ export const ProductCard = memo(function ProductCard({
   categoryId, 
   stock = 0,
   LinkComponent,
-  href
+  href,
+  onQuickAdd,
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const displayPrice = discountedPrice || price;
@@ -50,8 +52,8 @@ export const ProductCard = memo(function ProductCard({
   const productUrl = href || `/products/detail/${id}`;
 
   const cardContent = (
-    <Card className="overflow-hidden border border-rose-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95">
-      <div className="aspect-square bg-gradient-to-br from-rose-50/90 via-amber-50/40 to-beige-50/80 relative overflow-hidden">
+    <Card className="overflow-hidden border border-primary-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95">
+      <div className="aspect-square bg-gradient-to-br from-primary-50/90 via-amber-50/40 to-beige-50/80 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent z-10"></div>
         <OptimizedImage
           src={image || '/placeholder-product.jpg'}
@@ -64,7 +66,7 @@ export const ProductCard = memo(function ProductCard({
         
         {/* Stock Badge */}
         {stock === 0 && (
-          <div className="absolute top-2 left-2 z-20 rounded-full border border-rose-200/90 bg-rose-50/95 px-2.5 py-1 text-xs font-semibold text-rose-700 backdrop-blur-sm">
+          <div className="absolute top-2 left-2 z-20 rounded-full border border-primary-200/90 bg-primary-50/95 px-2.5 py-1 text-xs font-semibold text-primary-700 backdrop-blur-sm">
             Нөөц дууссан
           </div>
         )}
@@ -93,6 +95,7 @@ export const ProductCard = memo(function ProductCard({
               price={price}
               stock={stock}
               onAdd={(message) => toastCallback?.(message)}
+              onQuickAdd={onQuickAdd}
             />
           </div>
         )}

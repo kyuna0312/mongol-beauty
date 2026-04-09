@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Package, CheckCircle, XCircle, Truck } from 'lucide-react';
@@ -16,6 +17,13 @@ const OrderStatusConfig: Record<string, { label: string; color: string; icon: an
 export function AdminOrdersPage() {
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get('status');
+  const [pendingAction, setPendingAction] = useState<{
+    orderId: string;
+    nextStatus: string;
+    label: string;
+  } | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
 
   const { data, loading, error, refetch } = useQuery(GET_ADMIN_ORDERS);
   const [updateOrderStatus] = useMutation(UPDATE_ORDER_STATUS, {
@@ -25,12 +33,16 @@ export function AdminOrdersPage() {
   });
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId);
     try {
       await updateOrderStatus({
         variables: { orderId, status: newStatus },
       });
+      setPendingAction(null);
     } catch (err: any) {
       alert(`Алдаа: ${err.message}`);
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -52,10 +64,10 @@ export function AdminOrdersPage() {
   if (error) {
     return (
       <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
-          <p className="text-red-800 font-semibold mb-1">Алдаа гарлаа</p>
-          <p className="text-red-600 text-sm">{error.message}</p>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+          <div className="text-amber-500 text-4xl mb-3">⚠️</div>
+          <p className="text-amber-800 font-semibold mb-1">Алдаа гарлаа</p>
+          <p className="text-amber-700 text-sm">{error.message}</p>
         </div>
       </div>
     );
@@ -74,6 +86,34 @@ export function AdminOrdersPage() {
         </h1>
         <p className="text-gray-500">{orders.length} захиалга</p>
       </div>
+
+      {pendingAction && (
+        <div className="mb-4 rounded-xl border border-primary-200 bg-primary-50 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-primary-900">
+            Та <span className="font-semibold">#{pendingAction.orderId.slice(0, 8)}</span> захиалгыг{' '}
+            <span className="font-semibold">{pendingAction.label}</span> төлөв рүү өөрчлөх үү?
+          </p>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setPendingAction(null)}
+              disabled={updatingOrderId === pendingAction.orderId}
+              className="border-primary-300 text-primary-700 hover:bg-primary-100"
+            >
+              Болих
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => handleStatusUpdate(pendingAction.orderId, pendingAction.nextStatus)}
+              disabled={updatingOrderId === pendingAction.orderId}
+              className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800"
+            >
+              Батлах
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Status Filters */}
       <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
@@ -136,13 +176,16 @@ export function AdminOrdersPage() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500 mb-1">
-                      {new Date(order.createdAt).toLocaleDateString('mn-MN', {
+                      Үүсгэсэн: {new Date(order.createdAt).toLocaleDateString('mn-MN', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
+                    </p>
+                    <p className="text-xs text-gray-400 mb-1">
+                      Шинэчилсэн: {new Date(order.updatedAt).toLocaleString('mn-MN')}
                     </p>
                     {order.user && (
                       <p className="text-sm text-gray-600">
@@ -177,15 +220,23 @@ export function AdminOrdersPage() {
                 </div>
 
                 {order.paymentReceiptUrl && (
-                  <div className="mb-4">
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewReceiptUrl(order.paymentReceiptUrl)}
+                      className="inline-flex items-center gap-2 rounded-lg border border-primary-200 px-3 py-1.5 text-primary-700 text-sm font-medium hover:bg-primary-50 transition-colors"
+                    >
+                      <span>🖼️</span>
+                      Баримт урьдчилан харах
+                    </button>
                     <a
                       href={order.paymentReceiptUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-primary-600 text-sm font-medium hover:text-primary-700 transition-colors"
+                      className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-colors"
                     >
                       <span>📄</span>
-                      Төлбөрийн баримт харах
+                      Шинэ цонхоор нээх
                     </a>
                   </div>
                 )}
@@ -195,7 +246,14 @@ export function AdminOrdersPage() {
                     <>
                       <Button
                         size="sm"
-                        onClick={() => handleStatusUpdate(order.id, 'CONFIRMED')}
+                        onClick={() =>
+                          setPendingAction({
+                            orderId: order.id,
+                            nextStatus: 'CONFIRMED',
+                            label: 'Баталгаажсан',
+                          })
+                        }
+                        disabled={updatingOrderId === order.id}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md"
                       >
                         ✓ Баталгаажуулах
@@ -203,8 +261,15 @@ export function AdminOrdersPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleStatusUpdate(order.id, 'CANCELLED')}
-                        className="text-red-600 border-red-300 hover:bg-red-50"
+                        onClick={() =>
+                          setPendingAction({
+                            orderId: order.id,
+                            nextStatus: 'CANCELLED',
+                            label: 'Цуцлагдсан',
+                          })
+                        }
+                        disabled={updatingOrderId === order.id}
+                        className="text-primary-700 border-primary-300 hover:bg-primary-50"
                       >
                         ✕ Цуцлах
                       </Button>
@@ -213,7 +278,14 @@ export function AdminOrdersPage() {
                   {order.status === 'CONFIRMED' && (
                     <Button
                       size="sm"
-                      onClick={() => handleStatusUpdate(order.id, 'SHIPPING')}
+                      onClick={() =>
+                        setPendingAction({
+                          orderId: order.id,
+                          nextStatus: 'SHIPPING',
+                          label: 'Хүргэж байна',
+                        })
+                      }
+                      disabled={updatingOrderId === order.id}
                       className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-md"
                     >
                       🚚 Хүргэлтэд гаргах
@@ -222,7 +294,14 @@ export function AdminOrdersPage() {
                   {order.status === 'SHIPPING' && (
                     <Button
                       size="sm"
-                      onClick={() => handleStatusUpdate(order.id, 'COMPLETED')}
+                      onClick={() =>
+                        setPendingAction({
+                          orderId: order.id,
+                          nextStatus: 'COMPLETED',
+                          label: 'Дууссан',
+                        })
+                      }
+                      disabled={updatingOrderId === order.id}
                       className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-md"
                     >
                       ✓ Дуусгах
@@ -232,6 +311,34 @@ export function AdminOrdersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {previewReceiptUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setPreviewReceiptUrl(null)}
+        >
+          <div
+            className="w-full max-w-3xl rounded-2xl bg-white p-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-800">Төлбөрийн баримт</h3>
+              <button
+                type="button"
+                onClick={() => setPreviewReceiptUrl(null)}
+                className="rounded-lg border border-gray-200 px-2.5 py-1 text-sm text-gray-600 hover:bg-gray-50"
+              >
+                Хаах
+              </button>
+            </div>
+            <img
+              src={previewReceiptUrl}
+              alt="Payment receipt preview"
+              className="max-h-[75vh] w-full rounded-xl object-contain bg-gray-50"
+            />
+          </div>
         </div>
       )}
     </div>
