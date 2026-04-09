@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CartItem } from './cart-item.entity';
 import { Product } from '../product/product.entity';
 import { CartItemInput } from './dto/cart-item.input';
@@ -62,29 +62,47 @@ export class CartService {
   }
 
   async mergeCart(userId: string, items: CartItemInput[]): Promise<CartItem[]> {
+    if (!items.length) return this.getMyCart(userId);
+
+    const requestedIds = Array.from(new Set(items.map((i) => i.productId)));
+    const [products, existingRows] = await Promise.all([
+      this.productRepository.find({ where: { id: In(requestedIds) } }),
+      this.cartRepository.find({ where: { userId, productId: In(requestedIds) } }),
+    ]);
+
+    const productById = new Map(products.map((p) => [p.id, p]));
+    const existingByProductId = new Map(existingRows.map((row) => [row.productId, row]));
+    const incomingTotals = new Map<string, number>();
+
     for (const item of items) {
-      const product = await this.productRepository.findOne({ where: { id: item.productId } });
+      incomingTotals.set(item.productId, (incomingTotals.get(item.productId) || 0) + item.quantity);
+    }
+
+    const toSave: CartItem[] = [];
+    for (const [productId, incomingQuantity] of incomingTotals.entries()) {
+      const product = productById.get(productId);
       if (!product) continue;
 
-      const existing = await this.cartRepository.findOne({
-        where: { userId, productId: item.productId },
-      });
-
-      const mergedQuantity = Math.min(product.stock, (existing?.quantity ?? 0) + item.quantity);
+      const existing = existingByProductId.get(productId);
+      const mergedQuantity = Math.min(product.stock, (existing?.quantity ?? 0) + incomingQuantity);
       if (mergedQuantity <= 0) continue;
 
       if (existing) {
         existing.quantity = mergedQuantity;
-        await this.cartRepository.save(existing);
+        toSave.push(existing);
       } else {
-        await this.cartRepository.save(
+        toSave.push(
           this.cartRepository.create({
             userId,
-            productId: item.productId,
+            productId,
             quantity: mergedQuantity,
           }),
         );
       }
+    }
+
+    if (toSave.length) {
+      await this.cartRepository.save(toSave);
     }
 
     return this.getMyCart(userId);

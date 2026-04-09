@@ -22,3 +22,10 @@ export interface AdminOrder {
   };
   items?: AdminOrderItem[];
 }
+
+export interface AdminOrdersPageData {
+  items: AdminOrder[];
+  total: number;
+  limit: number;
+  offset: number;
+}

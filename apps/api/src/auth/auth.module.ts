@@ -16,12 +16,12 @@ import { GqlAdminGuard } from '../common/guards/gql-admin.guard';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
-        const secret = configService.get<string>('JWT_SECRET');
-        if (process.env.NODE_ENV === 'production' && !secret) {
-          throw new Error('JWT_SECRET is required in production');
+        const secret = configService.get<string>('JWT_SECRET')?.trim();
+        if (!secret && process.env.NODE_ENV !== 'test') {
+          throw new Error('JWT_SECRET is required');
         }
         return {
-          secret: secret || 'dev-only-jwt-secret-change-me',
+          secret: secret || 'test-only-jwt-secret',
           signOptions: { expiresIn: '7d' },
         };
       },

@@ -1,5 +1,4 @@
 import { InputType, Field, ID, Int } from '@nestjs/graphql';
-import { SkinType, Feature } from '../product.entity';
 
 @InputType()
 export class CreateProductInput {

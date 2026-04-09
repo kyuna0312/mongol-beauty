@@ -25,6 +25,8 @@ import { CartModule } from './cart/cart.module';
 import { ContentModule } from './content/content.module';
 import type { GraphqlContext } from './types/graphql-context';
 import type { Request, Response } from 'express';
+import { InternalResilienceModule } from './common/internal-resilience.module';
+import { PrometheusModule } from './common/prometheus/prometheus.module';
 
 const serviceMode = process.env.SERVICE_MODE || 'gateway';
 const isGateway = serviceMode === 'gateway';
@@ -48,6 +50,8 @@ const isPaymentService = serviceMode === 'payment';
         return config;
       },
     }),
+    PrometheusModule,
+    InternalResilienceModule,
     TypeOrmModule.forRootAsync({
       useFactory: () => {
         const syncEnv = process.env.DB_SYNCHRONIZE;

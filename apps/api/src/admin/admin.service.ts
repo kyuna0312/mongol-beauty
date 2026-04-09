@@ -6,8 +6,8 @@ import { OrderStatus } from '../order/order.entity';
 export class AdminService {
   constructor(private readonly orderGatewayService: OrderGatewayService) {}
 
-  async getAllOrders() {
-    return this.orderGatewayService.findAllAdmin();
+  async getAdminOrders(params: { limit: number; offset: number; status?: OrderStatus }) {
+    return this.orderGatewayService.findAllAdminPaginated(params);
   }
 
   async confirmPayment(orderId: string) {

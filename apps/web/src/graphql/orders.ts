@@ -33,8 +33,8 @@ export const CREATE_ORDER_SIMPLE = gql`
 `;
 
 export const UPLOAD_PAYMENT_RECEIPT_SIMPLE = gql`
-  mutation UploadPaymentReceipt($orderId: ID!, $file: Upload!) {
-    uploadPaymentReceipt(orderId: $orderId, file: $file) {
+  mutation UploadPaymentReceipt($file: Upload!, $orderId: ID!) {
+    uploadPaymentReceipt(file: $file, orderId: $orderId) {
       id
       paymentReceiptUrl
     }

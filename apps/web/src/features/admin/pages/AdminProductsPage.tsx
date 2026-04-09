@@ -18,7 +18,7 @@ export function AdminProductsPage() {
     if (window.confirm(`"${name}" бүтээгдэхүүнийг устгах уу?`)) {
       try {
         await deleteProduct({ variables: { id } });
-      } catch (err) {
+      } catch (_err) {
         alert('Алдаа гарлаа');
       }
     }

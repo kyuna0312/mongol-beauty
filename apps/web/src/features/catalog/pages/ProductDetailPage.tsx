@@ -107,6 +107,17 @@ export function ProductDetailPage() {
     );
   };
 
+  const handleRelatedQuickAdd = async (relatedProductId: string, price: number, stock: number) => {
+    const current =
+      (items.find((item: CartItemLike) => item.productId === relatedProductId)?.quantity ?? 0) as number;
+    if (current >= stock) {
+      setToastMessage('Нөөц хүрэлцэхгүй байна');
+      return false;
+    }
+    await setItem(relatedProductId, current + 1, price);
+    return true;
+  };
+
   const handleShare = async () => {
     if (!product) return;
     if (navigator.share) {
@@ -116,7 +127,7 @@ export function ProductDetailPage() {
           text: product.description ?? undefined,
           url: window.location.href,
         });
-      } catch (err) {
+      } catch (_err) {
         // User cancelled or error occurred
       }
     } else {
@@ -356,6 +367,8 @@ export function ProductDetailPage() {
                 categoryId={relatedProduct.category.id}
                 stock={relatedProduct.stock}
                 LinkComponent={Link}
+                onAdd={(message) => setToastMessage(message)}
+                onQuickAdd={handleRelatedQuickAdd}
               />
             ))}
           </div>

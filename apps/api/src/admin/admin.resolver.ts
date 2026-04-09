@@ -1,6 +1,7 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { Order, OrderStatus } from '../order/order.entity';
+import { AdminOrdersPage } from '../order/admin-orders-page.object';
 import { AdminService } from './admin.service';
 import { GqlJwtAuthGuard } from '../common/guards/gql-jwt-auth.guard';
 import { GqlAdminGuard } from '../common/guards/gql-admin.guard';
@@ -10,9 +11,15 @@ import { GqlAdminGuard } from '../common/guards/gql-admin.guard';
 export class AdminResolver {
   constructor(private adminService: AdminService) {}
 
-  @Query(() => [Order])
-  async adminOrders(): Promise<Order[]> {
-    return this.adminService.getAllOrders();
+  @Query(() => AdminOrdersPage)
+  async adminOrders(
+    @Args('limit', { type: () => Int, nullable: true }) limitArg?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offsetArg?: number,
+    @Args('status', { type: () => OrderStatus, nullable: true }) status?: OrderStatus,
+  ): Promise<AdminOrdersPage> {
+    const limit = Math.min(100, Math.max(1, limitArg ?? 20));
+    const offset = Math.max(0, offsetArg ?? 0);
+    return this.adminService.getAdminOrders({ limit, offset, status });
   }
 
   @Mutation(() => Order)

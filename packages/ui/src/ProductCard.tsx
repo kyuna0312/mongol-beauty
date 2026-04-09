@@ -4,13 +4,6 @@ import { OptimizedImage } from './OptimizedImage';
 import { QuickAddButton } from './QuickAddButton';
 import { Heart } from 'lucide-react';
 
-// Global toast state management
-let toastCallback: ((message: string) => void) | null = null;
-
-export function setCartToastCallback(callback: (message: string) => void) {
-  toastCallback = callback;
-}
-
 interface ProductCardProps {
   id: string;
   name: string;
@@ -22,6 +15,7 @@ interface ProductCardProps {
   // Flexible routing - accepts a Link component from react-router-dom or any routing library
   LinkComponent?: React.ComponentType<any>;
   href?: string;
+  onAdd?: (message: string) => void;
   onQuickAdd?: (productId: string, price: number, stock: number) => Promise<boolean> | boolean;
 }
 
@@ -35,6 +29,7 @@ export const ProductCard = memo(function ProductCard({
   stock = 0,
   LinkComponent,
   href,
+  onAdd,
   onQuickAdd,
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -97,7 +92,7 @@ export const ProductCard = memo(function ProductCard({
               productName={name}
               price={price}
               stock={stock}
-              onAdd={(message) => toastCallback?.(message)}
+              onAdd={onAdd}
               onQuickAdd={onQuickAdd}
             />
           </div>

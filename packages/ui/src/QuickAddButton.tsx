@@ -27,34 +27,12 @@ export function QuickAddButton({
 
     if (stock === 0 || isAdding) return;
     
-    // Check if we're in a browser environment
-    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-      return;
-    }
-
     setIsAdding(true);
     
     let didAdd = false;
     if (onQuickAdd) {
       const result = await onQuickAdd(productId, price, stock);
       didAdd = Boolean(result);
-    } else {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const existingItem = cart.find((item: any) => item.productId === productId);
-      if (existingItem) {
-        if (existingItem.quantity < stock) {
-          existingItem.quantity += 1;
-          didAdd = true;
-        }
-      } else {
-        cart.push({ productId, quantity: 1, price });
-        didAdd = true;
-      }
-
-      if (didAdd) {
-        localStorage.setItem('cart', JSON.stringify(cart));
-        window.dispatchEvent(new Event('cartUpdated'));
-      }
     }
 
     if (!didAdd) {

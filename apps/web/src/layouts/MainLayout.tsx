@@ -27,7 +27,7 @@ export function MainLayout() {
     if (isAuthenticated) {
       mergeLocalCartToServer();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isAuthenticated]);
 
   const handleSearch = useCallback(

@@ -13,6 +13,8 @@ import {
   ForgotPasswordInput,
   ResetPasswordInput,
 } from './dto/auth.inputs';
+import type { Response } from 'express';
+import { getAccessCookieName } from './auth-cookie';
 
 @ObjectType()
 class AdminUser {
@@ -78,10 +80,33 @@ class MessageResponse {
 export class AuthResolver {
   constructor(private authService: AuthService) {}
 
+  private setAuthCookie(res: Response | undefined, token: string) {
+    if (!res) return;
+    res.cookie(getAccessCookieName(), token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+  }
+
+  private clearAuthCookie(res: Response | undefined) {
+    if (!res) return;
+    res.clearCookie(getAccessCookieName(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+    });
+  }
+
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Mutation(() => LoginResponse)
-  async adminLogin(@Args('input') input: AdminLoginInput): Promise<LoginResponse> {
-    return this.authService.login(input.email, input.password);
+  async adminLogin(@Args('input') input: AdminLoginInput, @Context() context: any): Promise<LoginResponse> {
+    const result = await this.authService.login(input.email, input.password);
+    this.setAuthCookie(context?.res, result.access_token);
+    return result;
   }
 
   @Query(() => User, { nullable: true })
@@ -103,8 +128,16 @@ export class AuthResolver {
 
   @Throttle({ default: { limit: 15, ttl: 60_000 } })
   @Mutation(() => UserLoginResponse)
-  async userLogin(@Args('input') input: UserLoginInput): Promise<UserLoginResponse> {
-    return this.authService.userLogin(input.email, input.password);
+  async userLogin(@Args('input') input: UserLoginInput, @Context() context: any): Promise<UserLoginResponse> {
+    const result = await this.authService.userLogin(input.email, input.password);
+    this.setAuthCookie(context?.res, result.access_token);
+    return result;
+  }
+
+  @Mutation(() => MessageResponse)
+  async logout(@Context() context: any): Promise<MessageResponse> {
+    this.clearAuthCookie(context?.res);
+    return { message: 'Logged out' };
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })

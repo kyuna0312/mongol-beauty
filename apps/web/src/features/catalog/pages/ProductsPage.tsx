@@ -1,13 +1,14 @@
 import { useState, memo, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { ProductCard, setCartToastCallback, ProductListSkeleton, CartToast } from '@mongol-beauty/ui';
+import { ProductCard, ProductListSkeleton, CartToast } from '@mongol-beauty/ui';
 import { Button } from '@mongol-beauty/ui';
 import { Filter, Grid3x3, List, ArrowUpDown } from 'lucide-react';
 import { GET_CATEGORY_BASIC, GET_PRODUCTS_PAGED } from '@/graphql/catalog';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
 import { PageHead } from '@/features/content/components/PageHead';
 import { useCart } from '@/hooks/useCart';
+import { clearCartToast, useCartToast } from '@/features/cart/store';
 import { CartItemLike } from '@/interfaces/cart';
 import { ProductCardRaw, ProductCardView } from '@/interfaces/catalog';
 
@@ -38,16 +39,10 @@ export const ProductsPage = memo(function ProductsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('default');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { items: cartItems, setItem } = useCart();
-
-  useEffect(() => {
-    setCartToastCallback((message: string) => {
-      setToastMessage(message);
-    });
-  }, []);
+  const { message: toastMessage, showCartToast } = useCartToast();
 
   const {
     data: productsData,
@@ -97,7 +92,7 @@ export const ProductsPage = memo(function ProductsPage() {
       const current =
         (cartItems.find((item: CartItemLike) => item.productId === productId)?.quantity ?? 0) as number;
       if (current >= stock) {
-        setToastMessage('Нөөц хүрэлцэхгүй байна');
+        showCartToast('Нөөц хүрэлцэхгүй байна');
         return false;
       }
       await setItem(productId, current + 1, price);
@@ -304,6 +299,7 @@ export const ProductsPage = memo(function ProductsPage() {
               categoryId={product.categoryId}
               stock={product.stock}
               LinkComponent={Link}
+              onAdd={showCartToast}
               onQuickAdd={handleQuickAdd}
             />
           ))}
@@ -360,7 +356,7 @@ export const ProductsPage = memo(function ProductsPage() {
       {toastMessage && (
         <CartToast
           message={toastMessage}
-          onClose={() => setToastMessage(null)}
+          onClose={clearCartToast}
         />
       )}
     </div>

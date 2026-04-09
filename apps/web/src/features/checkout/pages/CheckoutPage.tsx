@@ -7,6 +7,7 @@ import { Toast } from '@/components/Toast';
 import { useCart } from '@/hooks/useCart';
 import { CREATE_ORDER_SIMPLE, UPLOAD_PAYMENT_RECEIPT_SIMPLE } from '@/graphql/orders';
 import { CheckoutCartItem } from '@/interfaces/cart';
+import { getCheckoutCreateOrderBlock, isValidCheckoutPhone } from '@/lib/checkout-validation';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -21,20 +22,21 @@ export function CheckoutPage() {
   const [createOrder] = useMutation(CREATE_ORDER_SIMPLE);
   const [uploadReceipt] = useMutation(UPLOAD_PAYMENT_RECEIPT_SIMPLE);
   const hasCartItems = cart.length > 0;
-  const isPhoneValid = !phone.trim() || /^[0-9]{8}$/.test(phone.trim());
+  const isPhoneValid = isValidCheckoutPhone(phone);
 
   useEffect(() => {
     mergeLocalCartToServer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleCreateOrder = async () => {
-    if (!hasCartItems) {
+    const block = getCheckoutCreateOrderBlock(hasCartItems, phone);
+    if (block === 'empty_cart') {
       setToastMessage('Сагс хоосон байна. Эхлээд бүтээгдэхүүн нэмнэ үү.');
       setShowToast(true);
       return;
     }
-    if (!isPhoneValid) {
+    if (block === 'invalid_phone') {
       setToastMessage('Утасны дугаар 8 оронтой байх шаардлагатай.');
       setShowToast(true);
       return;
@@ -57,7 +59,7 @@ export function CheckoutPage() {
       setOrderId(data.createOrder.id);
       setToastMessage('Захиалга амжилттай үүслээ! Төлбөрийн баримт байршуулна уу.');
       setShowToast(true);
-    } catch (error) {
+    } catch (_error) {
       setToastMessage('Алдаа гарлаа. Дахин оролдоно уу.');
       setShowToast(true);
     }
@@ -69,8 +71,8 @@ export function CheckoutPage() {
     try {
       await uploadReceipt({
         variables: {
-          orderId,
           file: receiptFile,
+          orderId,
         },
       });
 
@@ -80,7 +82,7 @@ export function CheckoutPage() {
       setTimeout(() => {
         navigate(`/orders/${orderId}`);
       }, 2000);
-    } catch (error) {
+    } catch (_error) {
       setToastMessage('Алдаа гарлаа. Дахин оролдоно уу.');
       setShowToast(true);
     }

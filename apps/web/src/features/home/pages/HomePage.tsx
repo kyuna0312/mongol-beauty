@@ -1,20 +1,21 @@
 import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
-import { memo, useMemo, useEffect, useState, useCallback, useRef } from 'react';
-import { ProductCard, setCartToastCallback, ProductListSkeleton, OptimizedImage, CartToast } from '@mongol-beauty/ui';
+import { memo, useMemo, useCallback, useRef } from 'react';
+import { ProductCard, ProductListSkeleton, OptimizedImage, CartToast } from '@mongol-beauty/ui';
 import { Button } from '@mongol-beauty/ui';
 import { ArrowRight, Sparkles, Truck, ShieldCheck } from 'lucide-react';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
 import { PageHead } from '@/features/content/components/PageHead';
 import { useCart } from '@/hooks/useCart';
 import { GET_FEATURED_PRODUCTS, GET_HOME_CATEGORIES } from '@/graphql/home';
+import { clearCartToast, useCartToast } from '@/features/cart/store';
 import { CartItemLike } from '@/interfaces/cart';
 import { HomeCategory, HomeProduct } from '@/interfaces/home';
 
 export const HomePage = memo(function HomePage() {
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const hasPrefetchedProductsPage = useRef(false);
   const { items: cartItems, setItem } = useCart();
+  const { message: toastMessage, showCartToast } = useCartToast();
 
   const { data: categoriesData, loading: categoriesLoading, error: categoriesError } = useQuery(GET_HOME_CATEGORIES, {
     fetchPolicy: 'cache-and-network',
@@ -28,14 +29,6 @@ export const HomePage = memo(function HomePage() {
     errorPolicy: 'all',
   });
 
-  const handleCartToast = useCallback((message: string) => {
-    setToastMessage(message);
-  }, []);
-
-  useEffect(() => {
-    setCartToastCallback(handleCartToast);
-  }, [handleCartToast]);
-
   const prefetchProductsPage = useCallback(() => {
     if (hasPrefetchedProductsPage.current) return;
     hasPrefetchedProductsPage.current = true;
@@ -47,7 +40,7 @@ export const HomePage = memo(function HomePage() {
       const current =
         (cartItems.find((item: CartItemLike) => item.productId === productId)?.quantity ?? 0) as number;
       if (current >= stock) {
-        setToastMessage('Нөөц хүрэлцэхгүй байна');
+        showCartToast('Нөөц хүрэлцэхгүй байна');
         return false;
       }
       await setItem(productId, current + 1, price);
@@ -214,6 +207,7 @@ export const HomePage = memo(function HomePage() {
               categoryId={product.category.id}
               stock={product.stock}
               LinkComponent={Link}
+              onAdd={showCartToast}
               onQuickAdd={handleQuickAdd}
             />
           ))}
@@ -229,7 +223,7 @@ export const HomePage = memo(function HomePage() {
       </section>
 
       {toastMessage && (
-        <CartToast message={toastMessage} onClose={() => setToastMessage(null)} />
+        <CartToast message={toastMessage} onClose={clearCartToast} />
       )}
     </div>
   );

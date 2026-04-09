@@ -5,6 +5,9 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
 import compression from 'compression';
 import crypto from 'crypto';
+import express from 'express';
+import { join } from 'path';
+import { requestContext } from './common/request-context';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -25,19 +28,24 @@ async function bootstrap() {
     threshold: 1024, // Only compress responses > 1KB
   }));
 
-  // Set security headers
+  // Request / trace IDs (ALS for downstream internal hops) + security headers
   app.use((req, res, next) => {
     const requestId = (req.headers['x-request-id'] as string | undefined) || crypto.randomUUID();
+    const traceId = (req.headers['x-trace-id'] as string | undefined) || crypto.randomUUID();
     req.headers['x-request-id'] = requestId;
+    req.headers['x-trace-id'] = traceId;
     res.setHeader('x-request-id', requestId);
+    res.setHeader('x-trace-id', traceId);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     if (process.env.NODE_ENV === 'production') {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
-    logger.log(`${req.method} ${req.url} [requestId=${requestId}]`);
-    next();
+    requestContext.run({ requestId, traceId }, () => {
+      logger.log(`${req.method} ${req.url} [requestId=${requestId}] [traceId=${traceId}]`);
+      next();
+    });
   });
   
   app.useGlobalPipes(new ValidationPipe({
@@ -62,6 +70,10 @@ async function bootstrap() {
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
   });
+
+  const receiptUploadsDir =
+    process.env.RECEIPT_UPLOAD_DIR?.trim() || join(process.cwd(), 'uploads', 'receipts');
+  app.use('/uploads/receipts', express.static(receiptUploadsDir));
   
   const defaultPort =
     serviceMode === 'order' ? 4010 : serviceMode === 'payment' ? 4020 : 4000;

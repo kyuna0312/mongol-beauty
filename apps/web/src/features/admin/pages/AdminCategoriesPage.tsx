@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Folder } from 'lucide-react';
 import { Button } from '@mongol-beauty/ui';
 import { DELETE_CATEGORY } from '@/graphql/mutations';
-import { GET_CATEGORIES } from '@/graphql/queries';
+import { GET_ADMIN_CATEGORIES } from '@/graphql/queries';
 
 export function AdminCategoriesPage() {
   const navigate = useNavigate();
-  const { data, loading, error, refetch } = useQuery(GET_CATEGORIES);
+  const { data, loading, error, refetch } = useQuery(GET_ADMIN_CATEGORIES);
   const [deleteCategory] = useMutation(DELETE_CATEGORY, {
     onCompleted: () => {
       refetch();
@@ -18,7 +18,7 @@ export function AdminCategoriesPage() {
     if (window.confirm(`"${name}" ангиллыг устгах уу?`)) {
       try {
         await deleteCategory({ variables: { id } });
-      } catch (err) {
+      } catch (_err) {
         alert('Алдаа гарлаа');
       }
     }

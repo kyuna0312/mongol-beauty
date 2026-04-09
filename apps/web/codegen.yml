@@ -1,0 +1,18 @@
+overwrite: true
+schema: src/graphql/schema.graphql
+documents:
+  - 'src/**/*.{ts,tsx}'
+  - '!src/graphql/generated/**'
+generates:
+  src/graphql/generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+    config:
+      useTypeImports: true
+      enumsAsTypes: true
+      skipTypename: false
+      avoidOptionals:
+        field: true
+        inputValue: false
+      dedupeFragments: true

@@ -46,6 +46,18 @@ class EnvironmentVariables {
   @IsNotEmpty()
   JWT_SECRET?: string;
 
+  /** Required when NODE_ENV=production */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  INTERNAL_SERVICE_SECRET?: string;
+
+  /** Required when NODE_ENV=production */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  INTERNAL_SERVICE_TOKEN?: string;
+
   @IsOptional()
   @IsNumber()
   @Min(1000)
@@ -57,6 +69,24 @@ class EnvironmentVariables {
   @Min(1)
   @Transform(({ value }) => (value !== undefined ? parseInt(String(value), 10) : 100))
   THROTTLE_LIMIT?: number;
+
+  @IsOptional()
+  @IsString()
+  RECEIPT_STORAGE_DRIVER?: string;
+
+  @IsOptional()
+  @IsString()
+  RECEIPT_UPLOAD_DIR?: string;
+
+  @IsOptional()
+  @IsString()
+  RECEIPT_PUBLIC_BASE_PATH?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1024)
+  @Transform(({ value }) => (value !== undefined ? parseInt(String(value), 10) : 5 * 1024 * 1024))
+  RECEIPT_MAX_BYTES?: number;
 }
 
 export function validate(config: Record<string, unknown>) {
@@ -77,6 +107,19 @@ export function validate(config: Record<string, unknown>) {
     if (!secret) {
       throw new Error('JWT_SECRET is required in production');
     }
+    const internalSecret = String(config.INTERNAL_SERVICE_SECRET ?? '').trim();
+    if (!internalSecret) {
+      throw new Error('INTERNAL_SERVICE_SECRET is required in production');
+    }
+    const internalToken = String(config.INTERNAL_SERVICE_TOKEN ?? '').trim();
+    if (!internalToken) {
+      throw new Error('INTERNAL_SERVICE_TOKEN is required in production');
+    }
+  }
+
+  const receiptDriver = String(config.RECEIPT_STORAGE_DRIVER ?? 'local').trim().toLowerCase();
+  if (receiptDriver !== 'local') {
+    throw new Error('Only RECEIPT_STORAGE_DRIVER=local is supported');
   }
 
   return validatedConfig;

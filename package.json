@@ -16,10 +16,16 @@
     "dev:api": "yarn workspace @mongol-beauty/api start:dev",
     "dev": "concurrently \"yarn dev:api\" \"yarn dev:web\"",
     "dev:full": "yarn docker:up && yarn db:wait && yarn dev",
-    "build": "yarn workspaces run build",
+    "build": "npm run build -w @mongol-beauty/api && npm run build -w @mongol-beauty/web",
     "build:web:ci": "yarn workspace @mongol-beauty/web build:ci",
-    "type-check": "yarn workspaces run type-check",
-    "ci": "yarn type-check && yarn build",
+    "type-check": "npm run type-check -w @mongol-beauty/api && npm run type-check -w @mongol-beauty/web && npm run type-check -w @mongol-beauty/ui && npm run type-check -w @mongol-beauty/types && npm run type-check -w @mongol-beauty/config",
+    "graphql:codegen": "npm run codegen -w @mongol-beauty/web",
+    "graphql:codegen:check": "npm run codegen:check -w @mongol-beauty/web",
+    "lint": "eslint apps/api/src apps/web/src packages/ui/src --max-warnings 0",
+    "lint:fix": "eslint apps/api/src apps/web/src packages/ui/src --fix",
+    "test": "npm run test -w @mongol-beauty/web && npm run test -w @mongol-beauty/api",
+    "build:ci": "npm run build -w @mongol-beauty/api && npm run build:ci -w @mongol-beauty/web",
+    "ci": "npm run graphql:codegen:check && npm run type-check && npm run lint && npm run test && npm run build:ci",
     "db:wait": "node scripts/wait-for-db.js",
     "db:migrate": "npm run migration:run -w @mongol-beauty/api",
     "check-env": "node scripts/check-env.js",
@@ -33,10 +39,25 @@
     "e2e:purchase-admin": "node scripts/e2e-purchase-admin-flow.mjs",
     "seed": "yarn workspace @mongol-beauty/api seed",
     "create-admin": "yarn workspace @mongol-beauty/api create-admin",
-    "create-demo-user": "yarn workspace @mongol-beauty/api create-demo-user"
+    "create-demo-user": "yarn workspace @mongol-beauty/api create-demo-user",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "apps/**/*.{ts,tsx}": "eslint --fix --max-warnings 0 --no-warn-ignored",
+    "packages/ui/**/*.{ts,tsx}": "eslint --fix --max-warnings 0 --no-warn-ignored"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^9.39.4",
+    "concurrently": "^8.2.2",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "typescript-eslint": "^8.58.1"
   },
   "packageManager": "yarn@1.22.19"
 }

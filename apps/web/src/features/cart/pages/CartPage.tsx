@@ -10,18 +10,22 @@ import { CartLine, CartProduct } from '@/interfaces/cart';
 export function CartPage() {
   const navigate = useNavigate();
   const { items, setItem, removeItem: removeCartItem, mergeLocalCartToServer } = useCart();
-  const { data: productsData } = useQuery(GET_PRODUCTS_FOR_CART);
+  const productIds = Array.from(new Set(items.map((item: CartLine) => item.productId)));
+  const { data: productsData } = useQuery(GET_PRODUCTS_FOR_CART, {
+    variables: { ids: productIds },
+    skip: productIds.length === 0,
+  });
 
   useEffect(() => {
     mergeLocalCartToServer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const displayItems: CartLine[] = items.map((item: CartLine) => ({
     ...item,
     product:
       item.product ??
-      (productsData?.products as CartProduct[] | undefined)?.find((p) => p.id === item.productId),
+      (productsData?.productsByIds as CartProduct[] | undefined)?.find((p) => p.id === item.productId),
   }));
 
   const totalPrice = displayItems.reduce((sum: number, item: CartLine) => {

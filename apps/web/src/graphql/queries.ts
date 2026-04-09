@@ -1,85 +1,5 @@
 import { gql } from '@apollo/client';
-import { PRODUCT_FRAGMENT, PRODUCT_CARD_FRAGMENT, ORDER_FRAGMENT } from './fragments';
-
-// Product Queries
-export const GET_PRODUCTS = gql`
-  query GetProducts($categoryId: ID, $limit: Int, $offset: Int) {
-    products(categoryId: $categoryId, limit: $limit, offset: $offset) {
-      ...ProductFragment
-    }
-  }
-  ${PRODUCT_FRAGMENT}
-`;
-
-export const GET_PRODUCT = gql`
-  query GetProduct($id: ID!) {
-    product(id: $id) {
-      ...ProductFragment
-    }
-  }
-  ${PRODUCT_FRAGMENT}
-`;
-
-export const GET_PRODUCTS_CARD = gql`
-  query GetProductsCard($categoryId: ID, $limit: Int, $offset: Int) {
-    products(categoryId: $categoryId, limit: $limit, offset: $offset) {
-      ...ProductCardFragment
-    }
-  }
-  ${PRODUCT_CARD_FRAGMENT}
-`;
-
-// Category Queries
-export const GET_CATEGORIES = gql`
-  query GetCategories {
-    categories {
-      id
-      name
-      slug
-      description
-      imageUrl
-      products {
-        id
-        name
-        price
-        images
-      }
-    }
-  }
-`;
-
-export const GET_CATEGORY = gql`
-  query GetCategory($id: ID!) {
-    category(id: $id) {
-      id
-      name
-      slug
-      description
-      imageUrl
-      products {
-        id
-        name
-        price
-        images
-      }
-    }
-  }
-`;
-
-// Order Queries
-export const GET_ORDER = gql`
-  query GetOrder($id: ID!) {
-    order(id: $id) {
-      ...OrderFragment
-      user {
-        id
-        name
-        phone
-      }
-    }
-  }
-  ${ORDER_FRAGMENT}
-`;
+import { PRODUCT_FRAGMENT } from './fragments';
 
 export const GET_ORDERS = gql`
   query GetOrders {
@@ -95,6 +15,33 @@ export const GET_ORDERS = gql`
           id
           name
         }
+      }
+    }
+  }
+`;
+
+export const GET_ADMIN_CATEGORY = gql`
+  query GetAdminCategory($id: ID!) {
+    category(id: $id) {
+      id
+      name
+      slug
+      description
+      imageUrl
+    }
+  }
+`;
+
+export const GET_ADMIN_CATEGORIES = gql`
+  query GetAdminCategories {
+    categories {
+      id
+      name
+      slug
+      description
+      imageUrl
+      products {
+        id
       }
     }
   }
@@ -122,28 +69,33 @@ export const GET_ME = gql`
 
 // Admin Queries
 export const GET_ADMIN_ORDERS = gql`
-  query GetAdminOrders {
-    adminOrders {
-      id
-      totalPrice
-      status
-      paymentReceiptUrl
-      createdAt
-      updatedAt
+  query GetAdminOrders($limit: Int, $offset: Int, $status: OrderStatus) {
+    adminOrders(limit: $limit, offset: $offset, status: $status) {
+      total
+      limit
+      offset
       items {
         id
-        quantity
-        price
-        product {
+        totalPrice
+        status
+        paymentReceiptUrl
+        createdAt
+        updatedAt
+        items {
+          id
+          quantity
+          price
+          product {
+            id
+            name
+            images
+          }
+        }
+        user {
           id
           name
-          images
+          phone
         }
-      }
-      user {
-        id
-        name
-        phone
       }
     }
   }
