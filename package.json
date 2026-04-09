@@ -17,6 +17,7 @@
     "dev": "concurrently \"yarn dev:api\" \"yarn dev:web\"",
     "dev:full": "yarn docker:up && yarn db:wait && yarn dev",
     "build": "yarn workspaces run build",
+    "build:web:ci": "yarn workspace @mongol-beauty/web build:ci",
     "type-check": "yarn workspaces run type-check",
     "ci": "yarn type-check && yarn build",
     "db:wait": "node scripts/wait-for-db.js",
@@ -29,6 +30,7 @@
     "fix-port": "bash scripts/fix-port-conflict.sh",
     "setup-env": "node scripts/setup-env.js",
     "setup": "yarn check-docker && yarn setup-env && yarn docker:up && echo '✅ Setup complete! Run yarn dev to start development servers.'",
+    "e2e:purchase-admin": "node scripts/e2e-purchase-admin-flow.mjs",
     "seed": "yarn workspace @mongol-beauty/api seed",
     "create-admin": "yarn workspace @mongol-beauty/api create-admin",
     "create-demo-user": "yarn workspace @mongol-beauty/api create-demo-user"

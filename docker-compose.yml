@@ -30,6 +30,112 @@ services:
     networks:
       - mongol-beauty-network
 
+  gateway:
+    image: node:20-alpine
+    container_name: mongol-beauty-gateway
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      SERVICE_MODE: gateway
+      PORT: 4000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+      ORDER_SERVICE_URL: http://order-service:4010
+      PAYMENT_SERVICE_URL: http://payment-service:4020
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./:/app
+    command: sh -c "yarn install --frozen-lockfile && yarn workspace @mongol-beauty/api start:dev"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - mongol-beauty-network
+
+  order-service:
+    image: node:20-alpine
+    container_name: mongol-beauty-order-service
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      SERVICE_MODE: order
+      PORT: 4010
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+    ports:
+      - "4010:4010"
+    volumes:
+      - ./:/app
+    command: sh -c "yarn install --frozen-lockfile && yarn workspace @mongol-beauty/api start:dev"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4010/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - mongol-beauty-network
+
+  payment-service:
+    image: node:20-alpine
+    container_name: mongol-beauty-payment-service
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      SERVICE_MODE: payment
+      PORT: 4020
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+      ORDER_SERVICE_URL: http://order-service:4010
+    ports:
+      - "4020:4020"
+    volumes:
+      - ./:/app
+    command: sh -c "yarn install --frozen-lockfile && yarn workspace @mongol-beauty/api start:dev"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4020/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - mongol-beauty-network
+
 volumes:
   postgres_data:
     name: mongol_beauty_postgres_data

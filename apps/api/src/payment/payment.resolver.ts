@@ -5,8 +5,8 @@ import { join, basename } from 'path';
 import { promisify } from 'util';
 import { pipeline, Transform } from 'stream';
 import { Order } from '../order/order.entity';
-import { PaymentService } from './payment.service';
-import { OrderService } from '../order/order.service';
+import { PaymentGatewayService } from './payment.gateway.service';
+import { OrderGatewayService } from '../order/order.gateway.service';
 import { GqlOptionalAuthGuard } from '../common/guards/gql-optional-auth.guard';
 import { User } from '../user/user.entity';
 
@@ -33,8 +33,8 @@ const { GraphQLUpload } = require('graphql-upload');
 @Resolver(() => Order)
 export class PaymentResolver {
   constructor(
-    private paymentService: PaymentService,
-    private orderService: OrderService,
+    private readonly paymentGatewayService: PaymentGatewayService,
+    private readonly orderGatewayService: OrderGatewayService,
   ) {}
 
   @Mutation(() => Order)
@@ -45,7 +45,7 @@ export class PaymentResolver {
     @Context() ctx: any,
   ): Promise<Order> {
     const user = ctx.req?.user as User | null | undefined;
-    await this.orderService.assertCanUploadReceipt(orderId, user ?? null);
+    await this.orderGatewayService.assertCanUploadReceipt(orderId, user ?? null);
 
     const { createReadStream, filename, mimetype } = await file;
     if (!ALLOWED_RECEIPT_MIME.has(mimetype)) {
@@ -94,7 +94,7 @@ export class PaymentResolver {
       throw err;
     }
 
-    await this.paymentService.uploadReceipt(orderId, fileUrl);
-    return this.orderService.findOne(orderId);
+    await this.paymentGatewayService.uploadReceipt(orderId, fileUrl);
+    return this.orderGatewayService.findOneForRequester(orderId, user ?? null);
   }
 }

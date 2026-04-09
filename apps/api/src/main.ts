@@ -4,9 +4,11 @@ import { AppModule } from './app.module';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { PerformanceInterceptor } from './common/interceptors/performance.interceptor';
 import compression from 'compression';
+import crypto from 'crypto';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
+  const serviceMode = process.env.SERVICE_MODE || 'gateway';
   const app = await NestFactory.create(AppModule, {
     logger: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug'],
   });
@@ -25,12 +27,16 @@ async function bootstrap() {
 
   // Set security headers
   app.use((req, res, next) => {
+    const requestId = (req.headers['x-request-id'] as string | undefined) || crypto.randomUUID();
+    req.headers['x-request-id'] = requestId;
+    res.setHeader('x-request-id', requestId);
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     if (process.env.NODE_ENV === 'production') {
       res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     }
+    logger.log(`${req.method} ${req.url} [requestId=${requestId}]`);
     next();
   });
   
@@ -57,9 +63,16 @@ async function bootstrap() {
     credentials: true,
   });
   
-  const port = process.env.PORT || 4000;
+  const defaultPort =
+    serviceMode === 'order' ? 4010 : serviceMode === 'payment' ? 4020 : 4000;
+  const port = Number(process.env.PORT || defaultPort);
   await app.listen(port);
-  logger.log(`🚀 GraphQL API running on http://localhost:${port}/graphql`);
+  if (serviceMode === 'gateway') {
+    logger.log(`🚀 Gateway GraphQL API running on http://localhost:${port}/graphql`);
+  } else {
+    logger.log(`🚀 ${serviceMode}-service REST API running on http://localhost:${port}`);
+  }
+  logger.log(`📊 Service mode: ${serviceMode}`);
   logger.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   if (process.env.NODE_ENV === 'production') {
     logger.log(`✅ Compression enabled`);

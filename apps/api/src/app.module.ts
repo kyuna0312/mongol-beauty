@@ -26,6 +26,11 @@ import { ContentModule } from './content/content.module';
 import type { GraphqlContext } from './types/graphql-context';
 import type { Request, Response } from 'express';
 
+const serviceMode = process.env.SERVICE_MODE || 'gateway';
+const isGateway = serviceMode === 'gateway';
+const isOrderService = serviceMode === 'order';
+const isPaymentService = serviceMode === 'payment';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -99,43 +104,46 @@ import type { Request, Response } from 'express';
         ];
       },
     }),
-    GraphQLModule.forRootAsync<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      imports: [DataloaderModule],
-      inject: [ProductLoader, CategoryLoader],
-      useFactory: (productLoader: ProductLoader, categoryLoader: CategoryLoader) => ({
-        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-        sortSchema: true,
-        playground: process.env.NODE_ENV !== 'production',
-        introspection: process.env.NODE_ENV !== 'production',
-        context: ({ req, res }: { req: Request; res?: Response }): GraphqlContext => ({
-          req,
-          res,
-          loaders: {
-            product: productLoader.createLoader(),
-            category: categoryLoader.createLoader(),
-          },
-        }),
-        formatError: formatGraphqlError,
-        cache: 'bounded',
-        // graphql-query-complexity as a validation rule breaks variable coercion (calls
-        // getVariableValues without request variables) — all $variable queries return 400.
-        // Re-introduce complexity via an Apollo plugin or a fixed library version if needed.
-        validationRules: [depthLimit(10)],
-        fieldResolverEnhancers: ['interceptors'],
-      }),
-    }),
-    ProductModule,
-    CategoryModule,
-    OrderModule,
-    PaymentModule,
-    UserModule,
-    AdminModule,
-    AuthModule,
-    CartModule,
-    ContentModule,
+    ...(isGateway
+      ? [
+          GraphQLModule.forRootAsync<ApolloDriverConfig>({
+            driver: ApolloDriver,
+            imports: [DataloaderModule],
+            inject: [ProductLoader, CategoryLoader],
+            useFactory: (productLoader: ProductLoader, categoryLoader: CategoryLoader) => ({
+              autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+              sortSchema: true,
+              playground: process.env.NODE_ENV !== 'production',
+              introspection: process.env.NODE_ENV !== 'production',
+              context: ({ req, res }: { req: Request; res?: Response }): GraphqlContext => ({
+                req,
+                res,
+                loaders: {
+                  product: productLoader.createLoader(),
+                  category: categoryLoader.createLoader(),
+                },
+              }),
+              formatError: formatGraphqlError,
+              cache: 'bounded',
+              validationRules: [depthLimit(10)],
+              fieldResolverEnhancers: ['interceptors'],
+            }),
+          }),
+          ProductModule,
+          CategoryModule,
+          OrderModule,
+          PaymentModule,
+          UserModule,
+          AdminModule,
+          AuthModule,
+          CartModule,
+          ContentModule,
+        ]
+      : []),
+    ...(isOrderService ? [OrderModule] : []),
+    ...(isPaymentService ? [OrderModule, PaymentModule] : []),
     HealthModule,
-    DataloaderModule,
+    ...(isGateway ? [DataloaderModule] : []),
   ],
   providers: [
     DateTimeScalar,

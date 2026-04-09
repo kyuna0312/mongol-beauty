@@ -42,6 +42,9 @@ export class Order {
   @Column({ nullable: true })
   paymentReceiptUrl: string;
 
+  @Column({ nullable: true, unique: true })
+  idempotencyKey?: string;
+
   @Field(() => User, { nullable: true })
   @ManyToOne(() => User, (user) => user.orders, { nullable: true })
   @JoinColumn({ name: 'userId' })

@@ -21,7 +21,17 @@ export class OrderService {
     private dataSource: DataSource,
   ) {}
 
-  async create(input: CreateOrderInput, userId?: string): Promise<Order> {
+  async create(input: CreateOrderInput, userId?: string, idempotencyKey?: string): Promise<Order> {
+    if (idempotencyKey) {
+      const existing = await this.orderRepository.findOne({
+        where: { idempotencyKey },
+        relations: ['items', 'items.product', 'user'],
+      });
+      if (existing) {
+        return existing;
+      }
+    }
+
     return this.dataSource.transaction(async (manager) => {
       const productRepo = manager.getRepository(Product);
       const orderRepo = manager.getRepository(Order);
@@ -59,6 +69,7 @@ export class OrderService {
 
       const order = orderRepo.create({
         userId,
+        idempotencyKey,
         status: OrderStatus.WAITING_PAYMENT,
         totalPrice,
         items,
