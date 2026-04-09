@@ -14,20 +14,51 @@ export function CheckoutPage() {
   const { items: cart, clear, mergeLocalCartToServer } = useCart();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
-  const [orderId, setOrderId] = useState<string | null>(null);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [createOrder] = useMutation(CREATE_ORDER_SIMPLE);
   const [uploadReceipt] = useMutation(UPLOAD_PAYMENT_RECEIPT_SIMPLE);
   const hasCartItems = cart.length > 0;
   const isPhoneValid = isValidCheckoutPhone(phone);
+  const maxReceiptBytes = 5 * 1024 * 1024;
+  const allowedReceiptMime = new Set([
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+    'image/heic',
+    'image/heif',
+  ]);
 
   useEffect(() => {
     mergeLocalCartToServer();
      
   }, []);
+
+  const getErrorMessage = (error: unknown, fallback: string): string => {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as { message?: unknown }).message === 'string'
+    ) {
+      return (error as { message: string }).message;
+    }
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'graphQLErrors' in error &&
+      Array.isArray((error as { graphQLErrors?: unknown[] }).graphQLErrors) &&
+      (error as { graphQLErrors: Array<{ message?: string }> }).graphQLErrors[0]?.message
+    ) {
+      return (error as { graphQLErrors: Array<{ message?: string }> }).graphQLErrors[0].message || fallback;
+    }
+    return fallback;
+  };
 
   const handleCreateOrder = async () => {
     const block = getCheckoutCreateOrderBlock(hasCartItems, phone);
@@ -41,8 +72,24 @@ export function CheckoutPage() {
       setShowToast(true);
       return;
     }
+    if (!receiptFile) {
+      setToastMessage('Гүйлгээний баримтын зураг заавал оруулна уу.');
+      setShowToast(true);
+      return;
+    }
+    if (!allowedReceiptMime.has(receiptFile.type)) {
+      setToastMessage('Файлын төрөл буруу байна. JPG, PNG, WEBP, GIF, HEIC зураг оруулна уу.');
+      setShowToast(true);
+      return;
+    }
+    if (receiptFile.size > maxReceiptBytes) {
+      setToastMessage('Баримтын файл хэт том байна. 5MB-аас бага зураг сонгоно уу.');
+      setShowToast(true);
+      return;
+    }
 
     try {
+      setIsSubmitting(true);
       const { data } = await createOrder({
         variables: {
           input: {
@@ -56,35 +103,38 @@ export function CheckoutPage() {
         },
       });
 
-      setOrderId(data.createOrder.id);
-      setToastMessage('Захиалга амжилттай үүслээ! Төлбөрийн баримт байршуулна уу.');
-      setShowToast(true);
-    } catch (_error) {
-      setToastMessage('Алдаа гарлаа. Дахин оролдоно уу.');
-      setShowToast(true);
-    }
-  };
-
-  const handleUploadReceipt = async () => {
-    if (!orderId || !receiptFile) return;
-
-    try {
-      await uploadReceipt({
-        variables: {
-          file: receiptFile,
-          orderId,
-        },
-      });
-
-      setToastMessage('Төлбөрийн баримт амжилттай байршууллаа!');
-      setShowToast(true);
+      const createdOrderId = data?.createOrder?.id as string | undefined;
+      if (!createdOrderId) {
+        throw new Error('Захиалга үүсгэж чадсангүй. Дахин оролдоно уу.');
+      }
+      try {
+        await uploadReceipt({
+          variables: {
+            file: receiptFile,
+            orderId: createdOrderId,
+          },
+        });
+      } catch (uploadError) {
+        setToastMessage(
+          getErrorMessage(
+            uploadError,
+            `Захиалга үүслээ (#${createdOrderId.slice(0, 8)}), гэхдээ баримт илгээхэд алдаа гарлаа.`,
+          ),
+        );
+        setShowToast(true);
+        return;
+      }
       await clear();
-      setTimeout(() => {
-        navigate(`/orders/${orderId}`);
-      }, 2000);
-    } catch (_error) {
-      setToastMessage('Алдаа гарлаа. Дахин оролдоно уу.');
+      setToastMessage('Захиалга амжилттай үүсэж, төлбөрийн баримт илгээгдлээ. Админ шалгасны дараа төлөв "Төлбөр баталгаажсан" болно.');
       setShowToast(true);
+      setTimeout(() => {
+        navigate(`/orders/${createdOrderId}`);
+      }, 1500);
+    } catch (error) {
+      setToastMessage(getErrorMessage(error, 'Алдаа гарлаа. Дахин оролдоно уу.'));
+      setShowToast(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -101,10 +151,9 @@ export function CheckoutPage() {
         </h2>
       </div>
 
-      {!orderId ? (
-        <>
-          {/* Customer Info - INCELLDERM Style */}
-          <div className="bg-white rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
+      <>
+        {/* Customer Info - INCELLDERM Style */}
+        <div className="bg-white rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
             <h3 className="font-bold mb-4 text-gray-800 flex items-center gap-2">
               <span>👤</span>
               Холбоо барих мэдээлэл
@@ -131,10 +180,10 @@ export function CheckoutPage() {
                 />
               </div>
             </div>
-          </div>
+        </div>
 
-          {/* Order Summary - INCELLDERM Style */}
-          <div className="bg-gradient-to-br from-beige-50 to-beige-100 rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
+        {/* Order Summary - INCELLDERM Style */}
+        <div className="bg-gradient-to-br from-beige-50 to-beige-100 rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
             <h3 className="font-bold mb-4 text-gray-800 flex items-center gap-2">
               <span>📋</span>
               Захиалгын дүн
@@ -153,16 +202,16 @@ export function CheckoutPage() {
                 </span>
               </div>
             </div>
-          </div>
+        </div>
 
-          {/* Bank Info - Cute Design */}
-          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 mb-4 border-2 border-blue-100 shadow-sm">
+        {/* Bank Info - Cute Design */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 mb-4 border-2 border-blue-100 shadow-sm">
             <h3 className="font-bold mb-3 text-gray-800 flex items-center gap-2">
               <span>💳</span>
               Төлбөрийн мэдээлэл
             </h3>
             <p className="text-sm text-gray-700 mb-4 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-xl">
-              Захиалга үүсгэсний дараа доорх данс руу төлбөрөө шилжүүлнэ үү. 💰
+              Доорх данс руу төлбөрөө шилжүүлээд баримтын зургаа оруулна уу. Админ шалгаад төлбөрийн төлөвийг баталгаажуулна. 💰
             </p>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 space-y-2 text-sm">
               <div className="flex justify-between items-center py-2 border-b border-blue-100">
@@ -178,66 +227,44 @@ export function CheckoutPage() {
                 <span className="font-bold text-gray-800">Mongol Beauty LLC</span>
               </div>
             </div>
-          </div>
-
-          {!isPhoneValid && (
-            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              Утасны дугаар буруу байна. 8 оронтой тоо оруулна уу.
-            </div>
-          )}
-
-          {/* Create Order Button - INCELLDERM Style */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-beige-200 p-4 shadow-2xl">
-            <Button
-              fullWidth
-              size="lg"
-              onClick={handleCreateOrder}
-              disabled={!hasCartItems || !isPhoneValid}
-              className="bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 hover:from-primary-700 hover:via-primary-800 hover:to-primary-900 text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
-            >
-              Захиалга үүсгэх ✨
-            </Button>
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Upload Receipt - INCELLDERM Style */}
-          <div className="bg-white rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
-            <h3 className="font-bold mb-4 text-gray-800 flex items-center gap-2">
-              <span>📸</span>
-              Төлбөрийн баримт байршуулах
-            </h3>
-            <div className="space-y-4">
-              <label className="block">
-                <div className="border-2 border-dashed border-beige-300 rounded-2xl p-8 text-center cursor-pointer hover:border-primary-500 hover:bg-beige-50 transition-all duration-300 bg-gradient-to-br from-beige-50/50 to-beige-100/50">
-                  <Upload className="w-12 h-12 mx-auto mb-3 text-primary-600" />
-                  <p className="text-sm font-medium text-gray-700 mb-1">
-                    {receiptFile ? receiptFile.name : 'Баримт сонгох'}
-                  </p>
-                  {!receiptFile && (
-                    <p className="text-xs text-gray-500">PNG, JPG эсвэл PDF</p>
-                  )}
-                </div>
+            <div className="mt-4 rounded-xl border-2 border-dashed border-blue-300 bg-white p-4">
+              <p className="mb-2 text-sm font-semibold text-gray-800">Гүйлгээний баримтын зураг оруулах (заавал)</p>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700">
+                <Upload className="h-4 w-4" />
+                Зураг сонгох
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/heic,image/heif"
                   onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
                   className="hidden"
                 />
               </label>
-              {receiptFile && (
-                <Button
-                  fullWidth
-                  onClick={handleUploadReceipt}
-                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  Баримт илгээх 📤
-                </Button>
-              )}
+              <p className="mt-2 text-sm text-gray-700">
+                {receiptFile ? `Сонгосон файл: ${receiptFile.name}` : 'Одоогоор файл сонгоогүй байна'}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">Дэмжигдэх формат: JPG, PNG, WEBP, GIF, HEIC (max 5MB)</p>
             </div>
+        </div>
+
+        {!isPhoneValid && (
+          <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            Утасны дугаар буруу байна. 8 оронтой тоо оруулна уу.
           </div>
-        </>
-      )}
+        )}
+
+        {/* Create Order Button - INCELLDERM Style */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t-2 border-beige-200 p-4 shadow-2xl">
+          <Button
+            fullWidth
+            size="lg"
+            onClick={handleCreateOrder}
+            disabled={!hasCartItems || !isPhoneValid || !receiptFile || isSubmitting}
+            className="bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 hover:from-primary-700 hover:via-primary-800 hover:to-primary-900 text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
+          >
+            {isSubmitting ? 'Илгээж байна...' : 'Захиалга үүсгэх ✨'}
+          </Button>
+        </div>
+      </>
 
       {showToast && (
         <Toast

@@ -275,7 +275,7 @@ export type OrderItem = {
 export type OrderStatus =
   | 'CANCELLED'
   | 'COMPLETED'
-  | 'CONFIRMED'
+  | 'PAID_CONFIRMED'
   | 'SHIPPING'
   | 'WAITING_PAYMENT';
 

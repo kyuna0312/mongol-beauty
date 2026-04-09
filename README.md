@@ -89,7 +89,7 @@ For detailed setup instructions, see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md
 4. **Payment** - Manual bank transfer
 5. **Upload Receipt** - User uploads payment proof
 6. **Admin Verification** - Admin confirms payment
-7. **Order Tracking** - Status updates (WAITING_PAYMENT → CONFIRMED → SHIPPING → COMPLETED)
+7. **Order Tracking** - Status updates (WAITING_PAYMENT → payment confirmed (`PAID_CONFIRMED`) → SHIPPING → COMPLETED)
 
 ### Mobile-First UX
 - Thumb-reachable CTAs (fixed bottom buttons)
@@ -109,7 +109,7 @@ For detailed setup instructions, see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md
 
 ### Order Status Flow
 ```
-WAITING_PAYMENT → CONFIRMED → SHIPPING → COMPLETED
+WAITING_PAYMENT → payment confirmed (`PAID_CONFIRMED`) → SHIPPING → COMPLETED
                       ↓
                   CANCELLED
 ```

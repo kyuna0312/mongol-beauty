@@ -9,11 +9,20 @@ import express from 'express';
 import { join } from 'path';
 import { requestContext } from './common/request-context';
 
+const { graphqlUploadExpress } = require('graphql-upload') as {
+  graphqlUploadExpress: (options?: {
+    maxFileSize?: number;
+    maxFiles?: number;
+  }) => express.RequestHandler;
+};
+
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const serviceMode = process.env.SERVICE_MODE || 'gateway';
+  const isGateway = serviceMode === 'gateway';
   const app = await NestFactory.create(AppModule, {
     logger: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['log', 'error', 'warn', 'debug'],
+    ...(isGateway ? { bodyParser: false } : {}),
   });
   
   // Enable compression (gzip/brotli)
@@ -47,7 +56,20 @@ async function bootstrap() {
       next();
     });
   });
-  
+
+  // GraphQL multipart file uploads (graphql-upload). Must run before JSON body parsing.
+  if (isGateway) {
+    app.use(
+      '/graphql',
+      graphqlUploadExpress({
+        maxFileSize: 5 * 1024 * 1024,
+        maxFiles: 1,
+      }),
+    );
+    app.use(express.json({ limit: '1mb' }));
+    app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+  }
+
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,

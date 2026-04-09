@@ -12,7 +12,7 @@ export interface OrderItem {
 export interface OrderData {
   id: string;
   totalPrice: number;
-  status: 'WAITING_PAYMENT' | 'CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
+  status: 'WAITING_PAYMENT' | 'PAID_CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
   paymentReceiptUrl?: string | null;
   createdAt: string;
   items: OrderItem[];

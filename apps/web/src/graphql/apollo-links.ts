@@ -8,12 +8,18 @@ const graphqlUri = import.meta.env.VITE_GRAPHQL_URL || '/graphql';
 const httpLink = new HttpLink({
   uri: graphqlUri,
   credentials: 'include',
+  headers: {
+    'apollo-require-preflight': 'true',
+  },
 });
 
 /** Multipart only for mutations that send files (see CheckoutPage). */
 const uploadLink = createUploadLink({
   uri: graphqlUri,
   credentials: 'include',
+  headers: {
+    'apollo-require-preflight': 'true',
+  },
 });
 
 const splitLink = ApolloLink.split(

@@ -37,11 +37,11 @@ export class PerformanceInterceptor implements NestInterceptor {
             );
           }
         },
-        error: () => {
+        error: (error: unknown) => {
           const duration = Date.now() - startTime;
-          this.logger.error(
-            `Request failed: ${operationName} after ${duration}ms`,
-          );
+          const message = error instanceof Error ? error.message : String(error);
+          const stack = error instanceof Error ? error.stack : undefined;
+          this.logger.error(`Request failed: ${operationName} after ${duration}ms - ${message}`, stack);
         },
       }),
     );

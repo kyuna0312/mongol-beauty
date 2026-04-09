@@ -5,7 +5,8 @@ import { OrderItem } from './order-item.entity';
 
 export enum OrderStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
-  CONFIRMED = 'CONFIRMED',
+  // Keep persisted value as CONFIRMED for DB compatibility.
+  PAID_CONFIRMED = 'CONFIRMED',
   SHIPPING = 'SHIPPING',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',

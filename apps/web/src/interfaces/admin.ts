@@ -1,4 +1,4 @@
-export type OrderStatus = 'WAITING_PAYMENT' | 'CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
+export type OrderStatus = 'WAITING_PAYMENT' | 'PAID_CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
 
 export interface AdminOrderItem {
   id: string;

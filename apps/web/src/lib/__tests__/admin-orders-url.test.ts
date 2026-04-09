@@ -16,8 +16,8 @@ describe('ordersListUrl', () => {
   });
 
   it('sorts query keys alphabetically via URLSearchParams', () => {
-    const url = ordersListUrl({ page: 3, status: 'CONFIRMED' });
+    const url = ordersListUrl({ page: 3, status: 'PAID_CONFIRMED' });
     expect(url).toContain('page=3');
-    expect(url).toContain('status=CONFIRMED');
+    expect(url).toContain('status=PAID_CONFIRMED');
   });
 });

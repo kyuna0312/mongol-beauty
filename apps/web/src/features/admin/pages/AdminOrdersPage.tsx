@@ -12,7 +12,7 @@ const PAGE_SIZE = 20;
 
 const OrderStatusConfig: Record<OrderStatus, { label: string; color: string; icon: LucideIcon }> = {
   WAITING_PAYMENT: { label: 'Төлбөр хүлээж байна', color: 'bg-yellow-100 text-yellow-700', icon: Package },
-  CONFIRMED: { label: 'Баталгаажсан', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
+  PAID_CONFIRMED: { label: 'Төлбөр баталгаажсан', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
   SHIPPING: { label: 'Хүргэж байна', color: 'bg-purple-100 text-purple-700', icon: Truck },
   COMPLETED: { label: 'Дууссан', color: 'bg-green-100 text-green-700', icon: CheckCircle },
   CANCELLED: { label: 'Цуцлагдсан', color: 'bg-amber-100 text-amber-700', icon: XCircle },
@@ -269,6 +269,11 @@ export function AdminOrdersPage() {
                     </a>
                   </div>
                 )}
+                {!order.paymentReceiptUrl && order.status === 'WAITING_PAYMENT' && (
+                  <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    ⚠️ Баримтын зураг оруулаагүй байна. Баримтгүй үед баталгаажуулах боломжгүй.
+                  </div>
+                )}
 
                 <div className="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
                   {order.status === 'WAITING_PAYMENT' && (
@@ -278,14 +283,14 @@ export function AdminOrdersPage() {
                         onClick={() =>
                           setPendingAction({
                             orderId: order.id,
-                            nextStatus: 'CONFIRMED',
-                            label: 'Баталгаажсан',
+                            nextStatus: 'PAID_CONFIRMED',
+                            label: 'Төлбөр баталгаажсан',
                           })
                         }
-                        disabled={updatingOrderId === order.id}
+                        disabled={updatingOrderId === order.id || !order.paymentReceiptUrl}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md"
                       >
-                        ✓ Баталгаажуулах
+                        ✓ Төлбөр баталгаажуулах
                       </Button>
                       <Button
                         size="sm"
@@ -304,7 +309,7 @@ export function AdminOrdersPage() {
                       </Button>
                     </>
                   )}
-                  {order.status === 'CONFIRMED' && (
+                  {order.status === 'PAID_CONFIRMED' && (
                     <Button
                       size="sm"
                       onClick={() =>

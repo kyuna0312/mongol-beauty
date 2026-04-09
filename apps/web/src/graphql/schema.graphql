@@ -152,7 +152,7 @@ type OrderItem {
 enum OrderStatus {
   CANCELLED
   COMPLETED
-  CONFIRMED
+  PAID_CONFIRMED
   SHIPPING
   WAITING_PAYMENT
 }

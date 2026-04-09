@@ -37,8 +37,8 @@ A complete admin panel has been created for managing products, categories, and o
   - Payment receipt links
 - **Status Filtering**: Filter by order status
 - **Status Updates**: 
-  - Confirm payment (WAITING_PAYMENT → CONFIRMED)
-  - Ship order (CONFIRMED → SHIPPING)
+  - Confirm payment (WAITING_PAYMENT → payment confirmed `PAID_CONFIRMED`)
+  - Ship order (`PAID_CONFIRMED` → SHIPPING)
   - Complete order (SHIPPING → COMPLETED)
   - Cancel order
 
@@ -147,7 +147,7 @@ apps/api/src/
 2. Find the order
 3. Click status button:
    - "Баталгаажуулах" (Confirm) for WAITING_PAYMENT
-   - "Хүргэлтэд гаргах" (Ship) for CONFIRMED
+   - "Хүргэлтэд гаргах" (Ship) for payment confirmed (`PAID_CONFIRMED`)
    - "Дуусгах" (Complete) for SHIPPING
 
 ## Security Note

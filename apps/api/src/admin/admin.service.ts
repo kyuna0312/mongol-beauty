@@ -11,7 +11,7 @@ export class AdminService {
   }
 
   async confirmPayment(orderId: string) {
-    return this.orderGatewayService.updateStatus(orderId, OrderStatus.CONFIRMED);
+    return this.orderGatewayService.updateStatus(orderId, OrderStatus.PAID_CONFIRMED);
   }
 
   async updateOrderStatus(orderId: string, status: OrderStatus) {

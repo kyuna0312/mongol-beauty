@@ -79,11 +79,11 @@ if (!receiptRes.ok) {
   throw new Error(`Receipt upload simulation failed: ${await receiptRes.text()}`);
 }
 
-await gql(updateStatusMutation, { orderId, status: 'CONFIRMED' }, adminToken);
+await gql(updateStatusMutation, { orderId, status: 'PAID_CONFIRMED' }, adminToken);
 const after = await gql(getOrderQuery, { id: orderId }, adminToken);
 
-if (after.order.status !== 'CONFIRMED') {
-  throw new Error(`Expected CONFIRMED status but got ${after.order.status}`);
+if (after.order.status !== 'PAID_CONFIRMED') {
+  throw new Error(`Expected PAID_CONFIRMED status but got ${after.order.status}`);
 }
 if (!after.order.paymentReceiptUrl) {
   throw new Error('Expected paymentReceiptUrl to be present');

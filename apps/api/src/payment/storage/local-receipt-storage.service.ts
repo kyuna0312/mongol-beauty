@@ -7,7 +7,15 @@ import type { ReceiptUploadInput } from '../receipt-storage.service';
 
 const pipelineAsync = promisify(pipeline);
 
-const ALLOWED_RECEIPT_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const ALLOWED_RECEIPT_MIME = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+]);
 
 export interface StoredReceipt {
   url: string;

@@ -14,7 +14,7 @@
     "docker:clean": "./scripts/docker-compose.sh down -v",
     "dev:web": "yarn workspace @mongol-beauty/web dev",
     "dev:api": "yarn workspace @mongol-beauty/api start:dev",
-    "dev": "concurrently \"yarn dev:api\" \"yarn dev:web\"",
+    "dev": "concurrently -k \"yarn dev:api\" \"wait-on -t 120000 http://127.0.0.1:4000/health && yarn dev:web\"",
     "dev:full": "yarn docker:up && yarn db:wait && yarn dev",
     "build": "npm run build -w @mongol-beauty/api && npm run build -w @mongol-beauty/web",
     "build:web:ci": "yarn workspace @mongol-beauty/web build:ci",
@@ -57,7 +57,8 @@
     "globals": "^17.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "typescript-eslint": "^8.58.1"
+    "typescript-eslint": "^8.58.1",
+    "wait-on": "^8.0.1"
   },
   "packageManager": "yarn@1.22.19"
 }

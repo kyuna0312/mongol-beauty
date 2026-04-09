@@ -11,7 +11,7 @@ const statusConfig = {
     color: 'text-yellow-600',
     bgColor: 'bg-yellow-50',
   },
-  CONFIRMED: {
+  PAID_CONFIRMED: {
     label: 'Баталгаажсан',
     icon: CheckCircle,
     color: 'text-green-600',
