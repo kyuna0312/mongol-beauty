@@ -1,28 +1,10 @@
 import { useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { Link } from 'react-router-dom';
-import { Package, ShoppingBag, Users, TrendingUp } from 'lucide-react';
-import { Card } from '@mongol-beauty/ui';
-
-const GET_STATS = gql`
-  query GetAdminStats {
-    orders {
-      id
-      totalPrice
-      status
-    }
-    products {
-      id
-      stock
-    }
-    categories {
-      id
-    }
-  }
-`;
+import { Package, ShoppingBag, TrendingUp } from 'lucide-react';
+import { GET_ADMIN_STATS } from '@/graphql/queries';
 
 export function AdminDashboard() {
-  const { data, loading, error } = useQuery(GET_STATS);
+  const { data, loading, error } = useQuery(GET_ADMIN_STATS);
 
   if (loading) {
     return (
@@ -43,10 +25,10 @@ export function AdminDashboard() {
   if (error) {
     return (
       <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
-          <p className="text-red-800 font-semibold mb-1">Алдаа гарлаа</p>
-          <p className="text-red-600 text-sm">{error.message}</p>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+          <div className="text-amber-500 text-4xl mb-3">⚠️</div>
+          <p className="text-amber-800 font-semibold mb-1">Алдаа гарлаа</p>
+          <p className="text-amber-700 text-sm">{error.message}</p>
         </div>
       </div>
     );
@@ -54,8 +36,6 @@ export function AdminDashboard() {
 
   const orders = data?.orders || [];
   const products = data?.products || [];
-  const categories = data?.categories || [];
-
   const totalRevenue = orders
     .filter((o: any) => o.status === 'COMPLETED')
     .reduce((sum: number, o: any) => sum + o.totalPrice, 0);
@@ -106,7 +86,7 @@ export function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat, index) => (
+        {stats.map((stat) => (
           <Link key={stat.title} to={stat.link} className="group">
             <div className="bg-white rounded-xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-primary-200 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-3">

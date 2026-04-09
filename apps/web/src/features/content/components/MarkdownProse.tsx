@@ -51,7 +51,7 @@ const markdownComponents: Components = {
     }
     return (
       <code
-        className="rounded-md bg-rose-50/95 px-1.5 py-0.5 font-mono text-[0.9em] text-stone-800 ring-1 ring-rose-100/80"
+        className="rounded-md bg-primary-50/95 px-1.5 py-0.5 font-mono text-[0.9em] text-stone-800 ring-1 ring-primary-100/80"
         {...props}
       >
         {children}
@@ -59,7 +59,7 @@ const markdownComponents: Components = {
     );
   },
   pre: ({ children }) => (
-    <pre className="my-5 overflow-x-auto rounded-2xl border border-rose-100/90 bg-gradient-to-b from-stone-50 to-white p-4 text-sm shadow-inner shadow-rose-50/50">
+    <pre className="my-5 overflow-x-auto rounded-2xl border border-primary-100/90 bg-gradient-to-b from-stone-50 to-white p-4 text-sm shadow-inner shadow-primary-50/50">
       {children}
     </pre>
   ),

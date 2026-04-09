@@ -6,6 +6,7 @@ import * as nodemailer from 'nodemailer';
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private transporter: nodemailer.Transporter | null = null;
+  private smtpFrom = 'noreply@incellderm.mn';
 
   constructor(private configService: ConfigService) {
     this.initializeTransporter();
@@ -16,7 +17,7 @@ export class EmailService {
     const smtpPort = this.configService.get<number>('SMTP_PORT', 587);
     const smtpUser = this.configService.get<string>('SMTP_USER');
     const smtpPass = this.configService.get<string>('SMTP_PASSWORD');
-    const smtpFrom = this.configService.get<string>('SMTP_FROM', smtpUser || 'noreply@incellderm.mn');
+    this.smtpFrom = this.configService.get<string>('SMTP_FROM', smtpUser || 'noreply@incellderm.mn') ?? 'noreply@incellderm.mn';
 
     // If SMTP is not configured, use console logging (development mode)
     if (!smtpHost || !smtpUser || !smtpPass) {
@@ -40,7 +41,7 @@ export class EmailService {
     const resetLink = `${frontendUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
     const mailOptions = {
-      from: this.configService.get<string>('SMTP_FROM', 'noreply@incellderm.mn'),
+      from: this.smtpFrom,
       to: email,
       subject: 'INCELLDERM MONGOLIA - Нууц үг сэргээх',
       html: `

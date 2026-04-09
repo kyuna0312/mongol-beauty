@@ -5,10 +5,13 @@ import { OrderItem } from './order-item.entity';
 import { OrderService } from './order.service';
 import { OrderResolver } from './order.resolver';
 import { AuthModule } from '../auth/auth.module';
+import { OrderGatewayService } from './order.gateway.service';
+import { OrderInternalController } from './order.internal.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Order, OrderItem]), AuthModule],
-  providers: [OrderService, OrderResolver],
-  exports: [OrderService],
+  controllers: [OrderInternalController],
+  providers: [OrderService, OrderResolver, OrderGatewayService],
+  exports: [OrderService, OrderGatewayService],
 })
 export class OrderModule {}

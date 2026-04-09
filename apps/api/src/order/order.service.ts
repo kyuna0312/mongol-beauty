@@ -21,7 +21,29 @@ export class OrderService {
     private dataSource: DataSource,
   ) {}
 
-  async create(input: CreateOrderInput, userId?: string): Promise<Order> {
+  private async findOneRaw(id: string): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.product', 'user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ${id} not found`);
+    }
+    return order;
+  }
+
+  async create(input: CreateOrderInput, userId?: string, idempotencyKey?: string): Promise<Order> {
+    if (idempotencyKey) {
+      const existing = await this.orderRepository.findOne({
+        where: { idempotencyKey },
+        relations: ['items', 'items.product', 'user'],
+      });
+      if (existing) {
+        return existing;
+      }
+    }
+
     return this.dataSource.transaction(async (manager) => {
       const productRepo = manager.getRepository(Product);
       const orderRepo = manager.getRepository(Order);
@@ -59,6 +81,7 @@ export class OrderService {
 
       const order = orderRepo.create({
         userId,
+        idempotencyKey,
         status: OrderStatus.WAITING_PAYMENT,
         totalPrice,
         items,
@@ -72,12 +95,28 @@ export class OrderService {
     });
   }
 
-  /** All orders — use only from admin paths. */
+  /** All orders — use only from admin paths (legacy / non-paginated). */
   async findAll(): Promise<Order[]> {
     return this.orderRepository.find({
       relations: ['items', 'items.product', 'user'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  /** Paginated admin list with optional status filter. */
+  async findAllAdminPaginated(params: {
+    limit: number;
+    offset: number;
+    status?: OrderStatus;
+  }): Promise<{ items: Order[]; total: number }> {
+    const [items, total] = await this.orderRepository.findAndCount({
+      where: params.status ? { status: params.status } : {},
+      relations: ['items', 'items.product', 'user'],
+      order: { createdAt: 'DESC' },
+      take: params.limit,
+      skip: params.offset,
+    });
+    return { items, total };
   }
 
   async findAllForUser(userId: string): Promise<Order[]> {
@@ -89,16 +128,7 @@ export class OrderService {
   }
 
   async findOne(id: string): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id },
-      relations: ['items', 'items.product', 'user'],
-    });
-
-    if (!order) {
-      throw new NotFoundException(`Order ${id} not found`);
-    }
-
-    return order;
+    return this.findOneRaw(id);
   }
 
   /**
@@ -133,13 +163,13 @@ export class OrderService {
   }
 
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
-    const order = await this.findOne(id);
+    const order = await this.findOneRaw(id);
     order.status = status;
     return this.orderRepository.save(order);
   }
 
   async updatePaymentReceipt(id: string, receiptUrl: string): Promise<Order> {
-    const order = await this.findOne(id);
+    const order = await this.findOneRaw(id);
     order.paymentReceiptUrl = receiptUrl;
     return this.orderRepository.save(order);
   }

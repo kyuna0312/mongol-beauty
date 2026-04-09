@@ -1,22 +1,28 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Package, CheckCircle, XCircle, Truck } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Truck, type LucideIcon } from 'lucide-react';
 import { Button } from '@mongol-beauty/ui';
 import { GET_ADMIN_ORDERS } from '@/graphql/queries';
 import { UPDATE_ORDER_STATUS } from '@/graphql/mutations';
+import { AdminOrder, AdminOrdersPageData, OrderStatus } from '@/interfaces/admin';
+import { ordersListUrl } from '@/lib/admin-orders-url';
 
-const OrderStatusConfig: Record<string, { label: string; color: string; icon: any }> = {
+const PAGE_SIZE = 20;
+
+const OrderStatusConfig: Record<OrderStatus, { label: string; color: string; icon: LucideIcon }> = {
   WAITING_PAYMENT: { label: 'Төлбөр хүлээж байна', color: 'bg-yellow-100 text-yellow-700', icon: Package },
   CONFIRMED: { label: 'Баталгаажсан', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
   SHIPPING: { label: 'Хүргэж байна', color: 'bg-purple-100 text-purple-700', icon: Truck },
   COMPLETED: { label: 'Дууссан', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-  CANCELLED: { label: 'Цуцлагдсан', color: 'bg-red-100 text-red-700', icon: XCircle },
+  CANCELLED: { label: 'Цуцлагдсан', color: 'bg-amber-100 text-amber-700', icon: XCircle },
 };
 
 export function AdminOrdersPage() {
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get('status');
+  const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1', 10) || 1);
+  const offset = (page - 1) * PAGE_SIZE;
   const [pendingAction, setPendingAction] = useState<{
     orderId: string;
     nextStatus: string;
@@ -25,7 +31,13 @@ export function AdminOrdersPage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [previewReceiptUrl, setPreviewReceiptUrl] = useState<string | null>(null);
 
-  const { data, loading, error, refetch } = useQuery(GET_ADMIN_ORDERS);
+  const { data, loading, error, refetch } = useQuery(GET_ADMIN_ORDERS, {
+    variables: {
+      limit: PAGE_SIZE,
+      offset,
+      status: statusFilter || undefined,
+    },
+  });
   const [updateOrderStatus] = useMutation(UPDATE_ORDER_STATUS, {
     onCompleted: () => {
       refetch();
@@ -39,8 +51,9 @@ export function AdminOrdersPage() {
         variables: { orderId, status: newStatus },
       });
       setPendingAction(null);
-    } catch (err: any) {
-      alert(`Алдаа: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Төлөв шинэчлэх үед алдаа гарлаа';
+      alert(`Алдаа: ${message}`);
     } finally {
       setUpdatingOrderId(null);
     }
@@ -73,10 +86,12 @@ export function AdminOrdersPage() {
     );
   }
 
-  let orders = data?.adminOrders || [];
-  if (statusFilter) {
-    orders = orders.filter((o: any) => o.status === statusFilter);
-  }
+  const pageData = data?.adminOrders as AdminOrdersPageData | undefined;
+  const orders = (pageData?.items ?? []) as AdminOrder[];
+  const total = pageData?.total ?? 0;
+  const limit = pageData?.limit ?? PAGE_SIZE;
+  const pageOffset = pageData?.offset ?? offset;
+  const pageCount = Math.max(1, Math.ceil(total / limit));
 
   return (
     <div className="p-4 lg:p-6 max-w-7xl mx-auto">
@@ -84,7 +99,11 @@ export function AdminOrdersPage() {
         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
           Захиалга удирдах
         </h1>
-        <p className="text-gray-500">{orders.length} захиалга</p>
+        <p className="text-gray-500">
+          {total === 0
+            ? '0 захиалга'
+            : `${pageOffset + 1}–${Math.min(pageOffset + orders.length, total)} / ${total} захиалга`}
+        </p>
       </div>
 
       {pendingAction && (
@@ -132,7 +151,7 @@ export function AdminOrdersPage() {
           return (
             <Link
               key={status}
-              to={`/admin/orders?status=${status}`}
+              to={ordersListUrl({ status })}
               className={`px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 flex items-center gap-2 ${
                 statusFilter === status
                   ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
@@ -146,7 +165,7 @@ export function AdminOrdersPage() {
         })}
       </div>
 
-      {orders.length === 0 ? (
+      {orders.length === 0 && total === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-200">
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-12 h-12 text-gray-400" />
@@ -154,9 +173,19 @@ export function AdminOrdersPage() {
           <p className="text-xl font-semibold text-gray-700 mb-2">Захиалга олдсонгүй</p>
           <p className="text-gray-500">Одоогоор захиалга байхгүй байна</p>
         </div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl border border-amber-200 bg-amber-50/50">
+          <p className="text-gray-700 mb-3">Энэ хуудас хоосон байна.</p>
+          <Link
+            to={ordersListUrl({ page: 1, status: statusFilter })}
+            className="inline-flex rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700"
+          >
+            Эхний хуудас руу буцах
+          </Link>
+        </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order: any, index: number) => {
+          {orders.map((order, index: number) => {
             const statusConfig = OrderStatusConfig[order.status] || OrderStatusConfig.WAITING_PAYMENT;
             const StatusIcon = statusConfig.icon;
 
@@ -203,7 +232,7 @@ export function AdminOrdersPage() {
                 <div className="mb-4 bg-gray-50 rounded-lg p-3">
                   <p className="text-sm font-semibold text-gray-700 mb-2">Бүтээгдэхүүн:</p>
                   <div className="space-y-2">
-                    {order.items?.map((item: any) => (
+                    {order.items?.map((item) => (
                       <div
                         key={item.id}
                         className="flex items-center justify-between text-sm bg-white p-2 rounded-lg"
@@ -223,7 +252,7 @@ export function AdminOrdersPage() {
                   <div className="mb-4 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => setPreviewReceiptUrl(order.paymentReceiptUrl)}
+                      onClick={() => setPreviewReceiptUrl(order.paymentReceiptUrl || null)}
                       className="inline-flex items-center gap-2 rounded-lg border border-primary-200 px-3 py-1.5 text-primary-700 text-sm font-medium hover:bg-primary-50 transition-colors"
                     >
                       <span>🖼️</span>
@@ -311,6 +340,36 @@ export function AdminOrdersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {total > 0 && pageCount > 1 && (
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            to={ordersListUrl({ page: page - 1, status: statusFilter })}
+            className={`rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
+              page <= 1
+                ? 'pointer-events-none border-gray-100 text-gray-300'
+                : 'border-primary-200 text-primary-800 hover:bg-primary-50'
+            }`}
+            aria-disabled={page <= 1}
+          >
+            ← Өмнөх
+          </Link>
+          <span className="text-sm text-gray-600">
+            {page} / {pageCount}
+          </span>
+          <Link
+            to={ordersListUrl({ page: page + 1, status: statusFilter })}
+            className={`rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
+              page >= pageCount
+                ? 'pointer-events-none border-gray-100 text-gray-300'
+                : 'border-primary-200 text-primary-800 hover:bg-primary-50'
+            }`}
+            aria-disabled={page >= pageCount}
+          >
+            Дараах →
+          </Link>
         </div>
       )}
 

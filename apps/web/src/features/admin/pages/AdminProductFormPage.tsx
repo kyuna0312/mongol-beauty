@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@mongol-beauty/ui';
 import { CREATE_PRODUCT, UPDATE_PRODUCT } from '@/graphql/mutations';
-import { GET_PRODUCT } from '@/graphql/queries';
-import { GET_CATEGORIES } from '@/graphql/queries';
+import { GET_PRODUCT_DETAIL } from '@/graphql/catalog';
+import { GET_HOME_CATEGORIES } from '@/graphql/home';
 
 const SkinTypes = ['OILY', 'DRY', 'COMBINATION', 'SENSITIVE', 'NORMAL'];
 const Features = ['ANTI_AGING', 'HYDRATING', 'BRIGHTENING', 'ACNE_FIGHTING', 'SUNSCREEN', 'ORGANIC'];
@@ -15,12 +14,12 @@ export function AdminProductFormPage() {
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const { data: productData, loading: productLoading } = useQuery(GET_PRODUCT, {
+  const { data: productData, loading: productLoading } = useQuery(GET_PRODUCT_DETAIL, {
     variables: { id },
     skip: !id,
   });
 
-  const { data: categoriesData } = useQuery(GET_CATEGORIES);
+  const { data: categoriesData } = useQuery(GET_HOME_CATEGORIES);
   const [createProduct] = useMutation(CREATE_PRODUCT);
   const [updateProduct] = useMutation(UPDATE_PRODUCT);
 
@@ -40,7 +39,7 @@ export function AdminProductFormPage() {
       const product = productData.product;
       setFormData({
         name: product.name || '',
-        categoryId: product.categoryId || '',
+        categoryId: product.category?.id || '',
         price: product.price?.toString() || '',
         stock: product.stock?.toString() || '',
         description: product.description || '',
@@ -75,8 +74,8 @@ export function AdminProductFormPage() {
         await createProduct({ variables: { input } });
       }
       navigate('/admin/products');
-    } catch (error: any) {
-      alert(`Алдаа: ${error.message}`);
+    } catch (error: unknown) {
+      alert(`Алдаа: ${error instanceof Error ? error.message : 'Алдаа гарлаа'}`);
     }
   };
 

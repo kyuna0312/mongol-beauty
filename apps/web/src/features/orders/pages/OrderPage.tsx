@@ -1,29 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { CheckCircle, Clock, Truck, XCircle } from 'lucide-react';
-
-const GET_ORDER = gql`
-  query GetOrder($id: ID!) {
-    order(id: $id) {
-      id
-      totalPrice
-      status
-      paymentReceiptUrl
-      createdAt
-      items {
-        id
-        quantity
-        price
-        product {
-          id
-          name
-          images
-        }
-      }
-    }
-  }
-`;
+import { GET_ORDER_DETAIL } from '@/graphql/orders';
+import { OrderData } from '@/interfaces/order';
 
 const statusConfig = {
   WAITING_PAYMENT: {
@@ -53,14 +32,14 @@ const statusConfig = {
   CANCELLED: {
     label: 'Цуцлагдсан',
     icon: XCircle,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50',
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-50',
   },
 };
 
 export function OrderPage() {
   const { id } = useParams();
-  const { data, loading } = useQuery(GET_ORDER, {
+  const { data, loading } = useQuery(GET_ORDER_DETAIL, {
     variables: { id },
   });
 
@@ -68,7 +47,7 @@ export function OrderPage() {
     return <div className="p-4">Уншиж байна...</div>;
   }
 
-  const order = data?.order;
+  const order = data?.order as OrderData | undefined;
   if (!order) {
     return <div className="p-4">Захиалга олдсонгүй</div>;
   }
@@ -96,7 +75,7 @@ export function OrderPage() {
       <div className="bg-white rounded-lg p-4 mb-4 border border-gray-200">
         <h3 className="font-semibold mb-3">Захиалгын бүтээгдэхүүн</h3>
         <div className="space-y-3">
-          {order.items.map((item: any) => (
+          {order.items.map((item) => (
             <div key={item.id} className="flex gap-3">
               <img
                 src={item.product.images?.[0] || '/placeholder-product.jpg'}

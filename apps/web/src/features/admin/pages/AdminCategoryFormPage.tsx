@@ -3,14 +3,14 @@ import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@mongol-beauty/ui';
 import { CREATE_CATEGORY, UPDATE_CATEGORY } from '@/graphql/mutations';
-import { GET_CATEGORY } from '@/graphql/queries';
+import { GET_ADMIN_CATEGORY } from '@/graphql/queries';
 
 export function AdminCategoryFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
 
-  const { data: categoryData, loading: categoryLoading } = useQuery(GET_CATEGORY, {
+  const { data: categoryData, loading: categoryLoading } = useQuery(GET_ADMIN_CATEGORY, {
     variables: { id },
     skip: !id,
   });

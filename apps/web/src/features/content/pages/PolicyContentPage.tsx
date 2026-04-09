@@ -1,4 +1,4 @@
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
@@ -8,20 +8,7 @@ import { InfoPagesNav } from '../components/InfoPagesNav';
 import { PageHead } from '../components/PageHead';
 import { MarkdownProse } from '../components/MarkdownProse';
 import { FadeInSection } from '@/features/shared/components/FadeInSection';
-
-const GET_PAGE_BY_SLUG = gql`
-  query GetPageBySlug($slug: String!) {
-    page(slug: $slug) {
-      id
-      slug
-      title
-      content
-      metaTitle
-      metaDescription
-      updatedAt
-    }
-  }
-`;
+import { GET_PAGE_BY_SLUG } from '@/graphql/queries';
 
 export type PolicyContentSlug = 'privacy' | 'shipping' | 'returns' | 'faq';
 
@@ -45,8 +32,8 @@ const SLUG_UI: Record<
     blurb: 'Түгээмэл асуулт, хариулт — хурдан ойлголцох зориулалттай.',
     icon: HelpCircle,
     heroClass:
-      'border-rose-100/80 bg-gradient-to-br from-[#fff8fa] via-[#fce8f0] to-[#f3e8ff]',
-    blobA: 'from-pink-200/45 to-rose-200/25',
+      'border-primary-100/80 bg-gradient-to-br from-primary-50 via-[#f3f8f5] to-[#f3e8ff]',
+    blobA: 'from-primary-200/45 to-primary-100/25',
     blobB: 'from-violet-200/35 to-fuchsia-100/25',
   },
   shipping: {
@@ -56,7 +43,7 @@ const SLUG_UI: Record<
     heroClass:
       'border-sky-100/80 bg-gradient-to-br from-[#f0f9ff] via-[#e0f2fe] to-[#fce7f3]',
     blobA: 'from-sky-200/50 to-cyan-100/30',
-    blobB: 'from-amber-100/45 to-rose-100/30',
+    blobB: 'from-amber-100/45 to-primary-100/30',
   },
   returns: {
     eyebrow: 'Буцаалт',
@@ -65,7 +52,7 @@ const SLUG_UI: Record<
     heroClass:
       'border-amber-100/85 bg-gradient-to-br from-[#fffbeb] via-[#fef3c7] to-[#fce7f3]',
     blobA: 'from-amber-200/45 to-orange-100/30',
-    blobB: 'from-rose-100/40 to-pink-100/25',
+    blobB: 'from-primary-100/40 to-primary-50/25',
   },
   privacy: {
     eyebrow: 'Нууцлал',
@@ -74,14 +61,14 @@ const SLUG_UI: Record<
     heroClass:
       'border-violet-100/85 bg-gradient-to-br from-[#f5f3ff] via-[#ede9fe] to-[#fce7ec]',
     blobA: 'from-violet-200/40 to-indigo-100/30',
-    blobB: 'from-fuchsia-100/35 to-rose-100/25',
+    blobB: 'from-fuchsia-100/35 to-primary-100/25',
   },
 };
 
 function ContentLoadingSkeleton() {
   return (
     <div className="mb-page pb-14">
-      <div className="mb-8 h-48 animate-pulse rounded-[1.85rem] bg-gradient-to-br from-stone-100 to-rose-50/50 md:h-52" />
+      <div className="mb-8 h-48 animate-pulse rounded-[1.85rem] bg-gradient-to-br from-stone-100 to-primary-50/50 md:h-52" />
       <div className="mb-card-surface p-6 md:p-10">
         <div className="mb-6 h-9 w-2/3 max-w-md rounded-lg bg-stone-200/90" />
         <div className="space-y-3">
@@ -114,7 +101,7 @@ function ContentNotFound({ slug }: { slug: PolicyContentSlug }) {
           </Link>
           <Link
             to="/products"
-            className="inline-flex items-center gap-2 rounded-2xl border border-rose-200/80 bg-white/80 px-6 py-3 text-[15px] font-semibold text-stone-700 shadow-sm hover:bg-white"
+            className="inline-flex items-center gap-2 rounded-2xl border border-primary-200/80 bg-white/80 px-6 py-3 text-[15px] font-semibold text-stone-700 shadow-sm hover:bg-white"
           >
             Бүтээгдэхүүн
             <ArrowRight className="h-4 w-4" />
@@ -130,7 +117,7 @@ function BottomCta({ slug }: { slug: PolicyContentSlug }) {
   if (slug === 'faq') {
     return (
       <FadeInSection className="mt-10" delay={0.08}>
-        <div className="rounded-[1.35rem] border border-rose-100/90 bg-gradient-to-r from-rose-50/90 to-amber-50/50 px-6 py-8 text-center md:px-10">
+        <div className="rounded-[1.35rem] border border-primary-100/90 bg-gradient-to-r from-primary-50/90 to-amber-50/50 px-6 py-8 text-center md:px-10">
           <Package className="mx-auto mb-3 h-9 w-9 text-primary-500" strokeWidth={1.5} />
           <p className="font-display text-lg font-semibold text-stone-800">Бүтээгдэхүүн сонгох уу?</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-stone-600">
@@ -158,7 +145,7 @@ function BottomCta({ slug }: { slug: PolicyContentSlug }) {
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Link
               to="/login"
-              className="inline-flex items-center gap-2 rounded-2xl border border-rose-200/80 bg-white px-6 py-3 text-sm font-semibold text-stone-700 shadow-sm hover:bg-rose-50/80"
+              className="inline-flex items-center gap-2 rounded-2xl border border-primary-200/80 bg-white px-6 py-3 text-sm font-semibold text-stone-700 shadow-sm hover:bg-primary-50/80"
             >
               Нэвтрэх
             </Link>
@@ -287,7 +274,7 @@ export function PolicyContentPage({ slug }: PolicyContentPageProps) {
         <article className="mb-card-surface overflow-hidden p-6 md:p-10">
           <MarkdownProse markdown={page.content} />
           {updatedLabel ? (
-            <p className="mt-10 border-t border-rose-100/80 pt-6 text-xs text-stone-400">
+            <p className="mt-10 border-t border-primary-100/80 pt-6 text-xs text-stone-400">
               Сүүлд шинэчилсэн: {updatedLabel}
             </p>
           ) : null}

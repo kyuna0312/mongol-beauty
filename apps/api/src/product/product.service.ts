@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Product } from './product.entity';
 
 @Injectable()
@@ -52,6 +52,14 @@ export class ProductService {
     }
 
     return query.getOne();
+  }
+
+  async findByIds(ids: string[]): Promise<Product[]> {
+    if (!ids.length) return [];
+    return this.productRepository.find({
+      where: { id: In(ids) },
+      relations: ['category'],
+    });
   }
 
   async create(input: any): Promise<Product> {

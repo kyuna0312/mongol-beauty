@@ -15,7 +15,7 @@ export function InfoPagesNav({ current }: { current: InfoPageSlug }) {
   return (
     <nav
       aria-label="Мэдээллийн хуудсууд"
-      className="flex flex-wrap justify-center gap-2 border-t border-rose-100/70 pt-8"
+      className="flex flex-wrap justify-center gap-2 border-t border-primary-100/70 pt-8"
     >
       {LINKS.map(({ slug, label, path }) => {
         const isActive = slug === current;
@@ -26,7 +26,7 @@ export function InfoPagesNav({ current }: { current: InfoPageSlug }) {
             className={`rounded-full px-4 py-2 text-sm font-medium transition ${
               isActive
                 ? 'bg-primary-500 text-white shadow-md shadow-primary-900/10'
-                : 'border border-rose-100/90 bg-white/80 text-stone-600 hover:border-primary-200 hover:bg-rose-50/80 hover:text-primary-700'
+                : 'border border-primary-100/90 bg-white/80 text-stone-600 hover:border-primary-200 hover:bg-primary-50/80 hover:text-primary-700'
             }`}
           >
             {label}

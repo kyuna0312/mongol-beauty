@@ -1,37 +1,5 @@
 import { gql } from '@apollo/client';
 
-// Order Mutations
-export const CREATE_ORDER = gql`
-  mutation CreateOrder($input: CreateOrderInput!) {
-    createOrder(input: $input) {
-      id
-      totalPrice
-      status
-      createdAt
-      items {
-        id
-        quantity
-        price
-        product {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-// Payment Mutations
-export const UPLOAD_PAYMENT_RECEIPT = gql`
-  mutation UploadPaymentReceipt($orderId: ID!, $file: Upload!) {
-    uploadPaymentReceipt(orderId: $orderId, file: $file) {
-      id
-      paymentReceiptUrl
-      status
-    }
-  }
-`;
-
 // Admin Mutations
 export const CONFIRM_PAYMENT = gql`
   mutation ConfirmPayment($orderId: ID!) {
@@ -44,7 +12,7 @@ export const CONFIRM_PAYMENT = gql`
 `;
 
 export const UPDATE_ORDER_STATUS = gql`
-  mutation UpdateOrderStatus($orderId: ID!, $status: OrderStatus!) {
+  mutation UpdateOrderStatus($orderId: ID!, $status: String!) {
     updateOrderStatus(orderId: $orderId, status: $status) {
       id
       status
@@ -189,13 +157,36 @@ export const RESET_PASSWORD = gql`
   }
 `;
 
+export const LOGOUT = gql`
+  mutation Logout {
+    logout {
+      message
+    }
+  }
+`;
+
 export const UPDATE_USER_SUBSCRIPTION = gql`
-  mutation UpdateUserSubscription($userId: ID!, $userType: UserType!) {
+  mutation UpdateUserSubscription($userId: String!, $userType: UserType!) {
     updateUserSubscription(userId: $userId, userType: $userType) {
       id
       email
       name
       userType
+    }
+  }
+`;
+
+export const UPSERT_PAGE = gql`
+  mutation UpsertPage($input: UpsertPageInput!) {
+    upsertPage(input: $input) {
+      id
+      slug
+      title
+      content
+      metaTitle
+      metaDescription
+      isPublished
+      updatedAt
     }
   }
 `;

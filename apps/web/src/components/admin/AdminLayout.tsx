@@ -47,7 +47,7 @@ export function AdminLayout() {
               </Link>
               <button
                 onClick={logout}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 transition-colors p-2 rounded-lg hover:bg-red-50"
+                className="flex items-center gap-2 text-primary-700 hover:text-primary-800 transition-colors p-2 rounded-lg hover:bg-primary-50"
                 title="Системээс гарах"
               >
                 <LogOut className="w-4 h-4" />

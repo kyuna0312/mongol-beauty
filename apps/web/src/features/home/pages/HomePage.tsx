@@ -1,39 +1,23 @@
 import { useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { Link } from 'react-router-dom';
-import { memo, useMemo, useEffect, useState, useCallback, useRef } from 'react';
-import { ProductCard, setCartToastCallback, ProductListSkeleton, OptimizedImage, CartToast } from '@mongol-beauty/ui';
-import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
+import { memo, useMemo, useCallback, useRef } from 'react';
+import { ProductCard, ProductListSkeleton, OptimizedImage, CartToast } from '@mongol-beauty/ui';
 import { Button } from '@mongol-beauty/ui';
 import { ArrowRight, Sparkles, Truck, ShieldCheck } from 'lucide-react';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
 import { PageHead } from '@/features/content/components/PageHead';
-
-const GET_CATEGORIES = gql`
-  query GetCategories {
-    categories {
-      id
-      name
-      slug
-      imageUrl
-    }
-  }
-`;
-
-const GET_FEATURED_PRODUCTS = gql`
-  query GetFeaturedProducts {
-    products(limit: 8) {
-      ...ProductCardFragment
-    }
-  }
-  ${PRODUCT_CARD_FRAGMENT}
-`;
+import { useCart } from '@/hooks/useCart';
+import { GET_FEATURED_PRODUCTS, GET_HOME_CATEGORIES } from '@/graphql/home';
+import { clearCartToast, useCartToast } from '@/features/cart/store';
+import { CartItemLike } from '@/interfaces/cart';
+import { HomeCategory, HomeProduct } from '@/interfaces/home';
 
 export const HomePage = memo(function HomePage() {
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const hasPrefetchedProductsPage = useRef(false);
+  const { items: cartItems, setItem } = useCart();
+  const { message: toastMessage, showCartToast } = useCartToast();
 
-  const { data: categoriesData, loading: categoriesLoading, error: categoriesError } = useQuery(GET_CATEGORIES, {
+  const { data: categoriesData, loading: categoriesLoading, error: categoriesError } = useQuery(GET_HOME_CATEGORIES, {
     fetchPolicy: 'cache-and-network',
     nextFetchPolicy: 'cache-first',
     errorPolicy: 'all',
@@ -45,22 +29,28 @@ export const HomePage = memo(function HomePage() {
     errorPolicy: 'all',
   });
 
-  const handleCartToast = useCallback((message: string) => {
-    setToastMessage(message);
-  }, []);
-
-  useEffect(() => {
-    setCartToastCallback(handleCartToast);
-  }, [handleCartToast]);
-
   const prefetchProductsPage = useCallback(() => {
     if (hasPrefetchedProductsPage.current) return;
     hasPrefetchedProductsPage.current = true;
     import('@/features/catalog/pages/ProductsPage');
   }, []);
 
-  const categories = useMemo(() => categoriesData?.categories || [], [categoriesData]);
-  const products = useMemo(() => productsData?.products || [], [productsData]);
+  const handleQuickAdd = useCallback(
+    async (productId: string, price: number, stock: number) => {
+      const current =
+        (cartItems.find((item: CartItemLike) => item.productId === productId)?.quantity ?? 0) as number;
+      if (current >= stock) {
+        showCartToast('Нөөц хүрэлцэхгүй байна');
+        return false;
+      }
+      await setItem(productId, current + 1, price);
+      return true;
+    },
+    [cartItems, setItem],
+  );
+
+  const categories = useMemo<HomeCategory[]>(() => categoriesData?.categories || [], [categoriesData]);
+  const products = useMemo<HomeProduct[]>(() => productsData?.products || [], [productsData]);
 
   if ((categoriesLoading && !categoriesData) || (productsLoading && !productsData)) {
     return (
@@ -106,7 +96,7 @@ export const HomePage = memo(function HomePage() {
       <section className="mb-10 md:mb-14">
         <div className="relative overflow-hidden rounded-3xl md:rounded-4xl mb-hero-gradient shadow-soft mb-noise ring-1 ring-white/60">
           <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-amber-100/40 blur-3xl" aria-hidden />
-          <div className="absolute -left-12 bottom-0 h-44 w-44 rounded-full bg-rose-100/50 blur-2xl" aria-hidden />
+          <div className="absolute -left-12 bottom-0 h-44 w-44 rounded-full bg-primary-100/50 blur-2xl" aria-hidden />
           <div className="relative z-[1] grid gap-8 p-8 md:p-12 md:grid-cols-[1.1fr_minmax(0,1fr)] md:items-center">
             <div>
               <p className="mb-section-eyebrow text-primary-700/90">INCELLDERM · Mongolia</p>
@@ -117,11 +107,11 @@ export const HomePage = memo(function HomePage() {
                 Арчилгааны бүтээгдэхүүнийг найдвартай эх үүсвэрээс — таны өдөр тутмын routine-д зориулсан.
               </p>
               <div className="flex flex-wrap gap-2 mb-8">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-stone-700 shadow-sm backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-200/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-stone-700 shadow-sm backdrop-blur-sm">
                   <Truck className="h-4 w-4 text-primary-500" />
                   Хүргэлт үнэгүй
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-stone-700 shadow-sm backdrop-blur-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary-200/70 bg-white/70 px-3 py-1.5 text-sm font-medium text-stone-700 shadow-sm backdrop-blur-sm">
                   <ShieldCheck className="h-4 w-4 text-primary-500" />
                   Баталгаатай
                 </span>
@@ -133,7 +123,7 @@ export const HomePage = memo(function HomePage() {
                 </Link>
                 <Link
                   to="/products"
-                  className="mb-focus-ring inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-300/80 bg-white/50 px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-white/90 transition-colors shadow-sm"
+                  className="mb-focus-ring inline-flex items-center justify-center gap-2 rounded-2xl border border-primary-300/80 bg-white/50 px-6 py-3 text-sm font-semibold text-stone-700 hover:bg-white/90 transition-colors shadow-sm"
                 >
                   Онцлох бүтээгдэхүүн
                 </Link>
@@ -157,15 +147,15 @@ export const HomePage = memo(function HomePage() {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
-          {categories.map((category: any) => (
+          {categories.map((category) => (
             <Link
               key={category.id}
               to={`/products/${category.id}`}
-              className="mb-focus-ring group mb-card-surface p-3 md:p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-rose-200/90 hover:shadow-lg"
+              className="mb-focus-ring group mb-card-surface p-3 md:p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200/90 hover:shadow-lg"
               onMouseEnter={prefetchProductsPage}
               onFocus={prefetchProductsPage}
             >
-              <div className="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-rose-50 via-amber-50/40 to-beige-50 ring-1 ring-rose-100/80">
+              <div className="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 via-amber-50/40 to-beige-50 ring-1 ring-primary-100/80">
                 {category.imageUrl ? (
                   <OptimizedImage
                     src={category.imageUrl}
@@ -198,7 +188,7 @@ export const HomePage = memo(function HomePage() {
             <Button
               variant="outline"
               size="sm"
-              className="rounded-full border-rose-200/90 text-primary-700 hover:bg-rose-50/80 font-semibold"
+              className="rounded-full border-primary-200/90 text-primary-700 hover:bg-primary-50/80 font-semibold"
             >
               Бүгдийг харах
               <ArrowRight className="h-4 w-4" />
@@ -206,17 +196,19 @@ export const HomePage = memo(function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 md:gap-4">
-          {products.map((product: any) => (
+          {products.map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}
               name={product.name}
               price={product.price}
               discountedPrice={product.discountedPrice}
-              image={product.images?.[0]}
+              image={product.images?.[0] || '/placeholder-product.jpg'}
               categoryId={product.category.id}
               stock={product.stock}
               LinkComponent={Link}
+              onAdd={showCartToast}
+              onQuickAdd={handleQuickAdd}
             />
           ))}
         </div>
@@ -231,7 +223,7 @@ export const HomePage = memo(function HomePage() {
       </section>
 
       {toastMessage && (
-        <CartToast message={toastMessage} onClose={() => setToastMessage(null)} />
+        <CartToast message={toastMessage} onClose={clearCartToast} />
       )}
     </div>
   );

@@ -1,36 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { Button } from '@mongol-beauty/ui';
 import { Users, Crown, User, Search, RefreshCw } from 'lucide-react';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
-
-const GET_USERS = gql`
-  query GetUsers {
-    users {
-      id
-      email
-      name
-      phone
-      userType
-      createdAt
-      orders {
-        id
-      }
-    }
-  }
-`;
-
-const UPDATE_USER_SUBSCRIPTION = gql`
-  mutation UpdateUserSubscription($userId: ID!, $userType: UserType!) {
-    updateUserSubscription(userId: $userId, userType: $userType) {
-      id
-      email
-      name
-      userType
-    }
-  }
-`;
+import { GET_USERS } from '@/graphql/queries';
+import { UPDATE_USER_SUBSCRIPTION } from '@/graphql/mutations';
+import { AdminUser } from '@/interfaces/user';
 
 export function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +23,7 @@ export function AdminUsersPage() {
         await updateSubscription({
           variables: { userId, userType: newType },
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Error will be handled by mutation's onError
         console.error('Failed to update subscription:', err);
       }
@@ -83,10 +58,10 @@ export function AdminUsersPage() {
     );
   }
 
-  const users = data?.users || [];
+  const users = (data?.users || []) as AdminUser[];
   
   // Filter users
-  const filteredUsers = users.filter((user: any) => {
+  const filteredUsers = users.filter((user) => {
     const matchesSearch = !searchQuery || 
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -192,7 +167,7 @@ export function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user: any) => (
+                {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
@@ -267,13 +242,13 @@ export function AdminUsersPage() {
         <div className="bg-white rounded-xl p-4 border border-gray-200">
           <p className="text-sm text-gray-500 mb-1">Энгийн хэрэглэгч</p>
           <p className="text-2xl font-bold text-gray-900">
-            {users.filter((u: any) => u.userType === 'USER').length}
+            {users.filter((u) => u.userType === 'USER').length}
           </p>
         </div>
         <div className="bg-white rounded-xl p-4 border border-gray-200">
           <p className="text-sm text-gray-500 mb-1">Захиалгатай хэрэглэгч</p>
           <p className="text-2xl font-bold text-gold-600">
-            {users.filter((u: any) => u.userType === 'SUBSCRIBED_USER').length}
+            {users.filter((u) => u.userType === 'SUBSCRIBED_USER').length}
           </p>
         </div>
       </div>

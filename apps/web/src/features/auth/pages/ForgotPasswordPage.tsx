@@ -20,8 +20,8 @@ export function ForgotPasswordPage() {
     try {
       await forgotPassword({ variables: { input: { email } } });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || 'Алдаа гарлаа');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Алдаа гарлаа');
     }
   };
 
@@ -69,7 +69,7 @@ export function ForgotPasswordPage() {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     placeholder="email@example.com"
                     required
                     className="pl-10"

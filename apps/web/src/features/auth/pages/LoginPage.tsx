@@ -28,8 +28,8 @@ export function LoginPage() {
     try {
       await login(email, password);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Нэвтрэхэд алдаа гарлаа');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Нэвтрэхэд алдаа гарлаа');
       setLoading(false);
     }
   };
@@ -82,7 +82,7 @@ export function LoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   placeholder="email@example.com"
                   required
                   className="pl-10"
@@ -100,7 +100,7 @@ export function LoginPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   className="pl-10"

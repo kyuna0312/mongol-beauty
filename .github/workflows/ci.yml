@@ -4,25 +4,41 @@ on:
   push:
     branches: [main, master]
   pull_request:
-    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
+          cache: npm
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
-      - name: Typecheck
-        run: yarn type-check
+      - name: GraphQL codegen drift check
+        run: npm run graphql:codegen:check
 
-      - name: Build
-        run: yarn build
+      - name: TypeScript
+        run: npm run type-check
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Production build
+        run: npm run build:ci
+
+      - name: npm audit (informational)
+        run: npm audit --audit-level=high
+        continue-on-error: true

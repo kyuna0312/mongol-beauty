@@ -50,6 +50,22 @@ export class ProductResolver {
     return products;
   }
 
+  @Query(() => [Product])
+  async productsByIds(
+    @Args({ name: 'ids', type: () => [ID] }) ids: string[],
+    @Context() context?: GraphqlContext,
+  ): Promise<Product[]> {
+    const products = await this.productService.findByIds(ids);
+    const user = await this.requestUser(context);
+    if (user?.userType === UserType.SUBSCRIBED_USER) {
+      return products.map((p) => ({
+        ...p,
+        discountedPrice: Math.round(p.price * 0.9),
+      }));
+    }
+    return products;
+  }
+
   @Query(() => Product, { nullable: true })
   async product(
     @Args('id', { type: () => ID }) id: string,

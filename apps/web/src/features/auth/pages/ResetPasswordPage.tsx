@@ -51,8 +51,8 @@ export function ResetPasswordPage() {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err: any) {
-      setError(err.message || 'Нууц үг сэргээхэд алдаа гарлаа');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Нууц үг сэргээхэд алдаа гарлаа');
     }
   };
 
@@ -101,7 +101,7 @@ export function ResetPasswordPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   minLength={6}
@@ -120,7 +120,7 @@ export function ResetPasswordPage() {
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   minLength={6}

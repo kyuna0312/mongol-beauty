@@ -1,15 +1,8 @@
-import { memo, useState, ReactNode } from 'react';
+import { memo, useState } from 'react';
 import { Card } from './Card';
 import { OptimizedImage } from './OptimizedImage';
 import { QuickAddButton } from './QuickAddButton';
 import { Heart } from 'lucide-react';
-
-// Global toast state management
-let toastCallback: ((message: string) => void) | null = null;
-
-export function setCartToastCallback(callback: (message: string) => void) {
-  toastCallback = callback;
-}
 
 interface ProductCardProps {
   id: string;
@@ -22,6 +15,7 @@ interface ProductCardProps {
   // Flexible routing - accepts a Link component from react-router-dom or any routing library
   LinkComponent?: React.ComponentType<any>;
   href?: string;
+  onAdd?: (message: string) => void;
   onQuickAdd?: (productId: string, price: number, stock: number) => Promise<boolean> | boolean;
 }
 
@@ -35,6 +29,7 @@ export const ProductCard = memo(function ProductCard({
   stock = 0,
   LinkComponent,
   href,
+  onAdd,
   onQuickAdd,
 }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -52,7 +47,10 @@ export const ProductCard = memo(function ProductCard({
   const productUrl = href || `/products/detail/${id}`;
 
   const cardContent = (
-    <Card className="overflow-hidden border border-primary-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95">
+    <Card
+      data-category-id={categoryId}
+      className="overflow-hidden border border-primary-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95"
+    >
       <div className="aspect-square bg-gradient-to-br from-primary-50/90 via-amber-50/40 to-beige-50/80 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent z-10"></div>
         <OptimizedImage
@@ -94,7 +92,7 @@ export const ProductCard = memo(function ProductCard({
               productName={name}
               price={price}
               stock={stock}
-              onAdd={(message) => toastCallback?.(message)}
+              onAdd={onAdd}
               onQuickAdd={onQuickAdd}
             />
           </div>

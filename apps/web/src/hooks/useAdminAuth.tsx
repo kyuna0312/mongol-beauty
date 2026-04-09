@@ -2,7 +2,8 @@ import { useState, useEffect, createContext, useContext, ReactNode, JSX } from '
 import { useApolloClient } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { GET_ADMIN_ME } from '../graphql/queries';
-import { ADMIN_LOGIN as ADMIN_LOGIN_MUTATION } from '../graphql/mutations';
+import { ADMIN_LOGIN as ADMIN_LOGIN_MUTATION, LOGOUT } from '../graphql/mutations';
+import { clearSessionUser, setSessionUser } from '@/features/session/store';
 
 interface AdminUser {
   id: string;
@@ -13,7 +14,6 @@ interface AdminUser {
 
 interface AdminAuthContextType {
   user: AdminUser | null;
-  token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -24,46 +24,38 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 
 export function AdminAuthProvider({ children }: { children: ReactNode }): JSX.Element {
   const [user, setUser] = useState<AdminUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const client = useApolloClient();
   const navigate = useNavigate();
 
-  // Load token from localStorage on mount
+  // Verify cookie-backed session on mount
   useEffect(() => {
-    const storedToken = localStorage.getItem('admin_token');
-    if (storedToken) {
-      setToken(storedToken);
-      verifyToken(storedToken);
-    } else {
-      setLoading(false);
-    }
+    void verifyToken();
   }, []);
 
-  const verifyToken = async (tokenToVerify: string) => {
+  const verifyToken = async () => {
     try {
       const { data } = await client.query({
         query: GET_ADMIN_ME,
-        context: {
-          headers: {
-            authorization: `Bearer ${tokenToVerify}`,
-          },
-        },
         fetchPolicy: 'network-only',
       });
 
       if (data?.adminMe) {
         setUser(data.adminMe);
+        setSessionUser({
+          id: data.adminMe.id,
+          email: data.adminMe.email,
+          name: data.adminMe.name,
+          isAdmin: true,
+        });
       } else {
-        // Token invalid, clear it
-        localStorage.removeItem('admin_token');
-        setToken(null);
+        setUser(null);
+        clearSessionUser();
       }
     } catch (error) {
       console.error('Token verification failed:', error);
-      localStorage.removeItem('admin_token');
-      setToken(null);
       setUser(null);
+      clearSessionUser();
     } finally {
       setLoading(false);
     }
@@ -87,28 +79,39 @@ export function AdminAuthProvider({ children }: { children: ReactNode }): JSX.El
       }
 
       if (data?.adminLogin) {
-        const { access_token, user: adminUser } = data.adminLogin;
-        // Update state and localStorage
-        localStorage.setItem('admin_token', access_token);
-        setToken(access_token);
+        const { user: adminUser } = data.adminLogin;
         setUser(adminUser);
+        setSessionUser({
+          id: adminUser.id,
+          email: adminUser.email,
+          name: adminUser.name,
+          isAdmin: true,
+        });
         setLoading(false);
       } else {
         setLoading(false);
         throw new Error('Нэвтрэхэд алдаа гарлаа');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
       setLoading(false);
       
       // Extract error message from various error formats
       let errorMessage = 'Нэвтрэхэд алдаа гарлаа';
       
-      if (error.message) {
+      if (error instanceof Error && error.message) {
         errorMessage = error.message;
-      } else if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message;
-      } else if (error.networkError) {
+      } else if (
+        typeof error === 'object' &&
+        error !== null &&
+        'graphQLErrors' in error &&
+        Array.isArray((error as { graphQLErrors?: Array<{ message?: string }> }).graphQLErrors) &&
+        (error as { graphQLErrors: Array<{ message?: string }> }).graphQLErrors.length > 0
+      ) {
+        errorMessage =
+          (error as { graphQLErrors: Array<{ message?: string }> }).graphQLErrors[0]?.message ||
+          errorMessage;
+      } else if (typeof error === 'object' && error !== null && 'networkError' in error) {
         errorMessage = 'Сүлжээний алдаа. Дахин оролдоно уу.';
       }
       
@@ -117,9 +120,9 @@ export function AdminAuthProvider({ children }: { children: ReactNode }): JSX.El
   };
 
   const logout = () => {
-    setToken(null);
     setUser(null);
-    localStorage.removeItem('admin_token');
+    clearSessionUser();
+    void client.mutate({ mutation: LOGOUT }).catch(() => undefined);
     client.clearStore();
     navigate('/admin/login');
   };
@@ -128,11 +131,10 @@ export function AdminAuthProvider({ children }: { children: ReactNode }): JSX.El
     <AdminAuthContext.Provider
       value={{
         user,
-        token,
         login,
         logout,
         loading,
-        isAuthenticated: !!user && !!token,
+        isAuthenticated: Boolean(user),
       }}
     >
       {children}

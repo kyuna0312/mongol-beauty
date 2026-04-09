@@ -1,30 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { Button } from '@mongol-beauty/ui';
 import { Upload } from 'lucide-react';
 import { Toast } from '@/components/Toast';
 import { useCart } from '@/hooks/useCart';
-
-const CREATE_ORDER = gql`
-  mutation CreateOrder($input: CreateOrderInput!) {
-    createOrder(input: $input) {
-      id
-      totalPrice
-      status
-    }
-  }
-`;
-
-const UPLOAD_RECEIPT = gql`
-  mutation UploadPaymentReceipt($orderId: ID!, $file: Upload!) {
-    uploadPaymentReceipt(orderId: $orderId, file: $file) {
-      id
-      paymentReceiptUrl
-    }
-  }
-`;
+import { CREATE_ORDER_SIMPLE, UPLOAD_PAYMENT_RECEIPT_SIMPLE } from '@/graphql/orders';
+import { CheckoutCartItem } from '@/interfaces/cart';
+import { getCheckoutCreateOrderBlock, isValidCheckoutPhone } from '@/lib/checkout-validation';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -36,23 +19,24 @@ export function CheckoutPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  const [createOrder] = useMutation(CREATE_ORDER);
-  const [uploadReceipt] = useMutation(UPLOAD_RECEIPT);
+  const [createOrder] = useMutation(CREATE_ORDER_SIMPLE);
+  const [uploadReceipt] = useMutation(UPLOAD_PAYMENT_RECEIPT_SIMPLE);
   const hasCartItems = cart.length > 0;
-  const isPhoneValid = !phone.trim() || /^[0-9]{8}$/.test(phone.trim());
+  const isPhoneValid = isValidCheckoutPhone(phone);
 
   useEffect(() => {
     mergeLocalCartToServer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleCreateOrder = async () => {
-    if (!hasCartItems) {
+    const block = getCheckoutCreateOrderBlock(hasCartItems, phone);
+    if (block === 'empty_cart') {
       setToastMessage('Сагс хоосон байна. Эхлээд бүтээгдэхүүн нэмнэ үү.');
       setShowToast(true);
       return;
     }
-    if (!isPhoneValid) {
+    if (block === 'invalid_phone') {
       setToastMessage('Утасны дугаар 8 оронтой байх шаардлагатай.');
       setShowToast(true);
       return;
@@ -62,7 +46,7 @@ export function CheckoutPage() {
       const { data } = await createOrder({
         variables: {
           input: {
-            items: cart.map((item) => ({
+            items: (cart as CheckoutCartItem[]).map((item) => ({
               productId: item.productId,
               quantity: item.quantity,
             })),
@@ -75,7 +59,7 @@ export function CheckoutPage() {
       setOrderId(data.createOrder.id);
       setToastMessage('Захиалга амжилттай үүслээ! Төлбөрийн баримт байршуулна уу.');
       setShowToast(true);
-    } catch (error) {
+    } catch (_error) {
       setToastMessage('Алдаа гарлаа. Дахин оролдоно уу.');
       setShowToast(true);
     }
@@ -87,8 +71,8 @@ export function CheckoutPage() {
     try {
       await uploadReceipt({
         variables: {
-          orderId,
           file: receiptFile,
+          orderId,
         },
       });
 
@@ -98,13 +82,15 @@ export function CheckoutPage() {
       setTimeout(() => {
         navigate(`/orders/${orderId}`);
       }, 2000);
-    } catch (error) {
+    } catch (_error) {
       setToastMessage('Алдаа гарлаа. Дахин оролдоно уу.');
       setShowToast(true);
     }
   };
 
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0);
+  const totalPrice = (cart as CheckoutCartItem[]).reduce((sum: number, item: CheckoutCartItem) => {
+    return sum + (item.price || 0) * item.quantity;
+  }, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pb-32">
@@ -154,7 +140,7 @@ export function CheckoutPage() {
               Захиалгын дүн
             </h3>
             <div className="space-y-3">
-              {cart.map((item) => (
+              {(cart as CheckoutCartItem[]).map((item) => (
                 <div key={item.productId} className="flex justify-between text-sm bg-white/60 backdrop-blur-sm px-4 py-2 rounded-xl">
                   <span className="text-gray-700">Бүтээгдэхүүн x{item.quantity}</span>
                   <span className="font-semibold text-primary-600">{(item.price * item.quantity).toLocaleString()}₮</span>

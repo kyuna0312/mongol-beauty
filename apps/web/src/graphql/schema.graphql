@@ -1,0 +1,293 @@
+"""
+Indicates exactly one field must be supplied and this field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+"""Exposes a URL that specifies the behavior of this scalar."""
+directive @specifiedBy(
+  """The URL that specifies the behavior of this scalar."""
+  url: String!
+) on SCALAR
+
+input AdminLoginInput {
+  email: String!
+  password: String!
+}
+
+type AdminOrdersPage {
+  items: [Order!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
+}
+
+type AdminUser {
+  email: String!
+  id: String!
+  isAdmin: Boolean!
+  name: String!
+}
+
+type CartItem {
+  createdAt: DateTime!
+  id: ID!
+  product: Product!
+  quantity: Int!
+  updatedAt: DateTime!
+  user: User!
+}
+
+input CartItemInput {
+  productId: ID!
+  quantity: Int!
+}
+
+type Category {
+  description: String
+  id: ID!
+  imageUrl: String
+  name: String!
+  products: [Product!]!
+  slug: String!
+}
+
+input CreateCategoryInput {
+  description: String
+  imageUrl: String
+  name: String!
+  slug: String!
+}
+
+input CreateOrderInput {
+  items: [CreateOrderItemInput!]!
+  name: String
+  phone: String
+}
+
+input CreateOrderItemInput {
+  productId: String!
+  quantity: Int!
+}
+
+input CreateProductInput {
+  categoryId: ID!
+  description: String
+  features: [String!]! = []
+  images: [String!]! = []
+  name: String!
+  price: Int!
+  skinType: [String!]! = []
+  stock: Int! = 0
+}
+
+"""DateTime custom scalar type"""
+scalar DateTime
+
+enum Feature {
+  ACNE_FIGHTING
+  ANTI_AGING
+  BRIGHTENING
+  HYDRATING
+  ORGANIC
+  SUNSCREEN
+}
+
+input ForgotPasswordInput {
+  email: String!
+}
+
+type LoginResponse {
+  access_token: String!
+  user: AdminUser!
+}
+
+type MessageResponse {
+  message: String!
+}
+
+type Mutation {
+  adminLogin(input: AdminLoginInput!): LoginResponse!
+  clearCart: Boolean!
+  confirmPayment(orderId: ID!): Order!
+  createCategory(input: CreateCategoryInput!): Category!
+  createOrder(input: CreateOrderInput!): Order!
+  createProduct(input: CreateProductInput!): Product!
+  deleteCategory(id: ID!): Boolean!
+  deletePage(id: ID!): Boolean!
+  deleteProduct(id: ID!): Boolean!
+  forgotPassword(input: ForgotPasswordInput!): MessageResponse!
+  logout: MessageResponse!
+  mergeCart(items: [CartItemInput!]!): [CartItem!]!
+  register(input: RegisterInput!): User!
+  removeCartItem(productId: ID!): [CartItem!]!
+  resetPassword(input: ResetPasswordInput!): MessageResponse!
+  setCartItem(productId: ID!, quantity: Int!): [CartItem!]!
+  updateCategory(input: UpdateCategoryInput!): Category!
+  updateOrderStatus(orderId: ID!, status: String!): Order!
+  updateProduct(input: UpdateProductInput!): Product!
+  updateUserSubscription(userId: String!, userType: UserType!): User!
+  uploadPaymentReceipt(file: Upload!, orderId: ID!): Order!
+  upsertPage(input: UpsertPageInput!): Page!
+  userLogin(input: UserLoginInput!): UserLoginResponse!
+}
+
+type Order {
+  createdAt: DateTime!
+  id: ID!
+  items: [OrderItem!]!
+  paymentReceiptUrl: String
+  status: OrderStatus!
+  totalPrice: Float!
+  updatedAt: DateTime!
+  user: User
+}
+
+type OrderItem {
+  id: ID!
+  price: Float!
+  product: Product!
+  quantity: Float!
+}
+
+enum OrderStatus {
+  CANCELLED
+  COMPLETED
+  CONFIRMED
+  SHIPPING
+  WAITING_PAYMENT
+}
+
+type Page {
+  content: String!
+  createdAt: DateTime!
+  id: ID!
+  isPublished: Boolean!
+  metaDescription: String
+  metaTitle: String
+  slug: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type Product {
+  category: Category!
+  createdAt: DateTime!
+  description: String
+  discountedPrice: Float
+  features: [Feature!]!
+  id: ID!
+  images: [String!]!
+  name: String!
+  price: Float!
+  skinType: [SkinType!]!
+  stock: Float!
+  updatedAt: DateTime!
+}
+
+type Query {
+  adminMe: User
+  adminOrders(limit: Int, offset: Int, status: OrderStatus): AdminOrdersPage!
+  adminPages: [Page!]!
+  categories: [Category!]!
+  category(id: ID!): Category
+  me: User
+  myCart: [CartItem!]!
+  order(id: ID!): Order
+  orders: [Order!]!
+  page(slug: String!): Page
+  pagePreview(slug: String!): Page
+  product(categoryId: ID, id: ID!): Product
+  products(categoryId: ID, limit: Int, offset: Int): [Product!]!
+  productsByIds(ids: [ID!]!): [Product!]!
+  users: [User!]!
+}
+
+input RegisterInput {
+  email: String!
+  name: String!
+  password: String!
+  phone: String
+}
+
+input ResetPasswordInput {
+  email: String!
+  newPassword: String!
+  token: String!
+}
+
+enum SkinType {
+  COMBINATION
+  DRY
+  NORMAL
+  OILY
+  SENSITIVE
+}
+
+input UpdateCategoryInput {
+  description: String
+  id: String!
+  imageUrl: String
+  name: String
+  slug: String
+}
+
+input UpdateProductInput {
+  categoryId: ID
+  description: String
+  features: [String!]
+  id: ID!
+  images: [String!]
+  name: String
+  price: Int
+  skinType: [String!]
+  stock: Int
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input UpsertPageInput {
+  content: String!
+  isPublished: Boolean
+  metaDescription: String
+  metaTitle: String
+  slug: String!
+  title: String!
+}
+
+type User {
+  createdAt: DateTime!
+  email: String
+  id: ID!
+  isAdmin: Boolean!
+  name: String
+  orders: [Order!]!
+  phone: String
+  userType: UserType!
+}
+
+input UserLoginInput {
+  email: String!
+  password: String!
+}
+
+type UserLoginResponse {
+  access_token: String!
+  user: UserResponse!
+}
+
+type UserResponse {
+  email: String!
+  id: String!
+  isAdmin: Boolean!
+  name: String
+  phone: String
+  userType: UserType!
+}
+
+enum UserType {
+  ADMIN
+  SUBSCRIBED_USER
+  USER
+}
+

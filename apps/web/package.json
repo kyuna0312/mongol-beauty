@@ -5,10 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "codegen": "graphql-codegen --config codegen.yml",
+    "codegen:check": "graphql-codegen --config codegen.yml --check",
     "build": "tsc && vite build",
     "build:analyze": "tsc && vite build --mode analyze",
+    "build:ci": "tsc && vite build && node ../../scripts/check-web-bundle.js",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 0",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "analyze": "vite-bundle-visualizer"
   },
   "dependencies": {
@@ -29,14 +36,22 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typescript": "^4.0.1",
+    "@graphql-codegen/typescript-operations": "^4.1.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^14.2.1",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.16",
+    "jsdom": "^24.0.0",
+    "msw": "^2.13.2",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
-    "vite-bundle-visualizer": "^1.2.1"
+    "vite-bundle-visualizer": "^1.2.1",
+    "vitest": "^2.1.6"
   }
 }

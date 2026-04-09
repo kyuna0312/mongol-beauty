@@ -13,11 +13,22 @@ import { ProtectedAdminRoute } from '@/components/admin/ProtectedAdminRoute';
 export function AppRoutes() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const id = window.setTimeout(() => {
+    const browserWindow = window as Window & {
+      requestIdleCallback?: (cb: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const preload = () => {
       void import('@/features/cart/pages/CartPage');
       void import('@/features/checkout/pages/CheckoutPage');
-    }, 2000);
-    return () => window.clearTimeout(id);
+    };
+
+    if (browserWindow.requestIdleCallback && browserWindow.cancelIdleCallback) {
+      const idleId = browserWindow.requestIdleCallback(preload, { timeout: 2500 });
+      return () => browserWindow.cancelIdleCallback?.(idleId);
+    }
+
+    const timeoutId = browserWindow.setTimeout(preload, 2000);
+    return () => browserWindow.clearTimeout(timeoutId);
   }, []);
 
   return (
