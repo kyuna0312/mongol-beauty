@@ -1,4 +1,4 @@
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -13,20 +13,7 @@ import { InfoPagesNav } from '@/features/content/components/InfoPagesNav';
 import { PageHead } from '@/features/content/components/PageHead';
 import { MarkdownProse } from '@/features/content/components/MarkdownProse';
 import { FadeInSection } from '@/features/shared/components/FadeInSection';
-
-const GET_PAGE_ABOUT = gql`
-  query GetAboutPage {
-    page(slug: "about") {
-      id
-      slug
-      title
-      content
-      metaTitle
-      metaDescription
-      updatedAt
-    }
-  }
-`;
+import { GET_PAGE_ABOUT } from '@/graphql/queries';
 
 const FALLBACK_MARKDOWN = `## Сайн байна уу
 
@@ -62,7 +49,7 @@ const VALUES: Array<{
     icon: Heart,
     title: 'Хэрэглэгч төвтэй',
     body: 'Таны сэтгэл ханамж, итгэл — бидний өдөр тутмын зорилго.',
-    accent: 'from-rose-100/90 to-pink-50/50',
+    accent: 'from-primary-100/90 to-primary-50/50',
   },
   {
     icon: Shield,
@@ -100,9 +87,9 @@ export function AboutPage() {
       />
 
       {/* Hero */}
-      <header className="relative mb-12 overflow-hidden rounded-[1.85rem] border border-rose-100/80 bg-gradient-to-br from-[#fff5f7] via-[#fce8f0] to-[#e8e0f4] px-6 py-14 shadow-soft md:mb-16 md:px-12 md:py-20">
+      <header className="relative mb-12 overflow-hidden rounded-[1.85rem] border border-primary-100/80 bg-gradient-to-br from-primary-50 via-[#f3f8f5] to-[#e8e0f4] px-6 py-14 shadow-soft md:mb-16 md:px-12 md:py-20">
         <div className="pointer-events-none absolute -right-16 -top-24 h-72 w-72 rounded-full bg-gradient-to-br from-pink-200/40 to-violet-200/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-gradient-to-tr from-amber-100/50 to-rose-100/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-10 h-64 w-64 rounded-full bg-gradient-to-tr from-amber-100/50 to-primary-100/40 blur-3xl" />
         <div className="relative mx-auto max-w-3xl text-center">
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -144,7 +131,7 @@ export function AboutPage() {
             </Link>
             <Link
               to="/faq"
-              className="inline-flex items-center gap-2 rounded-2xl border border-rose-200/80 bg-white/70 px-6 py-3.5 text-[15px] font-semibold text-stone-700 shadow-sm backdrop-blur-sm transition hover:border-primary-200 hover:bg-white hover:text-primary-700"
+              className="inline-flex items-center gap-2 rounded-2xl border border-primary-200/80 bg-white/70 px-6 py-3.5 text-[15px] font-semibold text-stone-700 shadow-sm backdrop-blur-sm transition hover:border-primary-200 hover:bg-white hover:text-primary-700"
             >
               <Sparkles className="h-4 w-4 text-primary-500" />
               Түгээмэл асуулт
@@ -158,7 +145,7 @@ export function AboutPage() {
         <div className="mb-card-surface relative overflow-hidden p-6 md:p-10">
           <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 translate-x-1/4 -translate-y-1/4 rounded-full bg-primary-100/35 blur-2xl" />
           <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:gap-10">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-rose-50 shadow-inner ring-1 ring-rose-100/80">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 shadow-inner ring-1 ring-primary-100/80">
               <Users className="h-8 w-8 text-primary-600" strokeWidth={1.75} />
             </div>
             <div>
@@ -188,9 +175,9 @@ export function AboutPage() {
                 initial={false}
                 whileHover={{ y: -3 }}
                 transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-                className={`mb-card-surface group h-full border border-rose-100/70 bg-gradient-to-br ${v.accent} p-6 transition-shadow duration-300 hover:shadow-md hover:shadow-rose-100/60`}
+                className={`mb-card-surface group h-full border border-primary-100/70 bg-gradient-to-br ${v.accent} p-6 transition-shadow duration-300 hover:shadow-md hover:shadow-primary-100/60`}
               >
-                <div className="mb-4 inline-flex rounded-xl bg-white/80 p-2.5 text-primary-600 shadow-sm ring-1 ring-rose-100/60 transition group-hover:scale-105">
+                <div className="mb-4 inline-flex rounded-xl bg-white/80 p-2.5 text-primary-600 shadow-sm ring-1 ring-primary-100/60 transition group-hover:scale-105">
                   <v.icon className="h-6 w-6" strokeWidth={1.75} />
                 </div>
                 <h3 className="font-display text-lg font-semibold text-stone-800">{v.title}</h3>
@@ -204,7 +191,7 @@ export function AboutPage() {
       {/* Markdown story (CMS or fallback) */}
       <FadeInSection className="mb-10" delay={0.1}>
         <div className="mb-card-surface p-6 md:p-10">
-          <div className="mb-6 flex flex-col gap-2 border-b border-rose-100/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div className="mb-6 flex flex-col gap-2 border-b border-primary-100/80 pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="mb-section-eyebrow">Түүхэн тойм</p>
               <h2 className="font-display text-xl font-semibold text-stone-800 md:text-2xl">
@@ -225,7 +212,7 @@ export function AboutPage() {
 
       {/* Bottom CTA */}
       <FadeInSection delay={0.12}>
-        <div className="relative overflow-hidden rounded-[1.85rem] border border-rose-100/90 bg-gradient-to-r from-primary-500/95 via-primary-600 to-rose-600 px-6 py-10 text-center text-white shadow-lg shadow-primary-900/10 md:px-12">
+        <div className="relative overflow-hidden rounded-[1.85rem] border border-primary-100/90 bg-gradient-to-r from-primary-500/95 via-primary-600 to-primary-700 px-6 py-10 text-center text-white shadow-lg shadow-primary-900/10 md:px-12">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(255,255,255,0.25),transparent)]" />
           <div className="relative">
             <h2 className="font-display text-xl font-semibold md:text-2xl">Бэлэн үү?</h2>
@@ -234,7 +221,7 @@ export function AboutPage() {
             </p>
             <Link
               to="/products"
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-[15px] font-semibold text-primary-700 shadow-md transition hover:bg-rose-50 hover:shadow-lg"
+              className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-[15px] font-semibold text-primary-700 shadow-md transition hover:bg-primary-50 hover:shadow-lg"
             >
               Дэлгүүр рүү
               <ArrowRight className="h-4 w-4" />

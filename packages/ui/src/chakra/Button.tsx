@@ -1,7 +1,7 @@
 import { Button as ChakraButton, ButtonProps as ChakraButtonProps } from '@chakra-ui/react';
 import { forwardRef } from 'react';
 
-export interface ButtonProps extends Omit<ChakraButtonProps, 'colorScheme'> {
+export interface ButtonProps extends Omit<ChakraButtonProps, 'variant' | 'size' | 'colorScheme'> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;

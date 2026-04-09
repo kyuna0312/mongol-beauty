@@ -1,30 +1,16 @@
-import { gql, useQuery } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ExternalLink } from 'lucide-react';
 import { MarkdownContent } from '@/features/content/components/MarkdownContent';
 import { PageHead } from '@/features/content/components/PageHead';
-
-const PAGE_PREVIEW = gql`
-  query PagePreview($slug: String!) {
-    pagePreview(slug: $slug) {
-      id
-      slug
-      title
-      content
-      metaTitle
-      metaDescription
-      isPublished
-      updatedAt
-    }
-  }
-`;
+import { GET_PAGE_PREVIEW } from '@/graphql/queries';
 
 const KNOWN_SLUGS = new Set(['about', 'faq', 'shipping', 'returns', 'privacy']);
 
 export function AdminContentPreviewPage() {
   const { slug = '' } = useParams<{ slug: string }>();
 
-  const { data, loading, error } = useQuery(PAGE_PREVIEW, {
+  const { data, loading, error } = useQuery(GET_PAGE_PREVIEW, {
     variables: { slug },
     skip: !slug || !KNOWN_SLUGS.has(slug),
     fetchPolicy: 'network-only',

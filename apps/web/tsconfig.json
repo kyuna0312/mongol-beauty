@@ -23,7 +23,6 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "./tsconfig.node.json" },
-    { "path": "../../packages/ui" }
+    { "path": "./tsconfig.node.json" }
   ]
 }

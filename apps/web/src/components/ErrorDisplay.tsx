@@ -77,11 +77,11 @@ export function ErrorDisplay({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-amber-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-amber-50 p-4 md:p-8">
       <div className="mx-auto max-w-2xl">
-        <div className="rounded-3xl border border-rose-100 bg-white shadow-soft">
+        <div className="rounded-3xl border border-primary-100 bg-white shadow-soft">
           <div className="p-6 md:p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-100 text-primary-700">
               <AlertCircle className="h-7 w-7" />
             </div>
             <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-stone-900">{title}</h2>
@@ -93,7 +93,7 @@ export function ErrorDisplay({
             )}
           </div>
 
-          <div className="border-t border-rose-100 p-5 md:p-6">
+          <div className="border-t border-primary-100 p-5 md:p-6">
             {showSearch && (
               <form onSubmit={handleSearch} className="mb-4 flex gap-2">
                 <input

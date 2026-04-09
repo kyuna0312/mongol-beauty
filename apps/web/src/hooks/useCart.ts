@@ -1,57 +1,8 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
-import { useEffect, useState } from 'react';
+import { useMutation, useQuery } from '@apollo/client';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './useAuth';
-
-const GET_MY_CART = gql`
-  query GetMyCart {
-    myCart {
-      productId
-      quantity
-      product {
-        id
-        name
-        price
-        images
-        stock
-      }
-    }
-  }
-`;
-
-const SET_CART_ITEM = gql`
-  mutation SetCartItem($productId: ID!, $quantity: Int!) {
-    setCartItem(productId: $productId, quantity: $quantity) {
-      productId
-      quantity
-    }
-  }
-`;
-
-const REMOVE_CART_ITEM = gql`
-  mutation RemoveCartItem($productId: ID!) {
-    removeCartItem(productId: $productId) {
-      productId
-      quantity
-    }
-  }
-`;
-
-const CLEAR_CART = gql`
-  mutation ClearCart {
-    clearCart
-  }
-`;
-
-const MERGE_CART = gql`
-  mutation MergeCart($items: [CartItemInput!]!) {
-    mergeCart(items: $items) {
-      productId
-      quantity
-    }
-  }
-`;
-
-type LocalCartItem = { productId: string; quantity: number; price?: number };
+import { CLEAR_CART, GET_MY_CART, MERGE_CART, REMOVE_CART_ITEM, SET_CART_ITEM } from '@/graphql/cart';
+import { LocalCartItem } from '@/interfaces/cart';
 
 export function useCart() {
   const { isAuthenticated } = useAuth();
@@ -85,16 +36,24 @@ export function useCart() {
     return () => window.removeEventListener('cartUpdated', refresh);
   }, [isAuthenticated, refetch]);
 
-  const items = isAuthenticated
-    ? (data?.myCart ?? []).map((item: any) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        price: item.product?.price ?? 0,
-        product: item.product,
-      }))
-    : localCart;
+  const items = useMemo(
+    () =>
+      isAuthenticated
+        ? (data?.myCart ?? []).map((item: any) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.product?.price ?? 0,
+            product: item.product,
+          }))
+        : localCart,
+    [isAuthenticated, data, localCart],
+  );
 
-  const getCount = () => items.reduce((sum: number, item: any) => sum + item.quantity, 0);
+  const count = useMemo(
+    () => items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+    [items],
+  );
+  const getCount = useCallback(() => count, [count]);
 
   const setItem = async (productId: string, quantity: number, fallbackPrice?: number) => {
     if (isAuthenticated) {
@@ -174,6 +133,7 @@ export function useCart() {
     items,
     loading,
     refetch,
+    count,
     getCount,
     setItem,
     removeItem,

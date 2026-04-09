@@ -1,68 +1,9 @@
 import { useState, useEffect, createContext, useContext, ReactNode, JSX } from 'react';
 import { useApolloClient } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { gql } from '@apollo/client';
-
-const GET_ME = gql`
-  query GetMe {
-    me {
-      id
-      email
-      name
-      phone
-      userType
-      isAdmin
-    }
-  }
-`;
-
-const USER_LOGIN = gql`
-  mutation UserLogin($input: UserLoginInput!) {
-    userLogin(input: $input) {
-      access_token
-      user {
-        id
-        email
-        name
-        phone
-        userType
-        isAdmin
-      }
-    }
-  }
-`;
-
-const REGISTER = gql`
-  mutation Register($input: RegisterInput!) {
-    register(input: $input) {
-      id
-      email
-      name
-      phone
-      userType
-    }
-  }
-`;
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  phone?: string;
-  userType: 'USER' | 'SUBSCRIBED_USER' | 'ADMIN';
-  isAdmin: boolean;
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, phone?: string) => Promise<void>;
-  logout: () => void;
-  loading: boolean;
-  isAuthenticated: boolean;
-  isSubscribed: boolean;
-}
+import { GET_ME } from '@/graphql/queries';
+import { REGISTER, USER_LOGIN } from '@/graphql/mutations';
+import { AuthContextType, User } from '@/interfaces/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -127,10 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         setUser(userData);
         setLoading(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Нэвтрэхэд алдаа гарлаа';
       console.error('Login failed:', error);
       setLoading(false);
-      throw new Error(error.message || 'Нэвтрэхэд алдаа гарлаа');
+      throw new Error(message);
     }
   };
 
@@ -145,9 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         // Auto-login after registration
         await login(email, password);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Бүртгэлд алдаа гарлаа';
       console.error('Registration failed:', error);
-      throw new Error(error.message || 'Бүртгэлд алдаа гарлаа');
+      throw new Error(message);
     }
   };
 

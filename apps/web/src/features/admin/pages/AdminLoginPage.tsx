@@ -34,8 +34,8 @@ export function AdminLoginPage() {
     try {
       await login(email, password);
       // Navigation will be handled by useEffect when isAuthenticated becomes true
-    } catch (err: any) {
-      setError(err.message || 'Нэвтрэхэд алдаа гарлаа');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Нэвтрэхэд алдаа гарлаа');
       setLoading(false);
     }
   };
@@ -75,9 +75,9 @@ export function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-700 flex-shrink-0" />
+                <p className="text-sm text-amber-800">{error}</p>
               </div>
             )}
 
@@ -92,7 +92,7 @@ export function AdminLoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   placeholder="admin@incellderm.mn"
                   required
                   className="pl-10"
@@ -111,7 +111,7 @@ export function AdminLoginPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   className="pl-10"

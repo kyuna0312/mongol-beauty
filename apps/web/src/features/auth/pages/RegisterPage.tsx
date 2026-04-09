@@ -30,8 +30,8 @@ export function RegisterPage() {
     try {
       await register(email, password, name, phone || undefined);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || 'Бүртгэлд алдаа гарлаа');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Бүртгэлд алдаа гарлаа');
       setLoading(false);
     }
   };
@@ -84,7 +84,7 @@ export function RegisterPage() {
                   id="name"
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                   placeholder="Таны нэр"
                   required
                   className="pl-10"
@@ -102,7 +102,7 @@ export function RegisterPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                   placeholder="email@example.com"
                   required
                   className="pl-10"
@@ -120,7 +120,7 @@ export function RegisterPage() {
                   id="phone"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                   placeholder="99112233"
                   className="pl-10"
                 />
@@ -137,7 +137,7 @@ export function RegisterPage() {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   minLength={6}

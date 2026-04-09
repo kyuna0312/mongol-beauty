@@ -1,41 +1,32 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { Button } from '@mongol-beauty/ui';
 import { Trash2, ShoppingBag, ArrowLeft, Truck, Shield } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
-
-const GET_PRODUCTS = gql`
-  query GetProductsForCart {
-    products {
-      id
-      name
-      price
-      images
-      stock
-    }
-  }
-`;
+import { GET_PRODUCTS_FOR_CART } from '@/graphql/cart';
+import { CartLine, CartProduct } from '@/interfaces/cart';
 
 export function CartPage() {
   const navigate = useNavigate();
   const { items, setItem, removeItem: removeCartItem, mergeLocalCartToServer } = useCart();
-  const { data: productsData } = useQuery(GET_PRODUCTS);
+  const { data: productsData } = useQuery(GET_PRODUCTS_FOR_CART);
 
   useEffect(() => {
     mergeLocalCartToServer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const displayItems = items.map((item: any) => ({
+  const displayItems: CartLine[] = items.map((item: CartLine) => ({
     ...item,
-    product: item.product ?? productsData?.products?.find((p: any) => p.id === item.productId),
+    product:
+      item.product ??
+      (productsData?.products as CartProduct[] | undefined)?.find((p) => p.id === item.productId),
   }));
 
-  const totalPrice = displayItems.reduce(
-    (sum, item) => sum + (item.product?.price || 0) * item.quantity,
-    0
-  );
+  const totalPrice = displayItems.reduce((sum: number, item: CartLine) => {
+    return sum + (item.product?.price || 0) * item.quantity;
+  }, 0);
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     setItem(productId, newQuantity);
@@ -76,7 +67,7 @@ export function CartPage() {
     );
   }
 
-  const itemCount = displayItems.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = displayItems.reduce((sum: number, item: CartLine) => sum + item.quantity, 0);
   const canCheckout = itemCount > 0;
 
   return (
@@ -104,7 +95,7 @@ export function CartPage() {
       </div>
 
       <div className="space-y-4 mb-6">
-        {displayItems.map((item: any) => {
+        {displayItems.map((item: CartLine) => {
           if (!item.product) return null;
           return (
             <div

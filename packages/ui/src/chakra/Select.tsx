@@ -16,18 +16,16 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, fullWidth = true, options, children, className, ...props }, ref) => {
     const select = (
-      <Box
-        as="select"
+      <select
         ref={ref}
-        width={fullWidth ? '100%' : undefined}
-        p={2}
-        borderWidth="1px"
-        borderColor={error ? 'orange.500' : 'gray.300'}
-        borderRadius="md"
-        _focus={{
+        style={{
+          width: fullWidth ? '100%' : undefined,
+          padding: '0.5rem',
+          borderWidth: '1px',
+          borderStyle: 'solid',
+          borderColor: error ? '#dd6b20' : '#d1d5db',
+          borderRadius: '0.375rem',
           outline: 'none',
-          borderColor: 'teal.500',
-          boxShadow: '0 0 0 1px teal.500',
         }}
         className={className}
         {...props}
@@ -39,7 +37,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               </option>
             ))
           : children}
-      </Box>
+      </select>
     );
 
     if (!label && !error && !helperText) {

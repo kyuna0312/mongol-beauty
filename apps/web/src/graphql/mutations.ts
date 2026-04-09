@@ -199,3 +199,18 @@ export const UPDATE_USER_SUBSCRIPTION = gql`
     }
   }
 `;
+
+export const UPSERT_PAGE = gql`
+  mutation UpsertPage($input: UpsertPageInput!) {
+    upsertPage(input: $input) {
+      id
+      slug
+      title
+      content
+      metaTitle
+      metaDescription
+      isPublished
+      updatedAt
+    }
+  }
+`;

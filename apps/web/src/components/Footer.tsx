@@ -5,14 +5,14 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-rose-100/90 bg-gradient-to-b from-white/90 via-rose-50/40 to-amber-50/25 text-stone-600">
+    <footer className="mt-auto border-t border-primary-100/90 bg-gradient-to-b from-white/90 via-primary-50/40 to-amber-50/25 text-stone-600">
       <div className="h-px bg-gradient-to-r from-transparent via-primary-300/40 to-transparent" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 lg:py-14">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-12 mb-10">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-rose-50 to-amber-50/60 ring-1 ring-rose-100/90 flex items-center justify-center overflow-hidden p-1 shadow-sm">
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-50 to-amber-50/60 ring-1 ring-primary-100/90 flex items-center justify-center overflow-hidden p-1 shadow-sm">
                 <img
                   src="/incellderm-logo.png"
                   alt="INCELLDERM MONGOLIA Logo"
@@ -44,7 +44,7 @@ export function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-primary-600 ring-1 ring-rose-100 shadow-sm hover:bg-primary-50 hover:scale-105 transition-all"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-primary-600 ring-1 ring-primary-100 shadow-sm hover:bg-primary-50 hover:scale-105 transition-all"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
@@ -53,7 +53,7 @@ export function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-primary-600 ring-1 ring-rose-100 shadow-sm hover:bg-primary-50 hover:scale-105 transition-all"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-primary-600 ring-1 ring-primary-100 shadow-sm hover:bg-primary-50 hover:scale-105 transition-all"
                 aria-label="Instagram"
               >
                 <Instagram className="h-5 w-5" />
@@ -132,7 +132,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-rose-100/80 pt-8 md:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-primary-100/80 pt-8 md:flex-row">
           <p className="text-sm text-stone-500 text-center md:text-left">
             © {currentYear} INCELLDERM MONGOLIA. Бүх эрх хуулиар хамгаалагдсан.
           </p>

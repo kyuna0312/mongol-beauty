@@ -1,76 +1,20 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { Button, ProductCard, CartToast, OptimizedImage } from '@mongol-beauty/ui';
 import { ShoppingCart, Share2, Heart, Check } from 'lucide-react';
-import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { PageHead } from '@/features/content/components/PageHead';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
-
-const GET_PRODUCT = gql`
-  query GetProduct($id: ID!) {
-    product(id: $id) {
-      id
-      name
-      price
-      discountedPrice
-      stock
-      description
-      images
-      skinType
-      features
-      category {
-        id
-        name
-      }
-    }
-  }
-`;
+import { GET_PRODUCT_DETAIL, GET_RELATED_PRODUCTS } from '@/graphql/catalog';
+import { CartItemLike } from '@/interfaces/cart';
+import { ProductCardRelated, ProductDetailView } from '@/interfaces/catalog';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function isUuidLike(value?: string): boolean {
   return Boolean(value && UUID_PATTERN.test(value));
-}
-
-const GET_RELATED_PRODUCTS = gql`
-  query GetRelatedProducts($categoryId: ID!) {
-    products(categoryId: $categoryId) {
-      ...ProductCardFragment
-    }
-  }
-  ${PRODUCT_CARD_FRAGMENT}
-`;
-
-interface ProductDetailView {
-  id: string;
-  name: string;
-  price: number;
-  discountedPrice?: number | null;
-  stock: number;
-  description?: string | null;
-  images: string[];
-  skinType: string[];
-  features: string[];
-  category: {
-    id: string;
-    name: string;
-  };
-}
-
-interface ProductCardRelated {
-  id: string;
-  name: string;
-  price: number;
-  discountedPrice?: number | null;
-  stock?: number;
-  images?: string[];
-  category: {
-    id: string;
-  };
 }
 
 export function ProductDetailPage() {
@@ -86,7 +30,7 @@ export function ProductDetailPage() {
 
   const effectiveProductId = isUuidLike(productId) ? productId : undefined;
 
-  const { data, loading, error } = useQuery(GET_PRODUCT, {
+  const { data, loading, error } = useQuery(GET_PRODUCT_DETAIL, {
     variables: { id: effectiveProductId! },
     skip: !effectiveProductId,
     fetchPolicy: 'cache-and-network',
@@ -138,14 +82,15 @@ export function ProductDetailPage() {
       productId,
       effectiveProductId,
       errors: error.message,
-      graphQLErrors: (error as any).graphQLErrors,
+      graphQLErrors: error.graphQLErrors,
     });
   }, [error, productId, effectiveProductId]);
 
   const addToCart = async () => {
     if (!product || !effectiveProductId) return;
     if (product.stock === 0) return;
-    const current = (items.find((item: any) => item.productId === effectiveProductId)?.quantity ?? 0) as number;
+    const current =
+      (items.find((item: CartItemLike) => item.productId === effectiveProductId)?.quantity ?? 0) as number;
     const nextQuantity = current + quantity;
     if (nextQuantity > product.stock) {
       setToastMessage('Нөөц хүрэлцэхгүй байна');
@@ -400,14 +345,14 @@ export function ProductDetailPage() {
             <h3 className="text-xl font-bold text-gray-800">Холбоотой бүтээгдэхүүн</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {relatedProducts.map((relatedProduct: any) => (
+            {relatedProducts.map((relatedProduct) => (
               <ProductCard
                 key={relatedProduct.id}
                 id={relatedProduct.id}
                 name={relatedProduct.name}
                 price={relatedProduct.price}
                 discountedPrice={relatedProduct.discountedPrice}
-                image={relatedProduct.images?.[0]}
+                image={relatedProduct.images?.[0] || '/placeholder-product.jpg'}
                 categoryId={relatedProduct.category.id}
                 stock={relatedProduct.stock}
                 LinkComponent={Link}

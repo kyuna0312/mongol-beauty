@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@mongol-beauty/ui';
 import { CREATE_PRODUCT, UPDATE_PRODUCT } from '@/graphql/mutations';
@@ -75,8 +74,8 @@ export function AdminProductFormPage() {
         await createProduct({ variables: { input } });
       }
       navigate('/admin/products');
-    } catch (error: any) {
-      alert(`Алдаа: ${error.message}`);
+    } catch (error: unknown) {
+      alert(`Алдаа: ${error instanceof Error ? error.message : 'Алдаа гарлаа'}`);
     }
   };
 

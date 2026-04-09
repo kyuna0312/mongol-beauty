@@ -1,59 +1,20 @@
 import { useState, memo, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
-import { gql } from '@apollo/client';
 import { ProductCard, setCartToastCallback, ProductListSkeleton, CartToast } from '@mongol-beauty/ui';
 import { Button } from '@mongol-beauty/ui';
 import { Filter, Grid3x3, List, ArrowUpDown } from 'lucide-react';
-import { PRODUCT_CARD_FRAGMENT } from '@/graphql/fragments';
+import { GET_CATEGORY_BASIC, GET_PRODUCTS_PAGED } from '@/graphql/catalog';
 import { ErrorDisplay } from '@/components/ErrorDisplay';
 import { PageHead } from '@/features/content/components/PageHead';
 import { useCart } from '@/hooks/useCart';
-
-const GET_PRODUCTS = gql`
-  query GetProducts($categoryId: ID, $limit: Int, $offset: Int) {
-    products(categoryId: $categoryId, limit: $limit, offset: $offset) {
-      ...ProductCardFragment
-    }
-  }
-  ${PRODUCT_CARD_FRAGMENT}
-`;
-
-const GET_CATEGORY = gql`
-  query GetCategory($id: ID!) {
-    category(id: $id) {
-      id
-      name
-    }
-  }
-`;
+import { CartItemLike } from '@/interfaces/cart';
+import { ProductCardRaw, ProductCardView } from '@/interfaces/catalog';
 
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
 type ViewMode = 'grid' | 'list';
 const PAGE_SIZE = 24;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-interface ProductCardRaw {
-  id: string;
-  name: string;
-  price: number;
-  discountedPrice?: number | null;
-  stock?: number;
-  images?: string[] | null;
-  category: {
-    id: string;
-  };
-}
-
-interface ProductCardView {
-  id: string;
-  name: string;
-  price: number;
-  discountedPrice?: number | null;
-  image: string;
-  categoryId: string;
-  stock: number;
-}
 
 function toProductCardView(product: ProductCardRaw): ProductCardView {
   return {
@@ -94,7 +55,7 @@ export const ProductsPage = memo(function ProductsPage() {
     error: productsError,
     fetchMore,
     networkStatus,
-  } = useQuery(GET_PRODUCTS, {
+  } = useQuery(GET_PRODUCTS_PAGED, {
     variables: { categoryId: safeCategoryId, limit: PAGE_SIZE, offset: 0 },
     fetchPolicy: 'cache-and-network',
     nextFetchPolicy: 'cache-first',
@@ -103,7 +64,7 @@ export const ProductsPage = memo(function ProductsPage() {
   });
   const isFetchingMore = networkStatus === 3;
 
-  const { data: categoryData } = useQuery(GET_CATEGORY, {
+  const { data: categoryData } = useQuery(GET_CATEGORY_BASIC, {
     variables: { id: safeCategoryId },
     skip: !safeCategoryId,
     fetchPolicy: 'cache-first',
@@ -133,7 +94,8 @@ export const ProductsPage = memo(function ProductsPage() {
 
   const handleQuickAdd = useCallback(
     async (productId: string, price: number, stock: number) => {
-      const current = (cartItems.find((item: any) => item.productId === productId)?.quantity ?? 0) as number;
+      const current =
+        (cartItems.find((item: CartItemLike) => item.productId === productId)?.quantity ?? 0) as number;
       if (current >= stock) {
         setToastMessage('Нөөц хүрэлцэхгүй байна');
         return false;

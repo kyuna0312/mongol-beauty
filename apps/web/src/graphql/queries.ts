@@ -175,3 +175,88 @@ export const GET_USERS = gql`
     }
   }
 `;
+
+export const GET_ADMIN_STATS = gql`
+  query GetAdminStats {
+    orders {
+      id
+      totalPrice
+      status
+      createdAt
+    }
+    products {
+      id
+      stock
+    }
+    categories {
+      id
+    }
+  }
+`;
+
+export const GET_ADMIN_PRODUCTS = gql`
+  query GetAdminProducts {
+    products {
+      ...ProductFragment
+    }
+  }
+  ${PRODUCT_FRAGMENT}
+`;
+
+export const GET_ADMIN_PAGES = gql`
+  query GetAdminPages {
+    adminPages {
+      id
+      slug
+      title
+      content
+      metaTitle
+      metaDescription
+      isPublished
+      updatedAt
+    }
+  }
+`;
+
+export const GET_PAGE_PREVIEW = gql`
+  query PagePreview($slug: String!) {
+    pagePreview(slug: $slug) {
+      id
+      slug
+      title
+      content
+      metaTitle
+      metaDescription
+      isPublished
+      updatedAt
+    }
+  }
+`;
+
+export const GET_PAGE_BY_SLUG = gql`
+  query GetPageBySlug($slug: String!) {
+    page(slug: $slug) {
+      id
+      slug
+      title
+      content
+      metaTitle
+      metaDescription
+      updatedAt
+    }
+  }
+`;
+
+export const GET_PAGE_ABOUT = gql`
+  query GetAboutPage {
+    page(slug: "about") {
+      id
+      slug
+      title
+      content
+      metaTitle
+      metaDescription
+      updatedAt
+    }
+  }
+`;

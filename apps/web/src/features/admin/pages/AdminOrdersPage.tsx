@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Package, CheckCircle, XCircle, Truck } from 'lucide-react';
+import { Package, CheckCircle, XCircle, Truck, type LucideIcon } from 'lucide-react';
 import { Button } from '@mongol-beauty/ui';
 import { GET_ADMIN_ORDERS } from '@/graphql/queries';
 import { UPDATE_ORDER_STATUS } from '@/graphql/mutations';
+import { AdminOrder, OrderStatus } from '@/interfaces/admin';
 
-const OrderStatusConfig: Record<string, { label: string; color: string; icon: any }> = {
+const OrderStatusConfig: Record<OrderStatus, { label: string; color: string; icon: LucideIcon }> = {
   WAITING_PAYMENT: { label: 'Төлбөр хүлээж байна', color: 'bg-yellow-100 text-yellow-700', icon: Package },
   CONFIRMED: { label: 'Баталгаажсан', color: 'bg-blue-100 text-blue-700', icon: CheckCircle },
   SHIPPING: { label: 'Хүргэж байна', color: 'bg-purple-100 text-purple-700', icon: Truck },
   COMPLETED: { label: 'Дууссан', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-  CANCELLED: { label: 'Цуцлагдсан', color: 'bg-red-100 text-red-700', icon: XCircle },
+  CANCELLED: { label: 'Цуцлагдсан', color: 'bg-amber-100 text-amber-700', icon: XCircle },
 };
 
 export function AdminOrdersPage() {
@@ -39,8 +40,9 @@ export function AdminOrdersPage() {
         variables: { orderId, status: newStatus },
       });
       setPendingAction(null);
-    } catch (err: any) {
-      alert(`Алдаа: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Төлөв шинэчлэх үед алдаа гарлаа';
+      alert(`Алдаа: ${message}`);
     } finally {
       setUpdatingOrderId(null);
     }
@@ -73,9 +75,9 @@ export function AdminOrdersPage() {
     );
   }
 
-  let orders = data?.adminOrders || [];
+  let orders = (data?.adminOrders || []) as AdminOrder[];
   if (statusFilter) {
-    orders = orders.filter((o: any) => o.status === statusFilter);
+    orders = orders.filter((o) => o.status === statusFilter);
   }
 
   return (
@@ -156,7 +158,7 @@ export function AdminOrdersPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map((order: any, index: number) => {
+          {orders.map((order, index: number) => {
             const statusConfig = OrderStatusConfig[order.status] || OrderStatusConfig.WAITING_PAYMENT;
             const StatusIcon = statusConfig.icon;
 
@@ -203,7 +205,7 @@ export function AdminOrdersPage() {
                 <div className="mb-4 bg-gray-50 rounded-lg p-3">
                   <p className="text-sm font-semibold text-gray-700 mb-2">Бүтээгдэхүүн:</p>
                   <div className="space-y-2">
-                    {order.items?.map((item: any) => (
+                    {order.items?.map((item) => (
                       <div
                         key={item.id}
                         className="flex items-center justify-between text-sm bg-white p-2 rounded-lg"
@@ -223,7 +225,7 @@ export function AdminOrdersPage() {
                   <div className="mb-4 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => setPreviewReceiptUrl(order.paymentReceiptUrl)}
+                      onClick={() => setPreviewReceiptUrl(order.paymentReceiptUrl || null)}
                       className="inline-flex items-center gap-2 rounded-lg border border-primary-200 px-3 py-1.5 text-primary-700 text-sm font-medium hover:bg-primary-50 transition-colors"
                     >
                       <span>🖼️</span>

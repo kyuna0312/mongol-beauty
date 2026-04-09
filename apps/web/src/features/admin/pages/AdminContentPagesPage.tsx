@@ -1,38 +1,10 @@
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@mongol-beauty/ui';
 import { Eye, Save } from 'lucide-react';
-
-const GET_ADMIN_PAGES = gql`
-  query GetAdminPages {
-    adminPages {
-      id
-      slug
-      title
-      content
-      metaTitle
-      metaDescription
-      isPublished
-      updatedAt
-    }
-  }
-`;
-
-const UPSERT_PAGE = gql`
-  mutation UpsertPage($input: UpsertPageInput!) {
-    upsertPage(input: $input) {
-      id
-      slug
-      title
-      content
-      metaTitle
-      metaDescription
-      isPublished
-      updatedAt
-    }
-  }
-`;
+import { GET_ADMIN_PAGES } from '@/graphql/queries';
+import { UPSERT_PAGE } from '@/graphql/mutations';
 
 const PAGE_ORDER = ['about', 'faq', 'shipping', 'returns', 'privacy'] as const;
 

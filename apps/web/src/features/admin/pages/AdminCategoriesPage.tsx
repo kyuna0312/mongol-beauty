@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
-import { gql } from '@apollo/client';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Folder } from 'lucide-react';
 import { Button } from '@mongol-beauty/ui';
 import { DELETE_CATEGORY } from '@/graphql/mutations';
@@ -44,10 +42,10 @@ export function AdminCategoriesPage() {
   if (error) {
     return (
       <div className="p-4 lg:p-6 max-w-7xl mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <div className="text-red-500 text-4xl mb-3">⚠️</div>
-          <p className="text-red-800 font-semibold mb-1">Алдаа гарлаа</p>
-          <p className="text-red-600 text-sm">{error.message}</p>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+          <div className="text-amber-500 text-4xl mb-3">⚠️</div>
+          <p className="text-amber-800 font-semibold mb-1">Алдаа гарлаа</p>
+          <p className="text-amber-700 text-sm">{error.message}</p>
         </div>
       </div>
     );
@@ -126,7 +124,7 @@ export function AdminCategoriesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(category.id, category.name)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300 transition-colors"
+                      className="text-amber-700 hover:text-amber-800 hover:bg-amber-50 hover:border-amber-300 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

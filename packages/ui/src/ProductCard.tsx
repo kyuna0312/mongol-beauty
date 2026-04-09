@@ -1,4 +1,4 @@
-import { memo, useState, ReactNode } from 'react';
+import { memo, useState } from 'react';
 import { Card } from './Card';
 import { OptimizedImage } from './OptimizedImage';
 import { QuickAddButton } from './QuickAddButton';
@@ -52,7 +52,10 @@ export const ProductCard = memo(function ProductCard({
   const productUrl = href || `/products/detail/${id}`;
 
   const cardContent = (
-    <Card className="overflow-hidden border border-primary-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95">
+    <Card
+      data-category-id={categoryId}
+      className="overflow-hidden border border-primary-100/90 hover:border-primary-300/80 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 h-full flex flex-col group rounded-2xl bg-white/95"
+    >
       <div className="aspect-square bg-gradient-to-br from-primary-50/90 via-amber-50/40 to-beige-50/80 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent z-10"></div>
         <OptimizedImage
