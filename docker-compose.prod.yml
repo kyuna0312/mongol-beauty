@@ -1,0 +1,215 @@
+# =============================================================================
+# Mongol Beauty — Production Docker Compose
+# Usage: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+# =============================================================================
+
+name: mongol-beauty-prod
+
+services:
+
+  # ── Reverse proxy + SSL ──────────────────────────────────────────────────
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: mb-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - mongol-beauty-prod-network
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: mb-acme
+    restart: unless-stopped
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    environment:
+      DEFAULT_EMAIL: ${LETSENCRYPT_EMAIL}
+    depends_on:
+      - nginx-proxy
+    networks:
+      - mongol-beauty-prod-network
+
+  # ── Database ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: mb-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - mongol-beauty-prod-network
+
+  # ── Backend services ─────────────────────────────────────────────────────
+  order-service:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mb-order-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      SERVICE_MODE: order
+      PORT: 4010
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SYNCHRONIZE: "false"
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+    networks:
+      - mongol-beauty-prod-network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mb-payment-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      SERVICE_MODE: payment
+      PORT: 4020
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SYNCHRONIZE: "false"
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      ORDER_SERVICE_URL: http://order-service:4010
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - mongol-beauty-prod-network
+
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mb-gateway
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      SERVICE_MODE: gateway
+      PORT: 4000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SYNCHRONIZE: "false"
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      FRONTEND_URL: ${FRONTEND_URL}
+      ORDER_SERVICE_URL: http://order-service:4010
+      PAYMENT_SERVICE_URL: http://payment-service:4020
+      VIRTUAL_HOST: ${API_DOMAIN}
+      LETSENCRYPT_HOST: ${API_DOMAIN}
+      VIRTUAL_PORT: "4000"
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - mongol-beauty-prod-network
+
+  # ── Frontend ─────────────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_GRAPHQL_URL: https://${API_DOMAIN}/graphql
+    container_name: mb-web
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: ${DOMAIN}
+      LETSENCRYPT_HOST: ${DOMAIN}
+    depends_on:
+      - nginx-proxy
+    networks:
+      - mongol-beauty-prod-network
+
+  # ── Weekly DB backup ─────────────────────────────────────────────────────
+  db-backup:
+    image: postgres:15-alpine
+    container_name: mb-db-backup
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+      DB_HOST: postgres
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+    volumes:
+      - /var/backups/mongol-beauty:/backups
+      - ./scripts/db-backup.sh:/scripts/db-backup.sh:ro
+    command: >
+      sh -c "
+        chmod +x /scripts/db-backup.sh &&
+        echo '59 23 * * 6 /scripts/db-backup.sh >> /backups/backup.log 2>&1' | crontab - &&
+        crond -f -l 2
+      "
+    networks:
+      - mongol-beauty-prod-network
+
+volumes:
+  postgres_data:
+    name: mb_prod_postgres_data
+  uploads_data:
+    name: mb_prod_uploads_data
+  certs:
+    name: mb_prod_certs
+  vhost:
+    name: mb_prod_vhost
+  html:
+    name: mb_prod_html
+  acme:
+    name: mb_prod_acme
+
+networks:
+  mongol-beauty-prod-network:
+    name: mongol-beauty-prod-network
