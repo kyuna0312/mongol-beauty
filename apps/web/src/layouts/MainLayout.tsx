@@ -45,11 +45,11 @@ export function MainLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b border-primary-100/80 bg-white/85 shadow-soft backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-rose-100/60 bg-white/90 shadow-soft backdrop-blur-xl">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="flex items-center justify-between gap-4 py-3 md:py-4">
             <Link to="/" className="group flex shrink-0 items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 to-amber-50/50 p-1 shadow-sm ring-1 ring-primary-100/90 transition-all duration-300 group-hover:ring-primary-200/80 md:h-12 md:w-12">
+              <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-terracotta-50 to-rose-50 p-1 shadow-sm ring-1 ring-terracotta-100/80 transition-all duration-300 group-hover:ring-terracotta-200 md:h-12 md:w-12">
                 <img
                   src="/incellderm-logo.png"
                   alt="INCELLDERM MONGOLIA Logo"
@@ -61,7 +61,7 @@ export function MainLayout() {
                     if (parent && !parent.querySelector('.fallback-text')) {
                       const fallback = document.createElement('div');
                       fallback.className =
-                        'fallback-text flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 text-lg font-bold text-white';
+                        'fallback-text flex h-full w-full items-center justify-center rounded-xl bg-terracotta-gradient text-lg font-bold text-white';
                       fallback.textContent = 'ID';
                       parent.appendChild(fallback);
                     }
@@ -69,30 +69,30 @@ export function MainLayout() {
                 />
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="font-display text-lg font-semibold tracking-tight text-primary-700 transition-colors group-hover:text-primary-600 md:text-xl">
+                <span className="font-display text-lg font-semibold tracking-tight text-plum-900 transition-colors group-hover:text-terracotta-600 md:text-xl">
                   INCELLDERM
                 </span>
-                <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-stone-500 md:text-xs">
+                <span className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted md:text-xs">
                   Mongolia
                 </span>
               </div>
             </Link>
 
-            <nav className="hidden items-center gap-1 text-sm font-medium text-stone-600 lg:flex">
+            <nav className="hidden items-center gap-2 text-sm font-medium text-stone-600 lg:flex">
               <Link
                 to="/"
-                className={`rounded-xl px-3 py-2 transition-colors ${
-                  location.pathname === '/' ? 'bg-primary-500/10 text-primary-800' : 'hover:bg-primary-50/80'
+                className={`rounded-lg px-3 py-2 transition-all duration-200 ${
+                  location.pathname === '/' ? 'bg-terracotta-50 text-terracotta-700' : 'text-stone-600 hover:text-terracotta-600 hover:bg-terracotta-50/50'
                 }`}
               >
                 Нүүр
               </Link>
               <Link
                 to="/products"
-                className={`rounded-xl px-3 py-2 transition-colors ${
+                className={`rounded-lg px-3 py-2 transition-all duration-200 ${
                   location.pathname.startsWith('/products')
-                    ? 'bg-primary-500/10 text-primary-800'
-                    : 'hover:bg-primary-50/80'
+                    ? 'bg-terracotta-50 text-terracotta-700'
+                    : 'text-stone-600 hover:text-terracotta-600 hover:bg-terracotta-50/50'
                 }`}
               >
                 Бүтээгдэхүүн
@@ -106,21 +106,21 @@ export function MainLayout() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Бүтээгдэхүүн хайх..."
-                  className="w-full rounded-full border border-primary-100/90 bg-white/70 py-2.5 pl-11 pr-4 text-stone-800 placeholder:text-stone-400 transition-shadow focus:border-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-200/80"
+                  className="w-full rounded-full border border-rose-200/70 bg-rose-50/40 py-2.5 pl-11 pr-4 text-stone-800 placeholder:text-muted transition-all duration-200 focus:border-terracotta-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-terracotta-200/50"
                 />
-                <Search className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-stone-400" />
+                <Search className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-muted" />
               </div>
             </form>
 
             <div className="hidden shrink-0 items-center gap-2 md:flex">
               <Link
                 to="/cart"
-                className="relative rounded-xl p-2.5 text-primary-700 transition-colors hover:bg-primary-50/90"
+                className="relative rounded-xl p-2.5 text-plum-800 transition-all duration-200 hover:bg-rose-50/80 hover:scale-105"
                 aria-label="Сагс"
               >
                 <ShoppingCart className="h-[22px] w-[22px]" />
                 {cartCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-primary-500 px-0.5 text-[10px] font-bold text-white shadow-sm">
+                  <span className="absolute -right-0.5 -top-0.5 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-full bg-terracotta-500 px-0.5 text-[10px] font-bold text-white shadow-sm animate-scale-in">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
@@ -131,32 +131,32 @@ export function MainLayout() {
                   <button
                     type="button"
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 rounded-xl p-2 transition-colors duration-200 hover:bg-primary-50/90"
+                    className="flex items-center gap-2 rounded-xl p-2 transition-all duration-200 hover:bg-rose-50/80"
                     aria-label="Профайл"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-bold text-white">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-terracotta-gradient text-sm font-bold text-white shadow-md">
                       {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                   </button>
                   {showUserMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-primary-100/90 bg-white py-2 shadow-soft">
-                        <div className="border-b border-primary-100/80 px-4 py-2">
-                          <p className="text-sm font-semibold text-gray-900">{user?.name || 'Хэрэглэгч'}</p>
-                          <p className="text-xs text-gray-500">{user?.email}</p>
+                      <div className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-2xl border border-rose-100/80 bg-white py-2 shadow-lg animate-scale-in">
+                        <div className="border-b border-rose-100/80 bg-gradient-to-r from-rose-50/50 to-terracotta-50/30 px-4 py-2.5">
+                          <p className="text-sm font-semibold text-plum-900">{user?.name || 'Хэрэглэгч'}</p>
+                          <p className="text-xs text-muted">{user?.email}</p>
                           {user?.userType === 'SUBSCRIBED_USER' && (
-                            <span className="mt-1 inline-block rounded-full bg-gold-100 px-2 py-0.5 text-xs font-medium text-gold-800">
+                            <span className="mt-1.5 inline-block rounded-full bg-gold-100/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gold-800">
                               Захиалгатай
                             </span>
                           )}
                         </div>
                         <Link
                           to="/profile"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-primary-50/80"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-stone-700 transition-colors hover:bg-rose-50/70"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <User className="h-4 w-4" />
+                          <User className="h-4 w-4 text-terracotta-500" />
                           Профайл
                         </Link>
                         <button
@@ -165,7 +165,7 @@ export function MainLayout() {
                             logout();
                             setShowUserMenu(false);
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-primary-700 transition-colors hover:bg-primary-50"
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-terracotta-600 transition-colors hover:bg-terracotta-50/50"
                         >
                           <LogOut className="h-4 w-4" />
                           Гарах
@@ -177,7 +177,7 @@ export function MainLayout() {
               ) : (
                 <Link
                   to="/login"
-                  className="rounded-full bg-primary-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-600"
+                  className="rounded-full bg-terracotta-gradient px-4 py-2 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:shadow-lg hover:scale-105"
                 >
                   Нэвтрэх
                 </Link>

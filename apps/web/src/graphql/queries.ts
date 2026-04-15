@@ -79,6 +79,7 @@ export const GET_ADMIN_ORDERS = gql`
         totalPrice
         status
         paymentReceiptUrl
+        deliveryAddress
         createdAt
         updatedAt
         items {

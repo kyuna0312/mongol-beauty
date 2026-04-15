@@ -14,6 +14,7 @@ export function CheckoutPage() {
   const { items: cart, clear, mergeLocalCartToServer } = useCart();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -99,6 +100,7 @@ export function CheckoutPage() {
             })),
             phone: phone || undefined,
             name: name || undefined,
+            deliveryAddress: deliveryAddress || undefined,
           },
         },
       });
@@ -176,6 +178,18 @@ export function CheckoutPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Таны нэр"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Хүргэлтийн хаяг
+                </label>
+                <input
+                  type="text"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="Дүүрэг, хороо, байр, тоот..."
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>

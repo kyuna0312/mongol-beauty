@@ -223,6 +223,15 @@ export function AdminOrdersPage() {
                     <span>Шинэчлэгдсэн: {new Date(order.updatedAt).toLocaleDateString('mn-MN')}</span>
                   </div>
 
+                  {/* Delivery address */}
+                  {order.deliveryAddress && (
+                    <div className="flex items-start gap-2 text-xs bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                      <span className="text-blue-400 mt-0.5">📍</span>
+                      <span className="text-blue-800 font-medium">Хүргэлтийн хаяг:</span>
+                      <span className="text-blue-700">{order.deliveryAddress}</span>
+                    </div>
+                  )}
+
                   {/* Items */}
                   {order.items && order.items.length > 0 && (
                     <div className="bg-gray-50 rounded-lg divide-y divide-gray-100">
@@ -240,22 +249,30 @@ export function AdminOrdersPage() {
 
                   {/* Receipt */}
                   {order.paymentReceiptUrl && (
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
+                    <div className="space-y-2">
+                      <img
+                        src={order.paymentReceiptUrl}
+                        alt="Төлбөрийн баримт"
+                        className="w-full max-h-48 object-contain rounded-xl border border-gray-200 bg-gray-50 cursor-pointer"
                         onClick={() => setPreviewUrl(order.paymentReceiptUrl || null)}
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 border border-primary-200 rounded-lg px-3 py-1.5 hover:bg-primary-50 transition-colors"
-                      >
-                        🖼 Баримт харах
-                      </button>
-                      <a
-                        href={order.paymentReceiptUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                      >
-                        📄 Шинэ цонхоор
-                      </a>
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewUrl(order.paymentReceiptUrl || null)}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 border border-primary-200 rounded-lg px-3 py-1.5 hover:bg-primary-50 transition-colors"
+                        >
+                          🖼 Баримт харах
+                        </button>
+                        <a
+                          href={order.paymentReceiptUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors"
+                        >
+                          📄 Шинэ цонхоор
+                        </a>
+                      </div>
                     </div>
                   )}
                   {!order.paymentReceiptUrl && order.status === 'WAITING_PAYMENT' && (

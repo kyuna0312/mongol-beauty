@@ -1,21 +1,47 @@
 /**
- * Design tokens — soft beauty e‑commerce (clean, gentle, slightly playful).
+ * Design tokens — "Ulaanbaatar Glow" cosmetic beauty store
+ * Warm terracotta, deep plum, cream, rose gold with editorial elegance
  */
 @layer base {
   :root {
-    --mb-surface: #fdf8f6;
+    /* Surface colors */
+    --mb-surface: #faf6f3;
+    --mb-surface-alt: #f5efec;
     --mb-elevated: #ffffff;
-    --mb-ink: #44403c;
-    --mb-muted: #a8a29e;
-    --mb-brand: #3e725c;
-    --mb-brand-soft: rgba(62, 114, 92, 0.1);
+    --mb-elevated-2: #fefdfd;
+
+    /* Text colors */
+    --mb-ink: #2a2a2a;
+    --mb-ink-soft: #4a4a4a;
+    --mb-muted: #8b847f;
+    --mb-muted-light: #a89f99;
+
+    /* Brand colors - Cosmetic palette */
+    --mb-terracotta: #c4786e;
+    --mb-terracotta-dark: #a55f55;
+    --mb-terracotta-light: #d99085;
+    --mb-plum: #4a2c3a;
+    --mb-plum-light: #6b4454;
+    --mb-plum-soft: rgba(74, 44, 58, 0.08);
+    --mb-rose-gold: #b7849f;
+    --mb-rose-gold-light: #d4a5b9;
+    --mb-rose-gold-soft: rgba(183, 132, 159, 0.12);
+    --mb-cream: #faf6f3;
+    --mb-gold-accent: #c9a959;
+
+    /* Functional */
+    --mb-ring: rgba(183, 132, 159, 0.5);
     --mb-blush: #fce7ec;
     --mb-peach: #fff0e8;
-    --mb-ring: rgba(158, 197, 178, 0.7);
-    --mb-radius-lg: 1.35rem;
-    --mb-radius-xl: 1.85rem;
-    /* Mirrors tailwind `fontFamily.display` — use here instead of @apply font-display */
-    --mb-font-display: 'Quicksand', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* Spacing */
+    --mb-radius-lg: 1.25rem;
+    --mb-radius-xl: 1.75rem;
+    --mb-radius-2xl: 2.25rem;
+
+    /* Typography */
+    --mb-font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+    --mb-font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   }
 }
 
@@ -26,36 +52,65 @@
 
   .mb-section-title {
     font-family: var(--mb-font-display);
-    @apply text-lg md:text-xl font-semibold tracking-tight text-stone-700;
+    @apply text-2xl md:text-3xl font-semibold text-mb-ink;
   }
 
   .mb-section-eyebrow {
-    @apply text-[11px] md:text-xs font-semibold uppercase tracking-[0.22em] text-primary-600/85 mb-1.5;
+    @apply text-[11px] md:text-xs font-bold uppercase tracking-[0.25em] text-rose-gold mb-2;
   }
 
   .mb-card-surface {
-    @apply bg-white/95 rounded-[1.35rem] border border-primary-100/90 backdrop-blur-[2px];
+    @apply bg-white rounded-[1.25rem] border border-rose-100/50 backdrop-blur-sm;
     box-shadow:
-      0 2px 20px -4px rgba(62, 114, 92, 0.09),
-      0 8px 28px -14px rgba(120, 53, 15, 0.05);
+      0 4px 24px -8px rgba(74, 44, 58, 0.12),
+      0 1px 3px -1px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mb-card-surface:hover {
+    box-shadow:
+      0 12px 40px -12px rgba(74, 44, 58, 0.18),
+      0 4px 8px -2px rgba(196, 120, 110, 0.15);
+    transform: translateY(-2px);
   }
 
   .mb-btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-500 text-white font-semibold px-6 py-3 shadow-sm hover:bg-primary-600 active:scale-[0.98] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fdf8f6];
-    box-shadow: 0 4px 18px -4px rgba(62, 114, 92, 0.3);
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-terracotta text-white font-medium px-6 py-3 shadow-md hover:bg-terracotta-dark active:scale-[0.98] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf6f3];
+    box-shadow: 0 4px 14px -4px rgba(196, 120, 110, 0.5);
+  }
+
+  .mb-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-terracotta/30 bg-white/80 text-terracotta font-medium px-6 py-3 shadow-sm hover:bg-terracotta/5 hover:border-terracotta/50 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-gold/50 focus-visible:ring-offset-2;
   }
 
   .mb-chip {
-    @apply inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium border border-primary-100/90 bg-white/80 text-stone-600 transition-colors hover:bg-primary-50/60;
+    @apply inline-flex items-center rounded-full px-3.5 py-1.5 text-sm font-medium border border-rose-200/60 bg-white/70 text-stone-600 transition-all duration-200 hover:bg-rose-50/50 hover:border-rose-300/70;
   }
 
   .mb-hero-gradient {
     background: linear-gradient(
       135deg,
-      #fce4ec 0%,
-      #f8bbd9 28%,
-      #e8b4bc 55%,
-      #d9a5b0 100%
+      #fff0e8 0%,
+      #fce7ec 35%,
+      #f5efec 65%,
+      #faf6f3 100%
+    );
+  }
+
+  .mb-plum-gradient {
+    background: linear-gradient(
+      135deg,
+      #4a2c3a 0%,
+      #6b4454 50%,
+      #8b5a6a 100%
+    );
+  }
+
+  .mb-terracotta-gradient {
+    background: linear-gradient(
+      135deg,
+      #c4786e 0%,
+      #a55f55 100%
     );
   }
 
@@ -69,7 +124,7 @@
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    opacity: 0.035;
+    opacity: 0.02;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
@@ -163,10 +218,60 @@
   }
 
   .mb-markdown img {
-    @apply my-4 max-w-full rounded-xl border border-primary-100/80;
+    @apply my-4 max-w-full rounded-xl border border-rose-100/80;
   }
 
   .mb-focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#fdf8f6];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-gold/60 focus-visible:ring-offset-2 focus-visible:ring-offset-[#faf6f3];
+  }
+
+  /* Editorial display text */
+  .mb-display-text {
+    font-family: var(--mb-font-display);
+    @apply text-4xl md:text-5xl lg:text-6xl font-semibold leading-[1.1] text-mb-ink;
+  }
+
+  /* Product card hover overlay */
+  .mb-product-overlay {
+    @apply absolute inset-0 bg-gradient-to-t from-plum-900/60 via-transparent to-transparent opacity-0 transition-opacity duration-500;
+  }
+
+  .mb-card-surface:hover .mb-product-overlay {
+    @apply opacity-100;
+  }
+
+  /* Quick add button - slides up on hover */
+  .mb-quick-add {
+    @apply absolute bottom-0 left-0 right-0 p-3 translate-y-full opacity-0 transition-all duration-300;
+  }
+
+  .mb-card-surface:hover .mb-quick-add {
+    @apply translate-y-0 opacity-100;
+  }
+
+  /* Shimmer effect for loading states */
+  .mb-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(250, 246, 243, 0) 0%,
+      rgba(250, 246, 243, 0.8) 50%,
+      rgba(250, 246, 243, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Elegant divider */
+  .mb-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-rose-200/60 to-transparent;
+  }
+
+  /* Badge styles */
+  .mb-badge-new {
+    @apply inline-flex items-center rounded-full bg-terracotta px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white;
+  }
+
+  .mb-badge-sale {
+    @apply inline-flex items-center rounded-full bg-plum-900 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white;
   }
 }
