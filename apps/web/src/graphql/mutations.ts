@@ -12,7 +12,7 @@ export const CONFIRM_PAYMENT = gql`
 `;
 
 export const UPDATE_ORDER_STATUS = gql`
-  mutation UpdateOrderStatus($orderId: ID!, $status: String!) {
+  mutation UpdateOrderStatus($orderId: ID!, $status: OrderStatus!) {
     updateOrderStatus(orderId: $orderId, status: $status) {
       id
       status

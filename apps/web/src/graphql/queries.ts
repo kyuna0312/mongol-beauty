@@ -88,7 +88,6 @@ export const GET_ADMIN_ORDERS = gql`
           product {
             id
             name
-            images
           }
         }
         user {
@@ -130,21 +129,18 @@ export const GET_USERS = gql`
 
 export const GET_ADMIN_STATS = gql`
   query GetAdminStats {
-    adminOrders(limit: 1000) {
-      total
-      items {
+    adminStats {
+      totalOrders
+      completedRevenue
+      pendingOrders
+      totalProducts
+      lowStockProducts
+      recentOrders {
         id
         totalPrice
         status
         createdAt
       }
-    }
-    products {
-      id
-      stock
-    }
-    categories {
-      id
     }
   }
 `;

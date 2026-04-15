@@ -31,6 +31,16 @@ export type AdminOrdersPage = {
   total: Scalars['Int']['output'];
 };
 
+export type AdminStatsResult = {
+  __typename?: 'AdminStatsResult';
+  completedRevenue: Scalars['Int']['output'];
+  lowStockProducts: Scalars['Int']['output'];
+  pendingOrders: Scalars['Int']['output'];
+  recentOrders: Array<Order>;
+  totalOrders: Scalars['Int']['output'];
+  totalProducts: Scalars['Int']['output'];
+};
+
 export type AdminUser = {
   __typename?: 'AdminUser';
   email: Scalars['String']['output'];
@@ -222,7 +232,7 @@ export type MutationUpdateCategoryArgs = {
 
 export type MutationUpdateOrderStatusArgs = {
   orderId: Scalars['ID']['input'];
-  status: Scalars['String']['input'];
+  status: OrderStatus;
 };
 
 
@@ -313,6 +323,7 @@ export type Query = {
   adminMe: Maybe<User>;
   adminOrders: AdminOrdersPage;
   adminPages: Array<Page>;
+  adminStats: AdminStatsResult;
   categories: Array<Category>;
   category: Maybe<Category>;
   me: Maybe<User>;
@@ -394,7 +405,7 @@ export type SkinType =
 
 export type UpdateCategoryInput = {
   description?: InputMaybe<Scalars['String']['input']>;
-  id: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
   imageUrl?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
@@ -555,7 +566,7 @@ export type ConfirmPaymentMutation = { __typename?: 'Mutation', confirmPayment: 
 
 export type UpdateOrderStatusMutationVariables = Exact<{
   orderId: Scalars['ID']['input'];
-  status: Scalars['String']['input'];
+  status: OrderStatus;
 }>;
 
 
@@ -709,7 +720,7 @@ export type GetAdminOrdersQueryVariables = Exact<{
 }>;
 
 
-export type GetAdminOrdersQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, limit: number, offset: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, paymentReceiptUrl: string | null, createdAt: any, updatedAt: any, items: Array<{ __typename?: 'OrderItem', id: string, quantity: number, price: number, product: { __typename?: 'Product', id: string, name: string, images: Array<string> } }>, user: { __typename?: 'User', id: string, name: string | null, phone: string | null } | null }> } };
+export type GetAdminOrdersQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, limit: number, offset: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, paymentReceiptUrl: string | null, createdAt: any, updatedAt: any, items: Array<{ __typename?: 'OrderItem', id: string, quantity: number, price: number, product: { __typename?: 'Product', id: string, name: string } }>, user: { __typename?: 'User', id: string, name: string | null, phone: string | null } | null }> } };
 
 export type GetAdminMeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -724,7 +735,7 @@ export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 
 export type GetAdminStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAdminStatsQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, createdAt: any }> }, products: Array<{ __typename?: 'Product', id: string, stock: number }>, categories: Array<{ __typename?: 'Category', id: string }> };
+export type GetAdminStatsQuery = { __typename?: 'Query', adminStats: { __typename?: 'AdminStatsResult', totalOrders: number, completedRevenue: number, pendingOrders: number, totalProducts: number, lowStockProducts: number, recentOrders: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, createdAt: any }> } };
 
 export type GetAdminProductsQueryVariables = Exact<{ [key: string]: never; }>;
 

@@ -20,7 +20,7 @@ export class OrderItem {
   orderId: string;
 
   @Field(() => Product)
-  @ManyToOne(() => Product, { eager: true })
+  @ManyToOne(() => Product)
   @JoinColumn({ name: 'productId' })
   product: Product;
 

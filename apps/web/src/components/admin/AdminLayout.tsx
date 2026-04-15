@@ -1,9 +1,19 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Folder, ShoppingBag, Users, ArrowLeft, LogOut, FileText } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Package,
+  Folder,
+  ShoppingBag,
+  Users,
+  LogOut,
+  FileText,
+  ExternalLink,
+  ChevronRight,
+} from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const adminNavItems = [
-  { path: '/admin', label: 'Самбар', icon: LayoutDashboard },
+  { path: '/admin', label: 'Самбар', icon: LayoutDashboard, exact: true },
   { path: '/admin/products', label: 'Бүтээгдэхүүн', icon: Package },
   { path: '/admin/categories', label: 'Ангилал', icon: Folder },
   { path: '/admin/orders', label: 'Захиалга', icon: ShoppingBag },
@@ -11,110 +21,131 @@ const adminNavItems = [
   { path: '/admin/content', label: 'Контент', icon: FileText },
 ];
 
+function NavItem({ item, isActive }: { item: typeof adminNavItems[0]; isActive: boolean }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.path}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group ${
+        isActive
+          ? 'bg-primary-600 text-white shadow-sm'
+          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+      }`}
+    >
+      <Icon
+        className={`w-4.5 h-4.5 flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`}
+        size={18}
+      />
+      <span className="truncate">{item.label}</span>
+      {isActive && <ChevronRight className="w-3.5 h-3.5 ml-auto opacity-70" />}
+    </Link>
+  );
+}
+
 export function AdminLayout() {
   const location = useLocation();
   const { user, logout } = useAdminAuth();
 
+  const initials = user?.name
+    ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+    : user?.email?.charAt(0).toUpperCase() ?? 'A';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Mobile Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10 lg:hidden shadow-sm">
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-lg font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-            Админ панел
-          </h1>
-          <Link
-            to="/"
-            className="text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-lg hover:bg-gray-100"
-            title="Гарах"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* ── Sidebar (desktop) ── */}
+      <aside className="hidden lg:flex flex-col w-60 bg-white border-r border-gray-200 fixed inset-y-0 left-0 z-20">
+        {/* Brand */}
+        <div className="flex items-center gap-2.5 h-14 px-5 border-b border-gray-200 flex-shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-primary-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-xs font-bold">ID</span>
+          </div>
+          <span className="font-semibold text-gray-900 text-sm">Incellderm Admin</span>
         </div>
-      </div>
 
-      <div className="flex">
-        {/* Sidebar - Desktop */}
-        <aside className="hidden lg:block w-72 bg-white/80 backdrop-blur-sm border-r border-gray-200 min-h-screen sticky top-0 shadow-sm">
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-8">
-              <Link 
-                to="/" 
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors p-2 rounded-lg hover:bg-gray-100 w-fit"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">Гарах</span>
-              </Link>
-              <button
-                onClick={logout}
-                className="flex items-center gap-2 text-primary-700 hover:text-primary-800 transition-colors p-2 rounded-lg hover:bg-primary-50"
-                title="Системээс гарах"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-            <h2 className="text-2xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
-              Админ панел
-            </h2>
-            {user && (
-              <p className="text-sm text-gray-500 mb-6">Нэвтэрсэн: {user.name || user.email}</p>
-            )}
-            <nav className="space-y-2">
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path || 
-                  (item.path !== '/admin' && location.pathname.startsWith(item.path));
-                
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                      isActive
-                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200 font-medium transform scale-105'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </aside>
-
-        {/* Mobile Bottom Navigation */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 z-10 shadow-lg">
-          <div className="grid grid-cols-6 gap-1 px-2 py-2">
-            {adminNavItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path || 
-                (item.path !== '/admin' && location.pathname.startsWith(item.path));
-              
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex flex-col items-center justify-center py-2 rounded-xl transition-all duration-200 ${
-                    isActive 
-                      ? 'text-primary-600 bg-primary-50' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 mb-1 ${isActive ? 'scale-110' : ''} transition-transform`} />
-                  <span className={`text-xs font-medium ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          <p className="px-3 mb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+            Навигац
+          </p>
+          {adminNavItems.map((item) => {
+            const isActive = item.exact
+              ? location.pathname === item.path
+              : location.pathname.startsWith(item.path);
+            return <NavItem key={item.path} item={item} isActive={isActive} />;
+          })}
         </nav>
 
-        {/* Main Content */}
-        <main className="flex-1 pb-20 lg:pb-4">
-          <Outlet />
-        </main>
+        {/* Footer */}
+        <div className="border-t border-gray-200 px-3 py-3 flex-shrink-0 space-y-1">
+          <Link
+            to="/"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors group"
+          >
+            <ExternalLink size={16} className="text-gray-400 group-hover:text-gray-500" />
+            Сайт руу очих
+          </Link>
+          {user && (
+            <div className="flex items-center gap-3 px-3 py-2">
+              <div className="w-7 h-7 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-primary-700 text-xs font-semibold">{initials}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-700 truncate">{user.name || user.email}</p>
+                <p className="text-[10px] text-gray-400 truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={logout}
+                title="Гарах"
+                className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* ── Mobile top bar ── */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b border-gray-200 h-[52px] flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-md bg-primary-600 flex items-center justify-center">
+            <span className="text-white text-[10px] font-bold">ID</span>
+          </div>
+          <span className="text-sm font-semibold text-gray-900">Админ</span>
+        </div>
+        <Link to="/" className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+          <ExternalLink size={16} />
+        </Link>
       </div>
+
+      {/* ── Mobile bottom nav ── */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200 safe-area-inset-bottom">
+        <div className="grid grid-cols-6 h-14">
+          {adminNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.exact
+              ? location.pathname === item.path
+              : location.pathname.startsWith(item.path);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                  isActive ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <Icon size={18} />
+                <span className="text-[9px] font-medium leading-none truncate max-w-full px-1">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* ── Main content ── */}
+      <main className="flex-1 lg:ml-60 pt-[52px] lg:pt-0 pb-14 lg:pb-0 min-h-screen">
+        <Outlet />
+      </main>
     </div>
   );
 }

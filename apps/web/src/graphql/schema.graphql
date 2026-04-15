@@ -21,6 +21,15 @@ type AdminOrdersPage {
   total: Int!
 }
 
+type AdminStatsResult {
+  totalOrders: Int!
+  completedRevenue: Int!
+  pendingOrders: Int!
+  totalProducts: Int!
+  lowStockProducts: Int!
+  recentOrders: [Order!]!
+}
+
 type AdminUser {
   email: String!
   id: String!
@@ -123,7 +132,7 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): MessageResponse!
   setCartItem(productId: ID!, quantity: Int!): [CartItem!]!
   updateCategory(input: UpdateCategoryInput!): Category!
-  updateOrderStatus(orderId: ID!, status: String!): Order!
+  updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
   updateProduct(input: UpdateProductInput!): Product!
   updateUserSubscription(userId: String!, userType: UserType!): User!
   uploadPaymentReceipt(file: Upload!, orderId: ID!): Order!
@@ -186,6 +195,7 @@ type Product {
 
 type Query {
   adminMe: User
+  adminStats: AdminStatsResult!
   adminOrders(limit: Int, offset: Int, status: OrderStatus): AdminOrdersPage!
   adminPages: [Page!]!
   categories: [Category!]!
@@ -225,7 +235,7 @@ enum SkinType {
 
 input UpdateCategoryInput {
   description: String
-  id: String!
+  id: ID!
   imageUrl: String
   name: String
   slug: String

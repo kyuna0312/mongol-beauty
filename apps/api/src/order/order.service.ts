@@ -165,6 +165,7 @@ export class OrderService {
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const order = await this.findOneRaw(id);
     order.status = status;
+    order.updatedAt = new Date();
     return this.orderRepository.save(order);
   }
 
