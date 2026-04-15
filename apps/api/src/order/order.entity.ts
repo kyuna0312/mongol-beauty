@@ -43,6 +43,10 @@ export class Order {
   @Column({ nullable: true })
   paymentReceiptUrl: string;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  deliveryAddress: string;
+
   @Column({ nullable: true, unique: true })
   idempotencyKey?: string;
 

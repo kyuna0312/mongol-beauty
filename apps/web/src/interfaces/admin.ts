@@ -16,6 +16,7 @@ export interface AdminOrder {
   createdAt: string;
   updatedAt: string;
   paymentReceiptUrl?: string | null;
+  deliveryAddress?: string | null;
   user?: {
     name?: string;
     phone?: string;

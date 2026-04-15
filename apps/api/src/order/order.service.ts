@@ -85,6 +85,7 @@ export class OrderService {
         status: OrderStatus.WAITING_PAYMENT,
         totalPrice,
         items,
+        deliveryAddress: input.deliveryAddress,
       });
 
       const saved = await orderRepo.save(order);
