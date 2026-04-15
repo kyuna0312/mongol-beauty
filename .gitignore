@@ -47,3 +47,6 @@ uploads/
 
 # GraphQL
 apps/api/src/schema.gql
+
+# Claude Code
+CLAUDE.md

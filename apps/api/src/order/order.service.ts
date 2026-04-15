@@ -164,9 +164,6 @@ export class OrderService {
 
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const order = await this.findOneRaw(id);
-    if (status === OrderStatus.PAID_CONFIRMED && !order.paymentReceiptUrl) {
-      throw new BadRequestException('Cannot confirm payment before receipt image is uploaded');
-    }
     order.status = status;
     return this.orderRepository.save(order);
   }

@@ -271,7 +271,7 @@ export function AdminOrdersPage() {
                 )}
                 {!order.paymentReceiptUrl && order.status === 'WAITING_PAYMENT' && (
                   <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-                    ⚠️ Баримтын зураг оруулаагүй байна. Баримтгүй үед баталгаажуулах боломжгүй.
+                    ⚠️ Баримтын зураг оруулаагүй байна.
                   </div>
                 )}
 
@@ -287,7 +287,7 @@ export function AdminOrdersPage() {
                             label: 'Төлбөр баталгаажсан',
                           })
                         }
-                        disabled={updatingOrderId === order.id || !order.paymentReceiptUrl}
+                        disabled={updatingOrderId === order.id}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-md"
                       >
                         ✓ Төлбөр баталгаажуулах

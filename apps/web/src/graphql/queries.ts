@@ -130,11 +130,14 @@ export const GET_USERS = gql`
 
 export const GET_ADMIN_STATS = gql`
   query GetAdminStats {
-    orders {
-      id
-      totalPrice
-      status
-      createdAt
+    adminOrders(limit: 1000) {
+      total
+      items {
+        id
+        totalPrice
+        status
+        createdAt
+      }
     }
     products {
       id

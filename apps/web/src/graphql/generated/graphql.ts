@@ -724,7 +724,7 @@ export type GetUsersQuery = { __typename?: 'Query', users: Array<{ __typename?: 
 export type GetAdminStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAdminStatsQuery = { __typename?: 'Query', orders: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, createdAt: any }>, products: Array<{ __typename?: 'Product', id: string, stock: number }>, categories: Array<{ __typename?: 'Category', id: string }> };
+export type GetAdminStatsQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, createdAt: any }> }, products: Array<{ __typename?: 'Product', id: string, stock: number }>, categories: Array<{ __typename?: 'Category', id: string }> };
 
 export type GetAdminProductsQueryVariables = Exact<{ [key: string]: never; }>;
 

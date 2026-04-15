@@ -34,7 +34,7 @@ export function AdminDashboard() {
     );
   }
 
-  const orders = data?.orders || [];
+  const orders = data?.adminOrders?.items || [];
   const products = data?.products || [];
   const totalRevenue = orders
     .filter((o: any) => o.status === 'COMPLETED')
