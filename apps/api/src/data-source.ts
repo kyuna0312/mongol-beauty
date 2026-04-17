@@ -7,6 +7,7 @@ import { Category } from './category/category.entity';
 import { Product } from './product/product.entity';
 import { Order } from './order/order.entity';
 import { OrderItem } from './order/order-item.entity';
+import { CartItem } from './cart/cart-item.entity';
 
 // Load apps/api/.env then repo root .env (CLI is usually run from apps/api)
 config({ path: join(__dirname, '../.env'), quiet: true });
@@ -26,6 +27,6 @@ export default new DataSource({
   database: process.env.DB_NAME || 'mongol_beauty',
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
-  entities: [User, Category, Product, Order, OrderItem],
+  entities: [User, Category, Product, Order, OrderItem, CartItem],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
 });

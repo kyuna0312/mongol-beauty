@@ -102,6 +102,21 @@ export class InitialSchema1713456000000 implements MigrationInterface {
     await queryRunner.query(`CREATE INDEX "IDX_order_items_orderId"   ON "order_items" ("orderId")`);
     await queryRunner.query(`CREATE INDEX "IDX_order_items_productId" ON "order_items" ("productId")`);
 
+    // cart_items
+    await queryRunner.query(`
+      CREATE TABLE "cart_items" (
+        "id"        uuid      NOT NULL DEFAULT gen_random_uuid(),
+        "userId"    uuid      NOT NULL,
+        "productId" uuid      NOT NULL,
+        "quantity"  integer   NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
+        "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "PK_cart_items" PRIMARY KEY ("id")
+      )
+    `);
+    await queryRunner.query(`CREATE UNIQUE INDEX "IDX_cart_items_userId_productId" ON "cart_items" ("userId", "productId")`);
+    await queryRunner.query(`CREATE INDEX "IDX_cart_items_userId" ON "cart_items" ("userId")`);
+
     // Foreign keys
     await queryRunner.query(`
       ALTER TABLE "products"
@@ -127,9 +142,23 @@ export class InitialSchema1713456000000 implements MigrationInterface {
         FOREIGN KEY ("productId") REFERENCES "products"("id")
         ON DELETE NO ACTION ON UPDATE NO ACTION
     `);
+    await queryRunner.query(`
+      ALTER TABLE "cart_items"
+        ADD CONSTRAINT "FK_cart_items_userId"
+        FOREIGN KEY ("userId") REFERENCES "users"("id")
+        ON DELETE CASCADE ON UPDATE NO ACTION
+    `);
+    await queryRunner.query(`
+      ALTER TABLE "cart_items"
+        ADD CONSTRAINT "FK_cart_items_productId"
+        FOREIGN KEY ("productId") REFERENCES "products"("id")
+        ON DELETE CASCADE ON UPDATE NO ACTION
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE "cart_items"  DROP CONSTRAINT "FK_cart_items_productId"`);
+    await queryRunner.query(`ALTER TABLE "cart_items"  DROP CONSTRAINT "FK_cart_items_userId"`);
     await queryRunner.query(`ALTER TABLE "order_items" DROP CONSTRAINT "FK_order_items_productId"`);
     await queryRunner.query(`ALTER TABLE "order_items" DROP CONSTRAINT "FK_order_items_orderId"`);
     await queryRunner.query(`ALTER TABLE "orders"      DROP CONSTRAINT "FK_orders_userId"`);
@@ -149,6 +178,10 @@ export class InitialSchema1713456000000 implements MigrationInterface {
     await queryRunner.query(`DROP INDEX "IDX_products_createdAt"`);
     await queryRunner.query(`DROP INDEX "IDX_products_name"`);
     await queryRunner.query(`DROP TABLE "products"`);
+
+    await queryRunner.query(`DROP INDEX "IDX_cart_items_userId_productId"`);
+    await queryRunner.query(`DROP INDEX "IDX_cart_items_userId"`);
+    await queryRunner.query(`DROP TABLE "cart_items"`);
 
     await queryRunner.query(`DROP TABLE "users"`);
 
