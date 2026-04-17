@@ -1,195 +1,237 @@
-# Mongol Beauty - E-commerce Platform
+# Mongol Beauty — E-commerce Platform
 
 A monorepo beauty e-commerce platform built for Mongolian Gen Z users, featuring an order-centric Taobao-style flow with manual payment verification.
 
-## 🏗️ Architecture
+**Live site**: https://mcosmetics.mn
+
+---
+
+## Architecture
 
 ### Monorepo Structure
 ```
 mongol-beauty/
 ├── apps/
-│   ├── web/          # React + Vite frontend
-│   └── api/           # NestJS GraphQL backend
+│   ├── web/          # React 18 + Vite frontend
+│   └── api/          # NestJS GraphQL backend (gateway / order / payment modes)
 ├── packages/
-│   ├── ui/            # Shared Tailwind UI components
-│   ├── types/         # Shared GraphQL & TypeScript types
-│   └── config/        # Shared ESLint, TS, Tailwind config
-└── package.json       # Yarn workspaces root
+│   ├── ui/           # Shared Tailwind UI components
+│   ├── types/        # Shared TypeScript types & enums
+│   └── config/       # Shared ESLint, TS, Tailwind configs
+└── package.json      # Yarn workspaces root
 ```
 
-## 🚀 Tech Stack
-
-### Frontend
-- **React 18** with TypeScript
-- **Vite** for build tooling
-- **Tailwind CSS** for styling
-- **Apollo Client** for GraphQL
-- **React Router** for navigation
-
-### Backend
-- **NestJS** with TypeScript
-- **GraphQL** (Apollo Server)
-- **PostgreSQL** with TypeORM
-- **File Upload** support for payment receipts
-
-## 📋 Prerequisites
-
-- Node.js 18+ and Yarn
-- PostgreSQL 14+
-- Git
-
-## 🚀 Quick Start
-
-See [QUICK_START.md](./QUICK_START.md) for a 5-minute setup guide.
-For full local setup and troubleshooting, see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
-For all docs, see [docs/README.md](./docs/README.md).
-
-### Prerequisites
-
-- Node.js 18+
-- Yarn 1.22+
-- Docker & Docker Compose
-
-### Setup Steps
-
-1. **Install dependencies**:
-   ```bash
-   yarn install
-   ```
-
-2. **Set up environment**:
-   ```bash
-   cp .env.example .env
-   cp apps/api/.env.example apps/api/.env
-   cp apps/web/.env.example apps/web/.env
-   ```
-
-3. **Start database**:
-   ```bash
-   yarn docker:up
-   ```
-
-4. **Start development servers**:
-   ```bash
-   yarn dev
-   ```
-
-5. **Access the application**:
-   - **Frontend**: http://localhost:5173
-   - **GraphQL Playground**: http://localhost:4000/graphql
-
-For detailed setup instructions, see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
-
-## 📱 Features
-
-### User Flow (Order-Centric)
-1. **Browse Products** - Category-based navigation
-2. **Add to Cart** - Simple cart management
-3. **Create Order** - Order created before payment
-4. **Payment** - Manual bank transfer
-5. **Upload Receipt** - User uploads payment proof
-6. **Admin Verification** - Admin confirms payment
-7. **Order Tracking** - Status updates (WAITING_PAYMENT → payment confirmed (`PAID_CONFIRMED`) → SHIPPING → COMPLETED)
-
-### Mobile-First UX
-- Thumb-reachable CTAs (fixed bottom buttons)
-- Bottom-sheet filters
-- Toast notifications
-- Safe area insets support
-- Zero-friction checkout
-
-## 🗄️ Database Schema
-
-### Core Entities
-- **Category** - Product categories
-- **Product** - Beauty products with skin type and features
-- **Order** - Orders with status tracking
-- **OrderItem** - Order line items
-- **User** - Lightweight user model (phone-based or guest)
-
-### Order Status Flow
-```
-WAITING_PAYMENT → payment confirmed (`PAID_CONFIRMED`) → SHIPPING → COMPLETED
-                      ↓
-                  CANCELLED
-```
-
-## 📡 GraphQL API
-
-### Key Queries
-- `products(categoryId, limit, offset)` - List products
-- `product(id)` - Get product details
-- `categories` - List all categories
-- `order(id)` - Get order details
-- `orders` - List all orders
-
-### Key Mutations
-- `createOrder(input)` - Create new order
-- `uploadPaymentReceipt(orderId, file)` - Upload payment proof
-- `confirmPayment(orderId)` - Admin: confirm payment
-- `updateOrderStatus(orderId, status)` - Admin: update status
-
-See `apps/web/src/graphql/` for complete query/mutation examples.
-
-## 🎨 UX Rationale for Mongolian Gen Z
-
-1. **Mobile-First**: 90%+ of users access via mobile
-2. **Thumb-Reachable CTAs**: Fixed bottom buttons for easy tapping
-3. **Category > Brand**: Mongolian market prefers category browsing
-4. **Simple Checkout**: Minimal friction, guest checkout supported
-5. **Visual Product Focus**: Large images, clear pricing
-6. **Status Transparency**: Clear order status with icons
-7. **Mongolian Language Support**: UI labels in Mongolian (Нүүр, Бүтээгдэхүүн, etc.)
-
-## 🔐 Admin Features (MVP)
-
-- View all orders
-- View payment receipts
-- Confirm payments
-- Update order status
-- No payment gateway integration (manual verification)
-
-## 📦 Build for Production
-
-```bash
-yarn build
-```
-
-This builds both frontend and backend.
-
-## 🧪 Development Notes
-
-### Adding New GraphQL Types
-1. Update `packages/types/src/schema.graphql`
-2. Run codegen: `yarn workspace @mongol-beauty/types codegen`
-3. Types are auto-generated in `packages/types/src/generated/`
-
-### Adding Shared Components
-Add to `packages/ui/src/` and export from `index.ts`
-
-### File Uploads
-Payment receipts are stored in `apps/api/uploads/receipts/`. In production, use cloud storage (S3, Cloudinary, etc.).
-
-## 🚧 Future Enhancements
-
-- [ ] Authentication (phone-based OTP)
-- [ ] Product search and filters
-- [ ] Wishlist functionality
-- [ ] Order history for users
-- [ ] Admin dashboard UI
-- [ ] Cloud storage for images
-- [ ] SMS notifications
-- [ ] Payment gateway integration (optional)
-
-### Tomorrow task
-- insert logo
-- order product section
-
-
-## 📄 License
-
-Private - Mongol Beauty LLC
+### Tech Stack
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Apollo Client, Chakra UI
+- **Backend**: NestJS, GraphQL (Apollo Server), TypeORM, PostgreSQL 15
+- **Infra**: Docker Compose, nginx-proxy, Let's Encrypt (acme-companion)
 
 ---
 
-Built with ❤️ for Mongolian Gen Z beauty enthusiasts
+## Local Development
+
+### Prerequisites
+- Node.js 20+, Yarn 1.22+
+- Docker & Docker Compose
+
+### Setup
+
+```bash
+# 1. Install dependencies
+yarn install
+
+# 2. Copy env files
+cp .env.example .env
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env
+
+# 3. Start PostgreSQL
+yarn docker:up
+
+# 4. Start everything (backend + frontend)
+yarn dev:full
+```
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| GraphQL Playground | http://localhost:4000/graphql |
+| Admin panel | http://localhost:5173/admin |
+
+### Useful commands
+
+```bash
+yarn dev:api          # backend only (port 4000)
+yarn dev:web          # frontend only (port 5173)
+yarn docker:down      # stop database
+yarn docker:clean     # wipe database volume
+yarn seed             # seed demo data
+yarn create-admin     # create admin user
+```
+
+### Database migrations (local)
+
+```bash
+# Generate migration from entity changes
+npm run migration:generate -w @mongol-beauty/api -- src/migrations/DescribeChange
+
+# Run pending migrations
+yarn db:migrate
+```
+
+---
+
+## Production Deployment
+
+### Prerequisites
+- VPS with Docker & Docker Compose installed
+- Domain DNS pointing to server IP:
+  ```
+  mcosmetics.mn     → <server-ip>
+  api.mcosmetics.mn → <server-ip>
+  ```
+- Ports **80** and **443** open on the firewall
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/kyuna0312/mongol-beauty.git
+cd mongol-beauty
+
+cp .env.prod.example .env.prod
+```
+
+Edit `.env.prod`:
+
+```env
+# Database
+DB_USER=postgres
+DB_PASSWORD=<strong-password>
+DB_NAME=mongol_beauty
+
+# App secrets (generate with: openssl rand -hex 32)
+JWT_SECRET=<secret>
+INTERNAL_SERVICE_TOKEN=<secret>
+
+# Domains
+DOMAIN=mcosmetics.mn
+API_DOMAIN=api.mcosmetics.mn
+FRONTEND_URL=https://mcosmetics.mn
+
+# SSL
+LETSENCRYPT_EMAIL=khatanzorigb@gmail.com
+
+# Backups (must be a writable path)
+BACKUP_DIR=/home/<user>/backups/mongol-beauty
+```
+
+### 2. Create backup directory
+
+```bash
+mkdir -p ~/backups/mongol-beauty
+```
+
+### 3. Deploy
+
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+```
+
+**Startup order**:
+1. `postgres` — waits until healthy
+2. `migrator` — runs TypeORM migrations, exits 0
+3. `order-service`, `payment-service`, `gateway` — start after migrations complete
+4. `web` — frontend served via nginx
+5. `nginx-proxy` + `acme-companion` — reverse proxy + auto SSL
+
+### 4. Verify
+
+```bash
+# Check all containers are running
+docker compose -f docker-compose.prod.yml ps
+
+# Tail logs
+docker compose -f docker-compose.prod.yml logs -f
+
+# Single service logs
+docker compose -f docker-compose.prod.yml logs -f gateway
+docker compose -f docker-compose.prod.yml logs -f migrator
+```
+
+| URL | Service |
+|-----|---------|
+| https://mcosmetics.mn | Frontend |
+| https://api.mcosmetics.mn/graphql | GraphQL API |
+| https://api.mcosmetics.mn/health | Health check |
+
+### Re-deploy after code changes
+
+```bash
+git pull
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+```
+
+### Stop / tear down
+
+```bash
+# Stop (keep volumes)
+docker compose -f docker-compose.prod.yml --env-file .env.prod down
+
+# Stop and delete all data (destructive)
+docker compose -f docker-compose.prod.yml --env-file .env.prod down -v
+```
+
+---
+
+## Features
+
+### User Flow
+1. Browse products by category
+2. Add to cart
+3. Create order
+4. Manual bank transfer payment
+5. Upload payment receipt
+6. Admin verifies and confirms
+7. Order tracked: `WAITING_PAYMENT → PAID_CONFIRMED → SHIPPING → COMPLETED`
+
+### Admin Panel (`/admin`)
+- Order list with status filtering
+- Payment receipt viewer
+- Confirm payments, update status
+- Product & category CRUD
+
+---
+
+## GraphQL API
+
+### Key Queries
+- `products(categoryId, limit, offset)` — list products
+- `product(id)` — product detail
+- `categories` — all categories
+- `order(id)` — order detail
+- `adminOrders` — admin: all orders
+
+### Key Mutations
+- `createOrder(input)` — place order
+- `uploadPaymentReceipt(orderId, file)` — attach receipt
+- `confirmPayment(orderId)` — admin: confirm
+- `updateOrderStatus(orderId, status)` — admin: update status
+
+---
+
+## Code Quality
+
+```bash
+yarn type-check        # TypeScript check (all packages)
+yarn lint              # ESLint (max-warnings=0)
+yarn lint:fix          # Lint + auto-fix
+yarn test              # All tests (Jest + Vitest)
+yarn graphql:codegen   # Regenerate GraphQL types
+yarn ci                # Full CI pipeline
+```
+
+---
+
+## License
+
+Private — Mongol Beauty LLC

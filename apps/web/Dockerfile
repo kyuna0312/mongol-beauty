@@ -10,7 +10,7 @@ COPY apps/web/ ./apps/web/
 RUN yarn install --frozen-lockfile
 
 # VITE_GRAPHQL_URL baked into the static bundle at build time
-ARG VITE_GRAPHQL_URL=https://api.mcosmetic.mn/graphql
+ARG VITE_GRAPHQL_URL=https://api.mcosmetics.mn/graphql
 ENV VITE_GRAPHQL_URL=$VITE_GRAPHQL_URL
 
 RUN yarn workspace @mongol-beauty/web build
