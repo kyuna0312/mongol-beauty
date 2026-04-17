@@ -176,9 +176,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       ORDER_SERVICE_URL: http://order-service:4010
       PAYMENT_SERVICE_URL: http://payment-service:4020
-      VIRTUAL_HOST: ${API_DOMAIN}
-      LETSENCRYPT_HOST: ${API_DOMAIN}
-      VIRTUAL_PORT: "4000"
     volumes:
       - uploads_data:/app/uploads
     healthcheck:
@@ -196,7 +193,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        VITE_GRAPHQL_URL: https://${API_DOMAIN}/graphql
+        VITE_GRAPHQL_URL: https://${DOMAIN}/graphql
     container_name: mb-web
     restart: unless-stopped
     environment:
