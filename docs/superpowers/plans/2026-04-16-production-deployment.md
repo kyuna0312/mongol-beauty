@@ -760,7 +760,7 @@ git commit -m "chore: add production deploy script"
 
 This verifies the Dockerfiles work before pushing to the VPS.
 
-- [ ] **Step 1: Build both images from repo root**
+- [x] **Step 1: Build both images from repo root**
 
 ```bash
 docker build -f apps/api/Dockerfile -t mb-api-smoke . && echo "API build OK"
@@ -768,7 +768,7 @@ docker build -f apps/web/Dockerfile -t mb-web-smoke . && echo "WEB build OK"
 ```
 Expected: both print their respective `OK` line.
 
-- [ ] **Step 2: Confirm API image starts and responds**
+- [x] **Step 2: Confirm API image starts and responds**
 
 ```bash
 docker run --rm -d \
@@ -793,7 +793,7 @@ docker stop mb-api-smoke-run
 ```
 Expected: container starts (DB connection errors are fine — no DB connected), then stops cleanly.
 
-- [ ] **Step 3: Confirm web image serves index.html**
+- [x] **Step 3: Confirm web image serves index.html**
 
 ```bash
 docker run --rm -d -p 8081:80 --name mb-web-smoke-run mb-web-smoke
@@ -803,13 +803,13 @@ docker stop mb-web-smoke-run
 ```
 Expected: `HTTP 200`
 
-- [ ] **Step 4: Clean up test images**
+- [x] **Step 4: Clean up test images**
 
 ```bash
 docker rmi mb-api-smoke mb-web-smoke mb-api-test mb-web-test 2>/dev/null; true
 ```
 
-- [ ] **Step 5: Final commit — push to main**
+- [x] **Step 5: Final commit — push to main**
 
 ```bash
 git status
