@@ -116,7 +116,7 @@ const isPaymentService = serviceMode === 'payment';
             inject: [ProductLoader, CategoryLoader],
             useFactory: (productLoader: ProductLoader, categoryLoader: CategoryLoader) => ({
               autoSchemaFile: process.env.NODE_ENV === 'production'
-                ? join(process.cwd(), 'apps/api/dist/schema.gql')
+                ? true
                 : join(process.cwd(), 'src/schema.gql'),
               sortSchema: true,
               playground: process.env.NODE_ENV !== 'production',
