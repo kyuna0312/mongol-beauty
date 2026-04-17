@@ -1,13 +1,45 @@
 # =============================================================================
-# Mongol Beauty — Production Docker Compose (IP mode, no SSL)
+# Mongol Beauty — Production Docker Compose
 # Usage: docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
-# Web:     http://<SERVER_IP>
-# API:     http://<SERVER_IP>:4000/graphql
+# Web:  https://<DOMAIN>
+# API:  https://<API_DOMAIN>/graphql
 # =============================================================================
 
 name: mongol-beauty-prod
 
 services:
+
+  # ── Reverse proxy + SSL ──────────────────────────────────────────────────
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    container_name: mb-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - mongol-beauty-prod-network
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: mb-acme
+    restart: unless-stopped
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    environment:
+      DEFAULT_EMAIL: ${LETSENCRYPT_EMAIL}
+    depends_on:
+      - nginx-proxy
+    networks:
+      - mongol-beauty-prod-network
 
   # ── Database ─────────────────────────────────────────────────────────────
   postgres:
@@ -30,6 +62,27 @@ services:
     networks:
       - mongol-beauty-prod-network
 
+  # ── DB migrations (runs once, exits) ─────────────────────────────────────
+  migrator:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: mb-migrator
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    command: ["node", "node_modules/.bin/typeorm", "migration:run", "-d", "apps/api/dist/data-source.js"]
+    networks:
+      - mongol-beauty-prod-network
+
   # ── Backend services ─────────────────────────────────────────────────────
   order-service:
     build:
@@ -40,6 +93,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: production
       SERVICE_MODE: order
@@ -63,6 +118,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
       order-service:
         condition: service_started
     environment:
@@ -91,6 +148,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
       order-service:
         condition: service_started
       payment-service:
@@ -110,8 +169,9 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       ORDER_SERVICE_URL: http://order-service:4010
       PAYMENT_SERVICE_URL: http://payment-service:4020
-    ports:
-      - "4000:4000"
+      VIRTUAL_HOST: ${API_DOMAIN}
+      LETSENCRYPT_HOST: ${API_DOMAIN}
+      VIRTUAL_PORT: "4000"
     volumes:
       - uploads_data:/app/uploads
     healthcheck:
@@ -129,12 +189,14 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        VITE_GRAPHQL_URL: http://${SERVER_IP}:4000/graphql
+        VITE_GRAPHQL_URL: https://${API_DOMAIN}/graphql
     container_name: mb-web
     restart: unless-stopped
-    ports:
-      - "80:80"
+    environment:
+      VIRTUAL_HOST: ${DOMAIN}
+      LETSENCRYPT_HOST: ${DOMAIN}
     depends_on:
+      - nginx-proxy
       - gateway
     networks:
       - mongol-beauty-prod-network
@@ -169,6 +231,14 @@ volumes:
     name: mb_prod_postgres_data
   uploads_data:
     name: mb_prod_uploads_data
+  certs:
+    name: mb_prod_certs
+  vhost:
+    name: mb_prod_vhost
+  html:
+    name: mb_prod_html
+  acme:
+    name: mb_prod_acme
 
 networks:
   mongol-beauty-prod-network:
