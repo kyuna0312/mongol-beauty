@@ -106,6 +106,7 @@ services:
       DB_NAME: ${DB_NAME}
       DB_SYNCHRONIZE: "false"
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_SECRET}
     networks:
       - mongol-beauty-prod-network
 
@@ -133,6 +134,7 @@ services:
       DB_NAME: ${DB_NAME}
       DB_SYNCHRONIZE: "false"
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_SECRET}
       ORDER_SERVICE_URL: http://order-service:4010
     volumes:
       - uploads_data:/app/uploads
@@ -166,6 +168,7 @@ services:
       DB_SYNCHRONIZE: "false"
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_SECRET}
       FRONTEND_URL: ${FRONTEND_URL}
       ORDER_SERVICE_URL: http://order-service:4010
       PAYMENT_SERVICE_URL: http://payment-service:4020
