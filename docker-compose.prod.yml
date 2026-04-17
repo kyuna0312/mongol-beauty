@@ -79,7 +79,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
-    command: ["node", "node_modules/.bin/typeorm", "migration:run", "-d", "apps/api/dist/data-source.js"]
+    command: ["node", "node_modules/typeorm/cli.js", "migration:run", "-d", "apps/api/dist/data-source.js"]
     networks:
       - mongol-beauty-prod-network
 
