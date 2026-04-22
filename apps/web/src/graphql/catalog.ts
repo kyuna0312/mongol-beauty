@@ -2,8 +2,8 @@ import { gql } from '@apollo/client';
 import { PRODUCT_CARD_FRAGMENT } from './fragments';
 
 export const GET_PRODUCTS_PAGED = gql`
-  query GetProducts($categoryId: ID, $limit: Int, $offset: Int) {
-    products(categoryId: $categoryId, limit: $limit, offset: $offset) {
+  query GetProducts($categoryId: ID, $limit: Int, $offset: Int, $search: String) {
+    products(categoryId: $categoryId, limit: $limit, offset: $offset, search: $search) {
       ...ProductCardFragment
     }
   }

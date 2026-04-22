@@ -212,3 +212,18 @@ export const GET_PAGE_ABOUT = gql`
     }
   }
 `;
+
+export const GET_SITE_SETTINGS = gql`
+  query GetSiteSettings {
+    siteSettings {
+      id
+      bankName
+      bankAccount
+      bankOwner
+      phone
+      email
+      address
+      updatedAt
+    }
+  }
+`;

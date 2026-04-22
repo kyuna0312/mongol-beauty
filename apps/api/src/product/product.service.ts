@@ -15,10 +15,10 @@ export class ProductService {
     private productRepository: Repository<Product>,
   ) {}
 
-  async findAll(categoryId?: string, limit?: number, offset?: number): Promise<Product[]> {
+  async findAll(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
     const query = this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
-      .orderBy('product.createdAt', 'DESC'); // Default ordering
+      .orderBy('product.createdAt', 'DESC');
 
     if (categoryId) {
       if (this.isUuid(categoryId)) {
@@ -28,11 +28,13 @@ export class ProductService {
       }
     }
 
-    // Default pagination
-    const take = limit || 20;
-    const skip = offset || 0;
+    if (search?.trim()) {
+      const term = `%${search.trim()}%`;
+      const method = categoryId ? 'andWhere' : 'where';
+      query[method]('(product.name ILIKE :term OR product.description ILIKE :term)', { term });
+    }
 
-    query.take(take).skip(skip);
+    query.take(limit || 20).skip(offset || 0);
 
     return query.getMany();
   }

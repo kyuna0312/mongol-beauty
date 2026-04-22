@@ -73,6 +73,7 @@ export function AppRoutes() {
             <Route path="users" element={<Pages.AdminUsersPage />} />
             <Route path="content" element={<Pages.AdminContentPagesPage />} />
             <Route path="preview/:slug" element={<Pages.AdminContentPreviewPage />} />
+            <Route path="settings" element={<Pages.AdminSiteSettingsPage />} />
           </Route>
         </Route>
       </Routes>

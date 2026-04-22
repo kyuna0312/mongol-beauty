@@ -1,13 +1,6 @@
-"""
-Indicates exactly one field must be supplied and this field must not be `null`.
-"""
-directive @oneOf on INPUT_OBJECT
-
-"""Exposes a URL that specifies the behavior of this scalar."""
-directive @specifiedBy(
-  """The URL that specifies the behavior of this scalar."""
-  url: String!
-) on SCALAR
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
 
 input AdminLoginInput {
   email: String!
@@ -22,12 +15,12 @@ type AdminOrdersPage {
 }
 
 type AdminStatsResult {
-  totalOrders: Int!
   completedRevenue: Int!
-  pendingOrders: Int!
-  totalProducts: Int!
   lowStockProducts: Int!
+  pendingOrders: Int!
   recentOrders: [Order!]!
+  totalOrders: Int!
+  totalProducts: Int!
 }
 
 type AdminUser {
@@ -68,6 +61,7 @@ input CreateCategoryInput {
 }
 
 input CreateOrderInput {
+  deliveryAddress: String
   items: [CreateOrderItemInput!]!
   name: String
   phone: String
@@ -134,6 +128,7 @@ type Mutation {
   updateCategory(input: UpdateCategoryInput!): Category!
   updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
   updateProduct(input: UpdateProductInput!): Product!
+  updateSiteSettings(input: UpdateSiteSettingsInput!): SiteSettings!
   updateUserSubscription(userId: String!, userType: UserType!): User!
   uploadPaymentReceipt(file: Upload!, orderId: ID!): Order!
   upsertPage(input: UpsertPageInput!): Page!
@@ -142,6 +137,7 @@ type Mutation {
 
 type Order {
   createdAt: DateTime!
+  deliveryAddress: String
   id: ID!
   items: [OrderItem!]!
   paymentReceiptUrl: String
@@ -195,9 +191,9 @@ type Product {
 
 type Query {
   adminMe: User
-  adminStats: AdminStatsResult!
   adminOrders(limit: Int, offset: Int, status: OrderStatus): AdminOrdersPage!
   adminPages: [Page!]!
+  adminStats: AdminStatsResult!
   categories: [Category!]!
   category(id: ID!): Category
   me: User
@@ -207,8 +203,9 @@ type Query {
   page(slug: String!): Page
   pagePreview(slug: String!): Page
   product(categoryId: ID, id: ID!): Product
-  products(categoryId: ID, limit: Int, offset: Int): [Product!]!
+  products(categoryId: ID, limit: Int, offset: Int, search: String): [Product!]!
   productsByIds(ids: [ID!]!): [Product!]!
+  siteSettings: SiteSettings!
   users: [User!]!
 }
 
@@ -223,6 +220,17 @@ input ResetPasswordInput {
   email: String!
   newPassword: String!
   token: String!
+}
+
+type SiteSettings {
+  address: String!
+  bankAccount: String!
+  bankName: String!
+  bankOwner: String!
+  email: String!
+  id: String!
+  phone: String!
+  updatedAt: DateTime!
 }
 
 enum SkinType {
@@ -251,6 +259,15 @@ input UpdateProductInput {
   price: Int
   skinType: [String!]
   stock: Int
+}
+
+input UpdateSiteSettingsInput {
+  address: String
+  bankAccount: String
+  bankName: String
+  bankOwner: String
+  email: String
+  phone: String
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -300,4 +317,3 @@ enum UserType {
   SUBSCRIBED_USER
   USER
 }
-
