@@ -1,5 +1,5 @@
 import { useState, memo, useMemo, useEffect, useCallback, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { ProductCard, ProductListSkeleton, CartToast } from '@mongol-beauty/ui';
 import { Button } from '@mongol-beauty/ui';
@@ -35,6 +35,8 @@ function isUuidLike(value?: string): boolean {
 
 export const ProductsPage = memo(function ProductsPage() {
   const { categoryId } = useParams();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') ?? '';
   const safeCategoryId = isUuidLike(categoryId) ? categoryId : null;
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('default');
@@ -51,7 +53,7 @@ export const ProductsPage = memo(function ProductsPage() {
     fetchMore,
     networkStatus,
   } = useQuery(GET_PRODUCTS_PAGED, {
-    variables: { categoryId: safeCategoryId, limit: PAGE_SIZE, offset: 0 },
+    variables: { categoryId: safeCategoryId, limit: PAGE_SIZE, offset: 0, search: searchQuery || undefined },
     fetchPolicy: 'cache-and-network',
     nextFetchPolicy: 'cache-first',
     notifyOnNetworkStatusChange: true,
@@ -69,7 +71,7 @@ export const ProductsPage = memo(function ProductsPage() {
 
   useEffect(() => {
     setHasMore(true);
-  }, [safeCategoryId]);
+  }, [safeCategoryId, searchQuery]);
 
   const loadMoreProducts = useCallback(async () => {
     if (!hasMore || productsLoading || isFetchingMore) return;
@@ -79,6 +81,7 @@ export const ProductsPage = memo(function ProductsPage() {
         categoryId: safeCategoryId,
         limit: PAGE_SIZE,
         offset: currentCount,
+        search: searchQuery || undefined,
       },
     });
     const incomingCount = result.data?.products?.length || 0;
@@ -175,7 +178,9 @@ export const ProductsPage = memo(function ProductsPage() {
             <div>
               <p className="mb-section-eyebrow">Дэлгүүр</p>
               <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-stone-900">
-                {categoryData?.category?.name || 'Бүх бүтээгдэхүүн'}
+                {searchQuery
+                  ? `"${searchQuery}" хайлтын үр дүн`
+                  : categoryData?.category?.name || 'Бүх бүтээгдэхүүн'}
               </h1>
               {products.length > 0 && (
                 <p className="mt-1 text-sm text-stone-500">{products.length} бүтээгдэхүүн</p>
@@ -276,7 +281,11 @@ export const ProductsPage = memo(function ProductsPage() {
         <div className="text-center py-16">
           <div className="text-6xl mb-4">😔</div>
           <p className="text-xl font-semibold text-gray-700 mb-2">Бүтээгдэхүүн олдсонгүй</p>
-          <p className="text-gray-500 mb-6">Уучлаарай, одоогоор бүтээгдэхүүн байхгүй байна</p>
+          <p className="text-gray-500 mb-6">
+            {searchQuery
+              ? `"${searchQuery}" хайлтад тохирох бүтээгдэхүүн олдсонгүй`
+              : 'Уучлаарай, одоогоор бүтээгдэхүүн байхгүй байна'}
+          </p>
           <Link to="/">
             <Button className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white">
               Нүүр хуудас руу буцах

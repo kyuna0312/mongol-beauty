@@ -190,3 +190,18 @@ export const UPSERT_PAGE = gql`
     }
   }
 `;
+
+export const UPDATE_SITE_SETTINGS = gql`
+  mutation UpdateSiteSettings($input: UpdateSiteSettingsInput!) {
+    updateSiteSettings(input: $input) {
+      id
+      bankName
+      bankAccount
+      bankOwner
+      phone
+      email
+      address
+      updatedAt
+    }
+  }
+`;

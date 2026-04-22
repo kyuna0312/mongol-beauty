@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Button } from '@mongol-beauty/ui';
 import { Upload } from 'lucide-react';
 import { Toast } from '@/components/Toast';
 import { useCart } from '@/hooks/useCart';
 import { CREATE_ORDER_SIMPLE, UPLOAD_PAYMENT_RECEIPT_SIMPLE } from '@/graphql/orders';
+import { GET_SITE_SETTINGS } from '@/graphql/queries';
 import { CheckoutCartItem } from '@/interfaces/cart';
 import { getCheckoutCreateOrderBlock, isValidCheckoutPhone } from '@/lib/checkout-validation';
 
@@ -22,6 +23,8 @@ export function CheckoutPage() {
 
   const [createOrder] = useMutation(CREATE_ORDER_SIMPLE);
   const [uploadReceipt] = useMutation(UPLOAD_PAYMENT_RECEIPT_SIMPLE);
+  const { data: settingsData } = useQuery(GET_SITE_SETTINGS);
+  const settings = settingsData?.siteSettings;
   const hasCartItems = cart.length > 0;
   const isPhoneValid = isValidCheckoutPhone(phone);
   const maxReceiptBytes = 5 * 1024 * 1024;
@@ -230,15 +233,15 @@ export function CheckoutPage() {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 space-y-2 text-sm">
               <div className="flex justify-between items-center py-2 border-b border-blue-100">
                 <span className="font-medium text-gray-600">Банк:</span>
-                <span className="font-bold text-gray-800">ХХБ</span>
+                <span className="font-bold text-gray-800">{settings?.bankName ?? 'ХХБ'}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-blue-100">
                 <span className="font-medium text-gray-600">Данс:</span>
-                <span className="font-bold text-gray-800 font-mono">1234567890</span>
+                <span className="font-bold text-gray-800 font-mono">{settings?.bankAccount ?? '1234567890'}</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="font-medium text-gray-600">Эзэмшлийн нэр:</span>
-                <span className="font-bold text-gray-800">Mongol Beauty LLC</span>
+                <span className="font-bold text-gray-800">{settings?.bankOwner ?? 'Mongol Beauty LLC'}</span>
               </div>
             </div>
             <div className="mt-4 rounded-xl border-2 border-dashed border-blue-300 bg-white p-4">

@@ -82,6 +82,7 @@ export type CreateCategoryInput = {
 };
 
 export type CreateOrderInput = {
+  deliveryAddress?: InputMaybe<Scalars['String']['input']>;
   items: Array<CreateOrderItemInput>;
   name?: InputMaybe<Scalars['String']['input']>;
   phone?: InputMaybe<Scalars['String']['input']>;
@@ -147,6 +148,7 @@ export type Mutation = {
   updateCategory: Category;
   updateOrderStatus: Order;
   updateProduct: Product;
+  updateSiteSettings: SiteSettings;
   updateUserSubscription: User;
   uploadPaymentReceipt: Order;
   upsertPage: Page;
@@ -241,6 +243,11 @@ export type MutationUpdateProductArgs = {
 };
 
 
+export type MutationUpdateSiteSettingsArgs = {
+  input: UpdateSiteSettingsInput;
+};
+
+
 export type MutationUpdateUserSubscriptionArgs = {
   userId: Scalars['String']['input'];
   userType: UserType;
@@ -265,6 +272,7 @@ export type MutationUserLoginArgs = {
 export type Order = {
   __typename?: 'Order';
   createdAt: Scalars['DateTime']['output'];
+  deliveryAddress: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   items: Array<OrderItem>;
   paymentReceiptUrl: Maybe<Scalars['String']['output']>;
@@ -335,6 +343,7 @@ export type Query = {
   product: Maybe<Product>;
   products: Array<Product>;
   productsByIds: Array<Product>;
+  siteSettings: SiteSettings;
   users: Array<User>;
 };
 
@@ -376,6 +385,7 @@ export type QueryProductsArgs = {
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -394,6 +404,18 @@ export type ResetPasswordInput = {
   email: Scalars['String']['input'];
   newPassword: Scalars['String']['input'];
   token: Scalars['String']['input'];
+};
+
+export type SiteSettings = {
+  __typename?: 'SiteSettings';
+  address: Scalars['String']['output'];
+  bankAccount: Scalars['String']['output'];
+  bankName: Scalars['String']['output'];
+  bankOwner: Scalars['String']['output'];
+  email: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  phone: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
 };
 
 export type SkinType =
@@ -421,6 +443,15 @@ export type UpdateProductInput = {
   price?: InputMaybe<Scalars['Int']['input']>;
   skinType?: InputMaybe<Array<Scalars['String']['input']>>;
   stock?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type UpdateSiteSettingsInput = {
+  address?: InputMaybe<Scalars['String']['input']>;
+  bankAccount?: InputMaybe<Scalars['String']['input']>;
+  bankName?: InputMaybe<Scalars['String']['input']>;
+  bankOwner?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+  phone?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpsertPageInput = {
@@ -669,6 +700,13 @@ export type UpsertPageMutationVariables = Exact<{
 
 export type UpsertPageMutation = { __typename?: 'Mutation', upsertPage: { __typename?: 'Page', id: string, slug: string, title: string, content: string, metaTitle: string | null, metaDescription: string | null, isPublished: boolean, updatedAt: any } };
 
+export type UpdateSiteSettingsMutationVariables = Exact<{
+  input: UpdateSiteSettingsInput;
+}>;
+
+
+export type UpdateSiteSettingsMutation = { __typename?: 'Mutation', updateSiteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, updatedAt: any } };
+
 export type GetOrderQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -720,7 +758,7 @@ export type GetAdminOrdersQueryVariables = Exact<{
 }>;
 
 
-export type GetAdminOrdersQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, limit: number, offset: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, paymentReceiptUrl: string | null, createdAt: any, updatedAt: any, items: Array<{ __typename?: 'OrderItem', id: string, quantity: number, price: number, product: { __typename?: 'Product', id: string, name: string } }>, user: { __typename?: 'User', id: string, name: string | null, phone: string | null } | null }> } };
+export type GetAdminOrdersQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, limit: number, offset: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, status: OrderStatus, paymentReceiptUrl: string | null, deliveryAddress: string | null, createdAt: any, updatedAt: any, items: Array<{ __typename?: 'OrderItem', id: string, quantity: number, price: number, product: { __typename?: 'Product', id: string, name: string } }>, user: { __typename?: 'User', id: string, name: string | null, phone: string | null } | null }> } };
 
 export type GetAdminMeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -765,3 +803,8 @@ export type GetAboutPageQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetAboutPageQuery = { __typename?: 'Query', page: { __typename?: 'Page', id: string, slug: string, title: string, content: string, metaTitle: string | null, metaDescription: string | null, updatedAt: any } | null };
+
+export type GetSiteSettingsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetSiteSettingsQuery = { __typename?: 'Query', siteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, updatedAt: any } };

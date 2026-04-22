@@ -83,3 +83,6 @@ export const AdminContentPagesPage = lazy(() =>
 export const AdminContentPreviewPage = lazy(() =>
   import('@/features/admin/pages/AdminContentPreviewPage').then((m) => ({ default: m.AdminContentPreviewPage })),
 );
+export const AdminSiteSettingsPage = lazy(() =>
+  import('@/features/admin/pages/AdminSiteSettingsPage').then((m) => ({ default: m.AdminSiteSettingsPage })),
+);

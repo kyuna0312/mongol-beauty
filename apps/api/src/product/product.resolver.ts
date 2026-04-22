@@ -37,9 +37,10 @@ export class ProductResolver {
     @Args('categoryId', { type: () => ID, nullable: true }) categoryId?: string,
     @Args('limit', { type: () => Int, nullable: true }) limit?: number,
     @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('search', { type: () => String, nullable: true }) search?: string,
     @Context() context?: GraphqlContext,
   ): Promise<Product[]> {
-    const products = await this.productService.findAll(categoryId, limit, offset);
+    const products = await this.productService.findAll(categoryId, limit, offset, search);
     const user = await this.requestUser(context);
     if (user?.userType === UserType.SUBSCRIBED_USER) {
       return products.map(p => ({

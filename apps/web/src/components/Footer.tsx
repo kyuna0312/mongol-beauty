@@ -1,8 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { useQuery } from '@apollo/client';
+import { GET_SITE_SETTINGS } from '@/graphql/queries';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const { data: settingsData } = useQuery(GET_SITE_SETTINGS);
+  const phone = settingsData?.siteSettings?.phone ?? '9911-2233';
+  const email = settingsData?.siteSettings?.email ?? 'info@incellderm.mn';
+  const address = settingsData?.siteSettings?.address ?? 'Улаанбаатар хот, Монгол улс';
 
   return (
     <footer className="mt-auto border-t border-primary-100/90 bg-gradient-to-b from-white/90 via-primary-50/40 to-amber-50/25 text-stone-600">
@@ -15,8 +21,8 @@ export function Footer() {
               <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-50 to-amber-50/60 ring-1 ring-primary-100/90 flex items-center justify-center overflow-hidden p-1 shadow-sm">
                 <img
                   src="/incellderm-logo.png"
-                  alt="INCELLDERM MONGOLIA Logo"
-                  className="h-full w-full object-contain"
+                  alt="Мөнгөн Косметикс ХХК Logo"
+                  className="h-full w-full object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -32,8 +38,8 @@ export function Footer() {
                 />
               </div>
               <div>
-                <p className="font-display text-lg font-semibold text-primary-800 tracking-tight">INCELLDERM</p>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-stone-500">Mongolia</p>
+                <p className="font-display text-lg font-semibold text-primary-800 tracking-tight">Мөнгөн Косметикс</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-stone-500">ХХК</p>
               </div>
             </div>
             <p className="text-sm text-stone-500 leading-relaxed max-w-sm">
@@ -118,15 +124,15 @@ export function Footer() {
             <ul className="space-y-3 text-sm text-stone-600">
               <li className="flex items-start gap-3">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-                <span>9911-2233</span>
+                <span>{phone}</span>
               </li>
               <li className="flex items-start gap-3">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-                <span>info@incellderm.mn</span>
+                <span>{email}</span>
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-                <span>Улаанбаатар хот, Монгол улс</span>
+                <span>{address}</span>
               </li>
             </ul>
           </div>
@@ -134,7 +140,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-primary-100/80 pt-8 md:flex-row">
           <p className="text-sm text-stone-500 text-center md:text-left">
-            © {currentYear} INCELLDERM MONGOLIA. Бүх эрх хуулиар хамгаалагдсан.
+            © {currentYear} Мөнгөн Косметикс ХХК. Бүх эрх хуулиар хамгаалагдсан.
           </p>
           <div className="flex items-center gap-2 text-sm text-stone-500">
             <span>Made with</span>
