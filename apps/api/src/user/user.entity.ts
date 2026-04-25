@@ -6,6 +6,7 @@ import { CartItem } from '../cart/cart-item.entity';
 export enum UserType {
   USER = 'USER',
   SUBSCRIBED_USER = 'SUBSCRIBED_USER',
+  VIP_USER = 'VIP_USER',
   ADMIN = 'ADMIN',
 }
 

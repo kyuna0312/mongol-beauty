@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, X, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Plus, X, AlertTriangle, CheckCircle, Eye, Code } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { CREATE_PRODUCT, UPDATE_PRODUCT } from '@/graphql/mutations';
 import { GET_PRODUCT_DETAIL } from '@/graphql/catalog';
 import { GET_HOME_CATEGORIES } from '@/graphql/home';
+import { useAdminFeedback } from '../hooks/useAdminFeedback';
 
 const SkinTypeLabels: Record<string, string> = {
   OILY: 'Тосолог', DRY: 'Хуурай', COMBINATION: 'Холимог', SENSITIVE: 'Мэдрэмтгий', NORMAL: 'Хэвийн',
@@ -16,6 +18,13 @@ const FeatureLabels: Record<string, string> = {
 
 const SkinTypes = Object.keys(SkinTypeLabels);
 const Features  = Object.keys(FeatureLabels);
+
+// DOMPurify-sanitized HTML preview — safe against XSS
+function HtmlPreview({ html }: { html: string }) {
+  const safe = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+   
+  return <div className="w-full min-h-24 px-3 py-2.5 text-sm border border-gray-200 rounded-lg bg-gray-50 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: safe }} />;
+}
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
@@ -38,8 +47,7 @@ export function AdminProductFormPage() {
   const { id }   = useParams();
   const navigate = useNavigate();
   const isEdit   = !!id;
-  const [formError, setFormError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const { error: formError, success: formSuccess, loading: submitting, run } = useAdminFeedback();
 
   const { data: productData, loading: productLoading } = useQuery(GET_PRODUCT_DETAIL, {
     variables: { id },
@@ -50,9 +58,11 @@ export function AdminProductFormPage() {
   const [createProduct] = useMutation(CREATE_PRODUCT);
   const [updateProduct] = useMutation(UPDATE_PRODUCT);
 
+  const [htmlPreview, setHtmlPreview] = useState(false);
   const [form, setForm] = useState({
-    name: '', categoryId: '', price: '', stock: '', description: '',
+    name: '', categoryId: '', price: '', stock: '', description: '', descriptionHtml: '',
     skinType: [] as string[], features: [] as string[], images: [''] as string[],
+    isKoreanProduct: false,
   });
 
   useEffect(() => {
@@ -64,9 +74,11 @@ export function AdminProductFormPage() {
       price: p.price?.toString() || '',
       stock: p.stock?.toString() || '',
       description: p.description || '',
+      descriptionHtml: p.descriptionHtml || '',
       skinType: Array.isArray(p.skinType) ? p.skinType : [],
       features: Array.isArray(p.features) ? p.features : [],
       images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [''],
+      isKoreanProduct: p.isKoreanProduct ?? false,
     });
   }, [productData]);
 
@@ -79,8 +91,6 @@ export function AdminProductFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null);
-    setSubmitting(true);
     const input = {
       ...(isEdit ? { id } : {}),
       name: form.name,
@@ -88,21 +98,20 @@ export function AdminProductFormPage() {
       price: parseInt(form.price),
       stock: parseInt(form.stock) || 0,
       description: form.description,
+      descriptionHtml: form.descriptionHtml || undefined,
       skinType: form.skinType,
       features: form.features,
       images: form.images.filter((img) => img.trim()),
+      isKoreanProduct: form.isKoreanProduct,
     };
-    try {
+    await run(async () => {
       if (isEdit) {
         await updateProduct({ variables: { input } });
       } else {
         await createProduct({ variables: { input } });
       }
       navigate('/admin/products');
-    } catch (err: unknown) {
-      setFormError(err instanceof Error ? err.message : 'Алдаа гарлаа');
-      setSubmitting(false);
-    }
+    }, isEdit ? 'Бүтээгдэхүүн шинэчлэгдлээ' : 'Бүтээгдэхүүн нэмэгдлээ');
   };
 
   if (productLoading) {
@@ -137,15 +146,15 @@ export function AdminProductFormPage() {
         </div>
       </div>
 
-      {/* Error */}
+      {/* Feedback */}
       {formError && (
-        <div className="flex items-start justify-between bg-red-50 border border-red-200 rounded-xl px-4 py-3">
-          <div className="flex items-start gap-2 text-sm text-red-800">
-            <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" /> {formError}
-          </div>
-          <button onClick={() => setFormError(null)} className="text-red-400 hover:text-red-600 ml-3 flex-shrink-0">
-            <X size={14} />
-          </button>
+        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800">
+          <AlertTriangle size={14} className="mt-0.5 flex-shrink-0" /> {formError}
+        </div>
+      )}
+      {formSuccess && (
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
+          <CheckCircle size={14} className="flex-shrink-0" /> {formSuccess}
         </div>
       )}
 
@@ -203,7 +212,7 @@ export function AdminProductFormPage() {
           </div>
 
           <div>
-            <FieldLabel>Тайлбар</FieldLabel>
+            <FieldLabel>Тайлбар (энгийн текст)</FieldLabel>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -211,6 +220,31 @@ export function AdminProductFormPage() {
               placeholder="Бүтээгдэхүүний дэлгэрэнгүй тайлбар..."
               className="w-full px-3 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none transition-shadow"
             />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <FieldLabel>HTML тайлбар (форматтай)</FieldLabel>
+              <button
+                type="button"
+                onClick={() => setHtmlPreview((v) => !v)}
+                className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700"
+              >
+                {htmlPreview ? <Code size={12} /> : <Eye size={12} />}
+                {htmlPreview ? 'HTML засах' : 'Харах'}
+              </button>
+            </div>
+            {htmlPreview ? (
+              <HtmlPreview html={form.descriptionHtml} />
+            ) : (
+              <textarea
+                value={form.descriptionHtml}
+                onChange={(e) => setForm({ ...form, descriptionHtml: e.target.value })}
+                rows={5}
+                placeholder="<p>HTML форматтай тайлбар...</p>"
+                className="w-full px-3 py-2.5 text-sm font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none transition-shadow"
+              />
+            )}
           </div>
         </div>
 
@@ -256,6 +290,28 @@ export function AdminProductFormPage() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="flex items-center justify-between py-2 border-t border-gray-100 mt-2">
+            <div>
+              <p className="text-sm font-medium text-gray-700">🇰🇷 Солонгосын бүтээгдэхүүн</p>
+              <p className="text-xs text-gray-500 mt-0.5">Захиалга Солонгосоос ирнэ. Хүргэлт 7–14 хоног</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, isKoreanProduct: !f.isKoreanProduct }))}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                form.isKoreanProduct ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+              role="switch"
+              aria-checked={form.isKoreanProduct}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                  form.isKoreanProduct ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
           </div>
         </div>
 

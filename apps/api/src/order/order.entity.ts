@@ -58,6 +58,22 @@ export class Order {
   @Column({ nullable: true })
   userId: string;
 
+  @Field(() => [String])
+  @Column({ type: 'simple-array', default: '' })
+  notes: string[];
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  supplierName?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  koreaTrackingId?: string;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  estimatedDays?: string;
+
   @Field()
   @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

@@ -1,17 +1,19 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery, useApolloClient } from '@apollo/client';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@mongol-beauty/ui';
-import { Eye, Save } from 'lucide-react';
+import { CheckCircle, Eye, Save } from 'lucide-react';
 import { GET_ADMIN_PAGES } from '@/graphql/queries';
 import { UPSERT_PAGE } from '@/graphql/mutations';
 
 const PAGE_ORDER = ['about', 'faq', 'shipping', 'returns', 'privacy'] as const;
 
 export function AdminContentPagesPage() {
+  const apolloClient = useApolloClient();
   const { data, loading, refetch } = useQuery(GET_ADMIN_PAGES, { fetchPolicy: 'cache-and-network' });
   const [upsertPage, { loading: saving }] = useMutation(UPSERT_PAGE);
   const [activeSlug, setActiveSlug] = useState<string>('about');
+  const [saved, setSaved] = useState(false);
 
   const pages = useMemo(() => {
     const list = data?.adminPages ?? [];
@@ -55,7 +57,12 @@ export function AdminContentPagesPage() {
         },
       },
     });
+    // Evict public page cache so frontend reflects update immediately
+    apolloClient.cache.evict({ fieldName: 'page' });
+    apolloClient.cache.gc();
     await refetch();
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
   if (loading) return <div className="p-6">Loading content pages...</div>;
@@ -138,6 +145,12 @@ export function AdminContentPagesPage() {
               <Save className="w-4 h-4 mr-2" />
               {saving ? 'Хадгалж байна...' : 'Хадгалах'}
             </Button>
+            {saved && (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+                <CheckCircle className="w-4 h-4" />
+                Хадгалагдлаа
+              </span>
+            )}
             <Link
               to={`/admin/preview/${activeSlug}`}
               className="inline-flex items-center gap-2 rounded-2xl border border-primary-200 bg-primary-50 px-4 py-2.5 text-sm font-semibold text-primary-800 hover:bg-primary-100/80 transition-colors"

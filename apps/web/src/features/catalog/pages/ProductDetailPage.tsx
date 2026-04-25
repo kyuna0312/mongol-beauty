@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useParams, Link, Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { Button, ProductCard, CartToast, OptimizedImage } from '@mongol-beauty/ui';
@@ -15,6 +16,10 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 
 function isUuidLike(value?: string): boolean {
   return Boolean(value && UUID_PATTERN.test(value));
+}
+
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
 }
 
 export function ProductDetailPage() {
@@ -283,13 +288,27 @@ export function ProductDetailPage() {
           )}
         </div>
 
-        {product.description && (
+        {product.isKoreanProduct && (
+          <div className="mb-6 flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+            <span>🇰🇷</span>
+            <span>Энэ бүтээгдэхүүн Солонгосоос захиалагдана. Хүргэлт 7–14 хоног болно.</span>
+          </div>
+        )}
+
+        {(product.descriptionHtml || product.description) && (
           <div className="mb-6 p-4 bg-gradient-to-br from-beige-50 to-beige-100 rounded-2xl border border-beige-200">
             <h3 className="font-semibold mb-2 text-gray-800 flex items-center gap-2">
               <span>📝</span>
               Тайлбар
             </h3>
-            <p className="text-gray-700 text-sm leading-relaxed">{product.description}</p>
+            {product.descriptionHtml ? (
+              <div
+                className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.descriptionHtml) }}
+              />
+            ) : (
+              <p className="text-gray-700 text-sm leading-relaxed">{product.description}</p>
+            )}
           </div>
         )}
 

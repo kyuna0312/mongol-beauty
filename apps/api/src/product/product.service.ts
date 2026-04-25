@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Product } from './product.entity';
+import { Product, ProductsPage } from './product.entity';
 
 @Injectable()
 export class ProductService {
@@ -15,7 +15,7 @@ export class ProductService {
     private productRepository: Repository<Product>,
   ) {}
 
-  async findAll(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
+  private buildProductsQuery(categoryId?: string, limit?: number, offset?: number, search?: string) {
     const query = this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .orderBy('product.createdAt', 'DESC');
@@ -35,8 +35,16 @@ export class ProductService {
     }
 
     query.take(limit || 20).skip(offset || 0);
+    return query;
+  }
 
-    return query.getMany();
+  async findAll(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
+    return this.buildProductsQuery(categoryId, limit, offset, search).getMany();
+  }
+
+  async findAllPaginated(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<ProductsPage> {
+    const [items, totalCount] = await this.buildProductsQuery(categoryId, limit, offset, search).getManyAndCount();
+    return { items, totalCount };
   }
 
   async findOne(id: string, categoryRef?: string): Promise<Product | null> {
@@ -84,6 +92,7 @@ export class ProductService {
     if (input.price !== undefined) updateData.price = input.price;
     if (input.stock !== undefined) updateData.stock = input.stock;
     if (input.description !== undefined) updateData.description = input.description;
+    if (input.descriptionHtml !== undefined) updateData.descriptionHtml = input.descriptionHtml;
     if (input.skinType !== undefined) {
       updateData.skinType = Array.isArray(input.skinType) ? input.skinType.join(',') : input.skinType;
     }

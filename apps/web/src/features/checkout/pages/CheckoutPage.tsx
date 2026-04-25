@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery, useLazyQuery } from '@apollo/client';
 import { Button } from '@mongol-beauty/ui';
-import { Upload } from 'lucide-react';
+import { Upload, Tag } from 'lucide-react';
 import { Toast } from '@/components/Toast';
 import { useCart } from '@/hooks/useCart';
 import { CREATE_ORDER_SIMPLE, UPLOAD_PAYMENT_RECEIPT_SIMPLE } from '@/graphql/orders';
-import { GET_SITE_SETTINGS } from '@/graphql/queries';
+import { GET_SITE_SETTINGS, VALIDATE_VOUCHER, GET_ME } from '@/graphql/queries';
 import { CheckoutCartItem } from '@/interfaces/cart';
 import { getCheckoutCreateOrderBlock, isValidCheckoutPhone } from '@/lib/checkout-validation';
 
@@ -16,6 +16,10 @@ export function CheckoutPage() {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [notes, setNotes] = useState<string[]>([]);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucherDiscount, setVoucherDiscount] = useState<number | null>(null);
+  const [voucherError, setVoucherError] = useState('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -24,7 +28,10 @@ export function CheckoutPage() {
   const [createOrder] = useMutation(CREATE_ORDER_SIMPLE);
   const [uploadReceipt] = useMutation(UPLOAD_PAYMENT_RECEIPT_SIMPLE);
   const { data: settingsData } = useQuery(GET_SITE_SETTINGS);
+  const { data: meData } = useQuery(GET_ME);
+  const [validateVoucher, { loading: voucherLoading }] = useLazyQuery(VALIDATE_VOUCHER);
   const settings = settingsData?.siteSettings;
+  const isVip = meData?.me?.userType === 'VIP_USER';
   const hasCartItems = cart.length > 0;
   const isPhoneValid = isValidCheckoutPhone(phone);
   const maxReceiptBytes = 5 * 1024 * 1024;
@@ -62,6 +69,22 @@ export function CheckoutPage() {
       return (error as { graphQLErrors: Array<{ message?: string }> }).graphQLErrors[0].message || fallback;
     }
     return fallback;
+  };
+
+  const handleVoucherApply = async () => {
+    setVoucherError('');
+    setVoucherDiscount(null);
+    if (!voucherCode.trim()) return;
+    try {
+      const { data, error } = await validateVoucher({ variables: { code: voucherCode.trim() } });
+      if (error || !data?.validateVoucher) {
+        setVoucherError('Voucher хүчингүй байна');
+      } else {
+        setVoucherDiscount(data.validateVoucher.discountPercent);
+      }
+    } catch {
+      setVoucherError('Voucher олдсонгүй эсвэл хүчингүй байна');
+    }
   };
 
   const handleCreateOrder = async () => {
@@ -104,6 +127,7 @@ export function CheckoutPage() {
             phone: phone || undefined,
             name: name || undefined,
             deliveryAddress: deliveryAddress || undefined,
+            notes: notes.length > 0 ? notes : undefined,
           },
         },
       });
@@ -143,9 +167,13 @@ export function CheckoutPage() {
     }
   };
 
-  const totalPrice = (cart as CheckoutCartItem[]).reduce((sum: number, item: CheckoutCartItem) => {
+  const baseTotal = (cart as CheckoutCartItem[]).reduce((sum: number, item: CheckoutCartItem) => {
     return sum + (item.price || 0) * item.quantity;
   }, 0);
+  const vipDiscount = isVip ? 0.2 : 0;
+  const voucherDiscountRate = voucherDiscount ? voucherDiscount / 100 : 0;
+  const effectiveDiscount = Math.max(vipDiscount, voucherDiscountRate);
+  const totalPrice = Math.round(baseTotal * (1 - effectiveDiscount));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pb-32">
@@ -196,7 +224,59 @@ export function CheckoutPage() {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Нэмэлт тэмдэглэл</label>
+                <div className="space-y-2">
+                  {(['байнга хүн байна', 'ирэхээсээ өмнө яриа', 'нялх хүүхэдтэй', 'зөвхөн оройн цагаар'] as const).map((tag) => (
+                    <label key={tag} className="flex items-center gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={notes.includes(tag)}
+                        onChange={() => setNotes((prev) => prev.includes(tag) ? prev.filter((n) => n !== tag) : [...prev, tag])}
+                        className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-gray-700 group-hover:text-gray-900">{tag}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             </div>
+        </div>
+
+        {/* Voucher / VIP */}
+        <div className="bg-white rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
+          <h3 className="font-bold mb-4 text-gray-800 flex items-center gap-2">
+            <Tag size={16} />
+            Хөнгөлөлт
+          </h3>
+          {isVip && (
+            <div className="mb-3 rounded-xl bg-purple-50 border border-purple-200 px-4 py-2 text-sm text-purple-800 font-medium">
+              VIP хэрэглэгч — 20% хөнгөлөлт автоматаар нэмэгдсэн
+            </div>
+          )}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+              placeholder="Voucher код оруулах"
+              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleVoucherApply}
+              disabled={voucherLoading}
+              className="px-4 py-3 bg-primary-600 text-white rounded-xl text-sm font-medium hover:bg-primary-700 disabled:opacity-60 transition-colors"
+            >
+              {voucherLoading ? '...' : 'Хэрэглэх'}
+            </button>
+          </div>
+          {voucherDiscount !== null && (
+            <p className="mt-2 text-sm text-green-700 font-medium">Voucher хэрэглэгдлээ: {voucherDiscount}% хөнгөлөлт</p>
+          )}
+          {voucherError && (
+            <p className="mt-2 text-sm text-red-600">{voucherError}</p>
+          )}
         </div>
 
         {/* Order Summary - INCELLDERM Style */}
@@ -212,6 +292,12 @@ export function CheckoutPage() {
                   <span className="font-semibold text-primary-600">{(item.price * item.quantity).toLocaleString()}₮</span>
                 </div>
               ))}
+              {effectiveDiscount > 0 && (
+                <div className="flex justify-between text-sm bg-green-50 px-4 py-2 rounded-xl text-green-700">
+                  <span>Хөнгөлөлт ({Math.round(effectiveDiscount * 100)}%):</span>
+                  <span className="font-semibold">-{(baseTotal - totalPrice).toLocaleString()}₮</span>
+                </div>
+              )}
               <div className="border-t-2 border-beige-300 pt-4 mt-4 flex justify-between items-center bg-white/80 backdrop-blur-sm px-4 py-3 rounded-xl">
                 <span className="font-bold text-lg text-gray-800">Нийт:</span>
                 <span className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">

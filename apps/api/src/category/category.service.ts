@@ -16,6 +16,13 @@ export class CategoryService {
     });
   }
 
+  async findTree(): Promise<Category[]> {
+    const all = await this.categoryRepository.find({
+      relations: ['children'],
+    });
+    return all.filter((c) => !c.parentId);
+  }
+
   async findOne(id: string): Promise<Category> {
     return this.categoryRepository.findOne({
       where: { id },
