@@ -21,6 +21,11 @@ export class CreateCategoryInput {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @Field(() => ID, { nullable: true })
+  @IsOptional()
+  @IsUUID()
+  parentId?: string;
 }
 
 @InputType()
@@ -49,4 +54,9 @@ export class UpdateCategoryInput {
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @Field(() => ID, { nullable: true })
+  @IsOptional()
+  @IsUUID()
+  parentId?: string;
 }

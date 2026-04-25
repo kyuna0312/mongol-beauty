@@ -27,9 +27,11 @@ export interface ProductDetailView {
   discountedPrice?: number | null;
   stock: number;
   description?: string | null;
+  descriptionHtml?: string | null;
   images: string[];
   skinType: string[];
   features: string[];
+  isKoreanProduct?: boolean;
   category: {
     id: string;
     name: string;

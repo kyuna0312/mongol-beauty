@@ -17,6 +17,20 @@ export function createApolloCache(): InMemoryCache {
               return [...existing, ...incoming];
             },
           },
+          productsPaged: {
+            keyArgs: ['categoryId', 'search'],
+            merge(existing, incoming, { args }) {
+              if (!args?.offset) {
+                return incoming;
+              }
+              const existingItems = existing?.items ?? [];
+              const incomingItems = incoming?.items ?? [];
+              return {
+                ...incoming,
+                items: [...existingItems, ...incomingItems],
+              };
+            },
+          },
         },
       },
       Product: {

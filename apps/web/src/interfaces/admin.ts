@@ -17,6 +17,10 @@ export interface AdminOrder {
   updatedAt: string;
   paymentReceiptUrl?: string | null;
   deliveryAddress?: string | null;
+  notes?: string[];
+  supplierName?: string | null;
+  koreaTrackingId?: string | null;
+  estimatedDays?: string | null;
   user?: {
     name?: string;
     phone?: string;

@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Args, ID, Int, Context, ResolveField, Root } from '@nestjs/graphql';
 import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
-import { Product } from './product.entity';
+import { Product, ProductsPage } from './product.entity';
 import { ProductService } from './product.service';
 import { CreateProductInput, UpdateProductInput } from './dto/create-product.input';
 import { User, UserType } from '../user/user.entity';
@@ -42,6 +42,9 @@ export class ProductResolver {
   ): Promise<Product[]> {
     const products = await this.productService.findAll(categoryId, limit, offset, search);
     const user = await this.requestUser(context);
+    if (user?.userType === UserType.VIP_USER) {
+      return products.map(p => ({ ...p, discountedPrice: Math.round(p.price * 0.8) }));
+    }
     if (user?.userType === UserType.SUBSCRIBED_USER) {
       return products.map(p => ({
         ...p,
@@ -51,6 +54,28 @@ export class ProductResolver {
     return products;
   }
 
+  @Query(() => ProductsPage)
+  async productsPaged(
+    @Args('categoryId', { type: () => ID, nullable: true }) categoryId?: string,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('search', { type: () => String, nullable: true }) search?: string,
+    @Context() context?: GraphqlContext,
+  ): Promise<ProductsPage> {
+    const page = await this.productService.findAllPaginated(categoryId, limit, offset, search);
+    const user = await this.requestUser(context);
+    if (user?.userType === UserType.VIP_USER) {
+      return { ...page, items: page.items.map(p => ({ ...p, discountedPrice: Math.round(p.price * 0.8) })) };
+    }
+    if (user?.userType === UserType.SUBSCRIBED_USER) {
+      return {
+        ...page,
+        items: page.items.map(p => ({ ...p, discountedPrice: Math.round(p.price * 0.9) })),
+      };
+    }
+    return page;
+  }
+
   @Query(() => [Product])
   async productsByIds(
     @Args({ name: 'ids', type: () => [ID] }) ids: string[],
@@ -58,6 +83,9 @@ export class ProductResolver {
   ): Promise<Product[]> {
     const products = await this.productService.findByIds(ids);
     const user = await this.requestUser(context);
+    if (user?.userType === UserType.VIP_USER) {
+      return products.map((p) => ({ ...p, discountedPrice: Math.round(p.price * 0.8) }));
+    }
     if (user?.userType === UserType.SUBSCRIBED_USER) {
       return products.map((p) => ({
         ...p,
@@ -81,8 +109,10 @@ export class ProductResolver {
       return null;
     }
 
-    // Apply discount for subscribed users
     const user = await this.requestUser(context);
+    if (user?.userType === UserType.VIP_USER) {
+      return { ...product, discountedPrice: Math.round(product.price * 0.8) };
+    }
     if (user?.userType === UserType.SUBSCRIBED_USER) {
       return {
         ...product,
@@ -107,6 +137,9 @@ export class ProductResolver {
   @ResolveField(() => Int, { nullable: true })
   async discountedPrice(@Root() product: Product, @Context() context?: GraphqlContext): Promise<number | null> {
     const user = await this.requestUser(context);
+    if (user?.userType === UserType.VIP_USER) {
+      return Math.round(product.price * 0.8); // 20% discount
+    }
     if (user?.userType === UserType.SUBSCRIBED_USER) {
       return Math.round(product.price * 0.9); // 10% discount
     }

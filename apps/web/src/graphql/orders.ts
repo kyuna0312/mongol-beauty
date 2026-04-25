@@ -7,6 +7,10 @@ export const GET_ORDER_DETAIL = gql`
       totalPrice
       status
       paymentReceiptUrl
+      notes
+      supplierName
+      koreaTrackingId
+      estimatedDays
       createdAt
       items {
         id
@@ -16,6 +20,7 @@ export const GET_ORDER_DETAIL = gql`
           id
           name
           images
+          isKoreanProduct
         }
       }
     }

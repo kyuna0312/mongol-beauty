@@ -86,6 +86,7 @@ export class OrderService {
         totalPrice,
         items,
         deliveryAddress: input.deliveryAddress,
+        notes: input.notes ?? [],
       });
 
       const saved = await orderRepo.save(order);

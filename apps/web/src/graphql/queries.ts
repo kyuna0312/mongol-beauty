@@ -28,6 +28,7 @@ export const GET_ADMIN_CATEGORY = gql`
       slug
       description
       imageUrl
+      parentId
     }
   }
 `;
@@ -40,8 +41,24 @@ export const GET_ADMIN_CATEGORIES = gql`
       slug
       description
       imageUrl
+      parentId
       products {
         id
+      }
+    }
+  }
+`;
+
+export const GET_CATEGORIES_TREE = gql`
+  query GetCategoriesTree {
+    categoriesTree {
+      id
+      name
+      slug
+      children {
+        id
+        name
+        slug
       }
     }
   }
@@ -80,6 +97,10 @@ export const GET_ADMIN_ORDERS = gql`
         status
         paymentReceiptUrl
         deliveryAddress
+        notes
+        supplierName
+        koreaTrackingId
+        estimatedDays
         createdAt
         updatedAt
         items {
@@ -209,6 +230,14 @@ export const GET_PAGE_ABOUT = gql`
       metaTitle
       metaDescription
       updatedAt
+    }
+  }
+`;
+
+export const VALIDATE_VOUCHER = gql`
+  query ValidateVoucher($code: String!) {
+    validateVoucher(code: $code) {
+      discountPercent
     }
   }
 `;

@@ -7,6 +7,7 @@ This repo keeps documentation focused around a small canonical set.
 - `README.md` - project overview, architecture, features, and API summary.
 - `QUICK_START.md` - fastest way to run locally.
 - `docs/LOCAL_SETUP.md` - full local setup, migrations, troubleshooting, and workflow tips.
+- `docs/DOCKER.md` - Docker Compose guide (local full-stack, production), Cloudflare R2 setup, Dockerfile overview.
 - `ADMIN_PANEL.md` - admin panel capabilities and usage.
 - `DEMO_PRODUCTS.md` - demo seed data reference.
 
