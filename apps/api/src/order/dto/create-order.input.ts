@@ -48,4 +48,10 @@ export class CreateOrderInput {
   @IsOptional()
   @IsString()
   deliveryAddress?: string;
+
+  @Field(() => [String], { nullable: true, defaultValue: [] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  notes?: string[];
 }

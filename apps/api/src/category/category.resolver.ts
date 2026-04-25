@@ -15,6 +15,11 @@ export class CategoryResolver {
     return this.categoryService.findAll();
   }
 
+  @Query(() => [Category])
+  async categoriesTree(): Promise<Category[]> {
+    return this.categoryService.findTree();
+  }
+
   @Query(() => Category, { nullable: true })
   async category(@Args('id', { type: () => ID }) id: string): Promise<Category> {
     return this.categoryService.findOne(id);

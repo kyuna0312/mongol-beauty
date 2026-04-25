@@ -6,6 +6,7 @@ export interface OrderItem {
     id: string;
     name: string;
     images?: string[];
+    isKoreanProduct?: boolean;
   };
 }
 
@@ -14,6 +15,9 @@ export interface OrderData {
   totalPrice: number;
   status: 'WAITING_PAYMENT' | 'PAID_CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
   paymentReceiptUrl?: string | null;
+  supplierName?: string | null;
+  koreaTrackingId?: string | null;
+  estimatedDays?: string | null;
   createdAt: string;
   items: OrderItem[];
 }

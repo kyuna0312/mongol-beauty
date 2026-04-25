@@ -140,6 +140,14 @@ services:
       INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_SECRET}
       ORDER_SERVICE_URL: http://order-service:4010
+      # ── Receipt storage ──────────────────────────────────────────────────
+      RECEIPT_STORAGE_DRIVER: ${RECEIPT_STORAGE_DRIVER:-r2}
+      CF_R2_ACCOUNT_ID: ${CF_R2_ACCOUNT_ID}
+      CF_R2_ACCESS_KEY_ID: ${CF_R2_ACCESS_KEY_ID}
+      CF_R2_SECRET_ACCESS_KEY: ${CF_R2_SECRET_ACCESS_KEY}
+      CF_R2_BUCKET: ${CF_R2_BUCKET}
+      CF_R2_PUBLIC_URL: ${CF_R2_PUBLIC_URL}
+      RECEIPT_MAX_BYTES: ${RECEIPT_MAX_BYTES:-5242880}
     volumes:
       - uploads_data:/app/uploads
     networks:
@@ -176,6 +184,14 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       ORDER_SERVICE_URL: http://order-service:4010
       PAYMENT_SERVICE_URL: http://payment-service:4020
+      # ── Receipt storage ──────────────────────────────────────────────────
+      RECEIPT_STORAGE_DRIVER: ${RECEIPT_STORAGE_DRIVER:-r2}
+      CF_R2_ACCOUNT_ID: ${CF_R2_ACCOUNT_ID}
+      CF_R2_ACCESS_KEY_ID: ${CF_R2_ACCESS_KEY_ID}
+      CF_R2_SECRET_ACCESS_KEY: ${CF_R2_SECRET_ACCESS_KEY}
+      CF_R2_BUCKET: ${CF_R2_BUCKET}
+      CF_R2_PUBLIC_URL: ${CF_R2_PUBLIC_URL}
+      RECEIPT_MAX_BYTES: ${RECEIPT_MAX_BYTES:-5242880}
     volumes:
       - uploads_data:/app/uploads
     healthcheck:

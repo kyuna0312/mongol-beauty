@@ -1,5 +1,5 @@
 import { InputType, Field, ID, Int } from '@nestjs/graphql';
-import { IsString, IsUUID, IsInt, IsOptional, IsArray, Min } from 'class-validator';
+import { IsString, IsUUID, IsInt, IsOptional, IsArray, Min, IsBoolean } from 'class-validator';
 
 @InputType()
 export class CreateProductInput {
@@ -26,6 +26,11 @@ export class CreateProductInput {
   @IsString()
   description?: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  descriptionHtml?: string;
+
   @Field(() => [String], { defaultValue: [] })
   @IsArray()
   @IsString({ each: true })
@@ -40,6 +45,11 @@ export class CreateProductInput {
   @IsArray()
   @IsString({ each: true })
   images: string[];
+
+  @Field({ defaultValue: false })
+  @IsOptional()
+  @IsBoolean()
+  isKoreanProduct?: boolean;
 }
 
 @InputType()
@@ -75,6 +85,11 @@ export class UpdateProductInput {
   @IsString()
   description?: string;
 
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  descriptionHtml?: string;
+
   @Field(() => [String], { nullable: true })
   @IsOptional()
   @IsArray()
@@ -92,4 +107,9 @@ export class UpdateProductInput {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isKoreanProduct?: boolean;
 }

@@ -1,0 +1,192 @@
+# =============================================================================
+# Mongol Beauty — Full local stack (built images, no source mounts)
+# Usage: docker compose -f docker-compose.local.yml up --build -d
+#
+# Difference from docker-compose.yml (db-only):
+#   This file builds and runs the FULL stack — postgres + all API services + web.
+#   No Node installed on host required beyond Docker itself.
+#
+# First run:   docker compose -f docker-compose.local.yml up --build -d
+# Rebuild API: docker compose -f docker-compose.local.yml up --build gateway -d
+# Logs:        docker compose -f docker-compose.local.yml logs -f
+# Tear down:   docker compose -f docker-compose.local.yml down -v
+# =============================================================================
+
+name: mongol-beauty-local
+
+services:
+
+  # ── Database ─────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: mb-local-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-mongol_beauty}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-mongol_beauty}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - mongol-beauty-local-network
+
+  # ── Order service ─────────────────────────────────────────────────────────
+  order-service:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: mongol-beauty-api:local
+    container_name: mb-local-order-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      SERVICE_MODE: order
+      PORT: 4010
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+      DB_SYNCHRONIZE: "true"
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+    ports:
+      - "4010:4010"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4010/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - mongol-beauty-local-network
+
+  # ── Payment service ───────────────────────────────────────────────────────
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: mongol-beauty-api:local
+    container_name: mb-local-payment-service
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      SERVICE_MODE: payment
+      PORT: 4020
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+      DB_SYNCHRONIZE: "true"
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+      ORDER_SERVICE_URL: http://order-service:4010
+      # ── Receipt storage (local disk inside container) ─────────────────────
+      RECEIPT_STORAGE_DRIVER: ${RECEIPT_STORAGE_DRIVER:-local}
+      # To test R2 locally, set RECEIPT_STORAGE_DRIVER=r2 and add CF_R2_* vars below.
+      # CF_R2_ACCOUNT_ID: ${CF_R2_ACCOUNT_ID}
+      # CF_R2_ACCESS_KEY_ID: ${CF_R2_ACCESS_KEY_ID}
+      # CF_R2_SECRET_ACCESS_KEY: ${CF_R2_SECRET_ACCESS_KEY}
+      # CF_R2_BUCKET: ${CF_R2_BUCKET}
+      # CF_R2_PUBLIC_URL: ${CF_R2_PUBLIC_URL}
+    ports:
+      - "4020:4020"
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4020/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - mongol-beauty-local-network
+
+  # ── Gateway (GraphQL API) ─────────────────────────────────────────────────
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: mongol-beauty-api:local
+    container_name: mb-local-gateway
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      order-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      SERVICE_MODE: gateway
+      PORT: 4000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+      DB_SYNCHRONIZE: "true"
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-prod}
+      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET:-dev-internal-secret}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+      FRONTEND_URL: http://localhost:3000
+      ORDER_SERVICE_URL: http://order-service:4010
+      PAYMENT_SERVICE_URL: http://payment-service:4020
+    ports:
+      - "4000:4000"
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - mongol-beauty-local-network
+
+  # ── Web (React + Nginx) ───────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Gateway is proxied through nginx — uses relative /graphql path baked in
+        VITE_GRAPHQL_URL: /graphql
+    image: mongol-beauty-web:local
+    container_name: mb-local-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    networks:
+      - mongol-beauty-local-network
+
+volumes:
+  postgres_data:
+    name: mb_local_postgres_data
+  uploads_data:
+    name: mb_local_uploads_data
+
+networks:
+  mongol-beauty-local-network:
+    name: mongol-beauty-local-network

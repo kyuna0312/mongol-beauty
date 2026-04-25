@@ -7,6 +7,7 @@ import { PaymentGatewayService } from './payment.gateway.service';
 import { PaymentInternalController } from './payment.internal.controller';
 import { ReceiptStorageService } from './receipt-storage.service';
 import { LocalReceiptStorageService } from './storage/local-receipt-storage.service';
+import { R2ReceiptStorageService } from './storage/r2-receipt-storage.service';
 
 @Module({
   imports: [OrderModule, AuthModule],
@@ -17,6 +18,7 @@ import { LocalReceiptStorageService } from './storage/local-receipt-storage.serv
     PaymentGatewayService,
     ReceiptStorageService,
     LocalReceiptStorageService,
+    R2ReceiptStorageService,
   ],
   exports: [PaymentService, PaymentGatewayService],
 })

@@ -75,7 +75,9 @@ export const ProductsPage = memo(function ProductsPage() {
 
   const loadMoreProducts = useCallback(async () => {
     if (!hasMore || productsLoading || isFetchingMore) return;
-    const currentCount = productsData?.products?.length || 0;
+    const currentCount = productsData?.productsPaged?.items?.length || 0;
+    const totalCount = productsData?.productsPaged?.totalCount ?? 0;
+    if (currentCount >= totalCount) { setHasMore(false); return; }
     const result = await fetchMore({
       variables: {
         categoryId: safeCategoryId,
@@ -84,7 +86,7 @@ export const ProductsPage = memo(function ProductsPage() {
         search: searchQuery || undefined,
       },
     });
-    const incomingCount = result.data?.products?.length || 0;
+    const incomingCount = result.data?.productsPaged?.items?.length || 0;
     if (incomingCount < PAGE_SIZE) {
       setHasMore(false);
     }
@@ -121,7 +123,7 @@ export const ProductsPage = memo(function ProductsPage() {
 
   // Memoize, map to UI view model and sort products
   const products = useMemo(() => {
-    const allProducts: ProductCardRaw[] = productsData?.products || [];
+    const allProducts: ProductCardRaw[] = productsData?.productsPaged?.items || [];
     const mapped = allProducts.map(toProductCardView);
     const sorted = [...mapped];
 
@@ -182,8 +184,8 @@ export const ProductsPage = memo(function ProductsPage() {
                   ? `"${searchQuery}" хайлтын үр дүн`
                   : categoryData?.category?.name || 'Бүх бүтээгдэхүүн'}
               </h1>
-              {products.length > 0 && (
-                <p className="mt-1 text-sm text-stone-500">{products.length} бүтээгдэхүүн</p>
+              {(productsData?.productsPaged?.totalCount ?? 0) > 0 && (
+                <p className="mt-1 text-sm text-stone-500">{productsData!.productsPaged!.totalCount} бүтээгдэхүүн</p>
               )}
             </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -314,7 +316,7 @@ export const ProductsPage = memo(function ProductsPage() {
           ))}
         </div>
       )}
-      {products.length >= PAGE_SIZE && <div ref={sentinelRef} className="h-8" aria-hidden />}
+      {hasMore && <div ref={sentinelRef} className="h-8" aria-hidden />}
       <div className="py-4 text-center text-sm text-stone-500">
         {networkStatus === 3
           ? 'Илүү бүтээгдэхүүн ачаалж байна...'

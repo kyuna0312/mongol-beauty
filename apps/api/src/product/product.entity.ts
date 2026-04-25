@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Index } from 'typeorm';
-import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
 import { Category } from '../category/category.entity';
 
 export enum SkinType {
@@ -21,6 +21,15 @@ export enum Feature {
 
 registerEnumType(SkinType, { name: 'SkinType' });
 registerEnumType(Feature, { name: 'Feature' });
+
+@ObjectType()
+export class ProductsPage {
+  @Field(() => [Product])
+  items: Product[];
+
+  @Field(() => Int)
+  totalCount: number;
+}
 
 @ObjectType()
 @Entity('products')
@@ -58,6 +67,10 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true })
+  descriptionHtml?: string;
+
   @Field(() => [SkinType])
   @Column('simple-array', { default: '' })
   skinType: SkinType[];
@@ -69,6 +82,10 @@ export class Product {
   @Field(() => [String])
   @Column('simple-array', { default: '' })
   images: string[];
+
+  @Field()
+  @Column({ default: false })
+  isKoreanProduct: boolean;
 
   @Field()
   @Index()

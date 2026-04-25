@@ -6,6 +6,7 @@ import { GET_ADMIN_ORDERS } from '@/graphql/queries';
 import { UPDATE_ORDER_STATUS } from '@/graphql/mutations';
 import { AdminOrder, AdminOrdersPageData, OrderStatus } from '@/interfaces/admin';
 import { ordersListUrl } from '@/lib/admin-orders-url';
+import { useAdminFeedback } from '../hooks/useAdminFeedback';
 
 const PAGE_SIZE = 20;
 
@@ -35,6 +36,7 @@ export function AdminOrdersPage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [mutationError, setMutationError]   = useState<string | null>(null);
   const [previewUrl, setPreviewUrl]         = useState<string | null>(null);
+  const { success: actionSuccess, setSuccess: setActionSuccess } = useAdminFeedback();
 
   const { data, loading, error, refetch } = useQuery(GET_ADMIN_ORDERS, {
     variables: { limit: PAGE_SIZE, offset, status: statusFilter || undefined },
@@ -50,6 +52,7 @@ export function AdminOrdersPage() {
     try {
       await updateOrderStatus({ variables: { orderId, status: newStatus } });
       setPendingAction(null);
+      setActionSuccess('Захиалгын төлөв шинэчлэгдлээ');
     } catch (err: unknown) {
       setMutationError(err instanceof Error ? err.message : 'Алдаа гарлаа');
     } finally {
@@ -112,6 +115,14 @@ export function AdminOrdersPage() {
           </p>
         </div>
       </div>
+
+      {/* Success banner */}
+      {actionSuccess && (
+        <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
+          <CheckCircle size={14} className="flex-shrink-0" />
+          {actionSuccess}
+        </div>
+      )}
 
       {/* Mutation error banner */}
       {mutationError && (
@@ -229,6 +240,27 @@ export function AdminOrdersPage() {
                       <span className="text-blue-400 mt-0.5">📍</span>
                       <span className="text-blue-800 font-medium">Хүргэлтийн хаяг:</span>
                       <span className="text-blue-700">{order.deliveryAddress}</span>
+                    </div>
+                  )}
+
+                  {/* Notes */}
+                  {order.notes && order.notes.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {order.notes.map((note) => (
+                        <span key={note} className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200">
+                          {note}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Korea tracking info */}
+                  {(order.supplierName || order.koreaTrackingId || order.estimatedDays) && (
+                    <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                      <span className="font-medium text-blue-800">🇰🇷 Солонгос захиалга</span>
+                      {order.supplierName && <span className="text-blue-700">Нийлүүлэгч: {order.supplierName}</span>}
+                      {order.koreaTrackingId && <span className="text-blue-700">Трэкинг: {order.koreaTrackingId}</span>}
+                      {order.estimatedDays && <span className="text-blue-700">Хугацаа: {order.estimatedDays}</span>}
                     </div>
                   )}
 
