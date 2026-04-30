@@ -6,6 +6,7 @@ import DOMPurify from 'dompurify';
 import { CREATE_PRODUCT, UPDATE_PRODUCT } from '@/graphql/mutations';
 import { GET_PRODUCT_DETAIL } from '@/graphql/catalog';
 import { GET_HOME_CATEGORIES } from '@/graphql/home';
+import { GET_ADMIN_PRODUCTS } from '@/graphql/queries';
 import { useAdminFeedback } from '../hooks/useAdminFeedback';
 
 const SkinTypeLabels: Record<string, string> = {
@@ -55,8 +56,8 @@ export function AdminProductFormPage() {
   });
   const { data: categoriesData } = useQuery(GET_HOME_CATEGORIES);
 
-  const [createProduct] = useMutation(CREATE_PRODUCT);
-  const [updateProduct] = useMutation(UPDATE_PRODUCT);
+  const [createProduct] = useMutation(CREATE_PRODUCT, { refetchQueries: [{ query: GET_ADMIN_PRODUCTS }] });
+  const [updateProduct] = useMutation(UPDATE_PRODUCT, { refetchQueries: [{ query: GET_ADMIN_PRODUCTS }] });
 
   const [htmlPreview, setHtmlPreview] = useState(false);
   const [form, setForm] = useState({
