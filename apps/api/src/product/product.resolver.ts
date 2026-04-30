@@ -146,6 +146,15 @@ export class ProductResolver {
     return null;
   }
 
+  @ResolveField(() => Int, { nullable: true })
+  async stock(@Root() product: Product, @Context() context?: GraphqlContext): Promise<number | null> {
+    const user = await this.requestUser(context);
+    if (user?.isAdmin) {
+      return product.stock;
+    }
+    return null;
+  }
+
   // Admin mutations
   @Mutation(() => Product)
   @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)
