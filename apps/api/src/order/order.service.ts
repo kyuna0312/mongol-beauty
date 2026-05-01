@@ -6,11 +6,12 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Order, OrderStatus } from './order.entity';
+import { Order, OrderStatus, PaymentMethod } from './order.entity';
 import { OrderItem } from './order-item.entity';
 import { Product } from '../product/product.entity';
 import { CreateOrderInput } from './dto/create-order.input';
 import { User } from '../user/user.entity';
+import { SiteSettings } from '../content/site-settings.entity';
 
 @Injectable()
 export class OrderService {
@@ -48,8 +49,9 @@ export class OrderService {
       const productRepo = manager.getRepository(Product);
       const orderRepo = manager.getRepository(Order);
       const orderItemRepo = manager.getRepository(OrderItem);
+      const settingsRepo = manager.getRepository(SiteSettings);
 
-      let totalPrice = 0;
+      let subtotal = 0;
       const items: OrderItem[] = [];
 
       for (const itemInput of input.items) {
@@ -68,8 +70,7 @@ export class OrderService {
 
         await productRepo.decrement({ id: product.id }, 'stock', itemInput.quantity);
 
-        const itemPrice = product.price * itemInput.quantity;
-        totalPrice += itemPrice;
+        subtotal += product.price * itemInput.quantity;
 
         const orderItem = orderItemRepo.create({
           productId: itemInput.productId,
@@ -79,14 +80,28 @@ export class OrderService {
         items.push(orderItem);
       }
 
+      const settings = await settingsRepo.findOne({ where: { id: 'default' } });
+      const feeThreshold = settings?.freeDeliveryThreshold ?? 200000;
+      const feeAmount = settings?.deliveryFee ?? 5000;
+      const deliveryFee = subtotal >= feeThreshold ? 0 : feeAmount;
+      const totalPrice = subtotal + deliveryFee;
+
+      const paymentMethod = input.paymentMethod ?? PaymentMethod.BANK_TRANSFER;
+      const notes = [...(input.notes ?? [])];
+      if (paymentMethod === PaymentMethod.CASH) {
+        notes.push('Бэлэн мөнгөөр төлнө');
+      }
+
       const order = orderRepo.create({
         userId,
         idempotencyKey,
         status: OrderStatus.WAITING_PAYMENT,
         totalPrice,
+        deliveryFee,
+        paymentMethod,
         items,
         deliveryAddress: input.deliveryAddress,
-        notes: input.notes ?? [],
+        notes,
       });
 
       const saved = await orderRepo.save(order);

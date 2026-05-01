@@ -45,10 +45,12 @@ input CartItemInput {
 }
 
 type Category {
+  children: [Category!]
   description: String
   id: ID!
   imageUrl: String
   name: String!
+  parentId: ID
   products: [Product!]!
   slug: String!
 }
@@ -64,6 +66,8 @@ input CreateOrderInput {
   deliveryAddress: String
   items: [CreateOrderItemInput!]!
   name: String
+  notes: [String!] = []
+  paymentMethod: PaymentMethod = BANK_TRANSFER
   phone: String
 }
 
@@ -93,6 +97,11 @@ enum Feature {
   HYDRATING
   ORGANIC
   SUNSCREEN
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
 }
 
 input ForgotPasswordInput {
@@ -138,10 +147,16 @@ type Mutation {
 type Order {
   createdAt: DateTime!
   deliveryAddress: String
+  deliveryFee: Int!
+  estimatedDays: String
   id: ID!
   items: [OrderItem!]!
+  koreaTrackingId: String
+  notes: [String!]!
+  paymentMethod: PaymentMethod!
   paymentReceiptUrl: String
   status: OrderStatus!
+  supplierName: String
   totalPrice: Float!
   updatedAt: DateTime!
   user: User
@@ -178,15 +193,22 @@ type Product {
   category: Category!
   createdAt: DateTime!
   description: String
+  descriptionHtml: String
   discountedPrice: Float
   features: [Feature!]!
   id: ID!
   images: [String!]!
+  isKoreanProduct: Boolean
   name: String!
   price: Float!
   skinType: [SkinType!]!
   stock: Float!
   updatedAt: DateTime!
+}
+
+type ProductsPage {
+  items: [Product!]!
+  totalCount: Int!
 }
 
 type Query {
@@ -195,6 +217,7 @@ type Query {
   adminPages: [Page!]!
   adminStats: AdminStatsResult!
   categories: [Category!]!
+  categoriesTree: [Category!]!
   category(id: ID!): Category
   me: User
   myCart: [CartItem!]!
@@ -205,8 +228,14 @@ type Query {
   product(categoryId: ID, id: ID!): Product
   products(categoryId: ID, limit: Int, offset: Int, search: String): [Product!]!
   productsByIds(ids: [ID!]!): [Product!]!
+  productsPaged(categoryId: ID, limit: Int, offset: Int, search: String): ProductsPage!
   siteSettings: SiteSettings!
   users: [User!]!
+  validateVoucher(code: String!): VoucherResult
+}
+
+type VoucherResult {
+  discountPercent: Float!
 }
 
 input RegisterInput {
@@ -227,7 +256,9 @@ type SiteSettings {
   bankAccount: String!
   bankName: String!
   bankOwner: String!
+  deliveryFee: Int!
   email: String!
+  freeDeliveryThreshold: Int!
   id: String!
   phone: String!
   updatedAt: DateTime!
@@ -266,7 +297,9 @@ input UpdateSiteSettingsInput {
   bankAccount: String
   bankName: String
   bankOwner: String
+  deliveryFee: Int
   email: String
+  freeDeliveryThreshold: Int
   phone: String
 }
 

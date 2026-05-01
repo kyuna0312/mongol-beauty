@@ -118,8 +118,8 @@ export function validate(config: Record<string, unknown>) {
   }
 
   const receiptDriver = String(config.RECEIPT_STORAGE_DRIVER ?? 'local').trim().toLowerCase();
-  if (receiptDriver !== 'local') {
-    throw new Error('Only RECEIPT_STORAGE_DRIVER=local is supported');
+  if (!['local', 'r2'].includes(receiptDriver)) {
+    throw new Error(`Invalid RECEIPT_STORAGE_DRIVER: "${receiptDriver}". Valid values: local, r2`);
   }
 
   return validatedConfig;

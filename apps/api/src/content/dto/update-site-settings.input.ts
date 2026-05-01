@@ -1,5 +1,5 @@
-import { Field, InputType } from '@nestjs/graphql';
-import { IsString, IsOptional } from 'class-validator';
+import { Field, InputType, Int } from '@nestjs/graphql';
+import { IsString, IsOptional, IsInt, Min } from 'class-validator';
 
 @InputType()
 export class UpdateSiteSettingsInput {
@@ -32,4 +32,16 @@ export class UpdateSiteSettingsInput {
   @IsOptional()
   @IsString()
   address?: string;
+
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  deliveryFee?: number;
+
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  freeDeliveryThreshold?: number;
 }

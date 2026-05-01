@@ -58,6 +58,7 @@ export const ProductsPage = memo(function ProductsPage() {
     nextFetchPolicy: 'cache-first',
     notifyOnNetworkStatusChange: true,
     errorPolicy: 'all',
+    returnPartialData: false,
   });
   const isFetchingMore = networkStatus === 3;
 

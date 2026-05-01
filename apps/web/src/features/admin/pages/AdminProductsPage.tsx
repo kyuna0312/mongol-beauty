@@ -10,9 +10,10 @@ export function AdminProductsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleteError, setDeleteError]         = useState<string | null>(null);
 
-  const { data, loading, error, refetch } = useQuery(GET_ADMIN_PRODUCTS);
+  const { data, loading, error } = useQuery(GET_ADMIN_PRODUCTS);
   const [deleteProduct, { loading: deleting }] = useMutation(DELETE_PRODUCT, {
-    onCompleted: () => { refetch(); setConfirmDeleteId(null); },
+    refetchQueries: [{ query: GET_ADMIN_PRODUCTS }],
+    onCompleted: () => setConfirmDeleteId(null),
     onError: (err) => setDeleteError(err.message),
   });
 

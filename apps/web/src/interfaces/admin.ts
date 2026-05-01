@@ -1,4 +1,5 @@
 export type OrderStatus = 'WAITING_PAYMENT' | 'PAID_CONFIRMED' | 'SHIPPING' | 'COMPLETED' | 'CANCELLED';
+export type PaymentMethod = 'BANK_TRANSFER' | 'CASH';
 
 export interface AdminOrderItem {
   id: string;
@@ -15,6 +16,7 @@ export interface AdminOrder {
   totalPrice: number;
   createdAt: string;
   updatedAt: string;
+  paymentMethod: PaymentMethod;
   paymentReceiptUrl?: string | null;
   deliveryAddress?: string | null;
   notes?: string[];

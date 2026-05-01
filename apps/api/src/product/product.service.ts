@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Product, ProductsPage } from './product.entity';
@@ -20,12 +20,8 @@ export class ProductService {
       .leftJoinAndSelect('product.category', 'category')
       .orderBy('product.createdAt', 'DESC');
 
-    if (categoryId) {
-      if (this.isUuid(categoryId)) {
-        query.where('product.categoryId = :categoryId', { categoryId });
-      } else {
-        query.where('category.slug = :categorySlug', { categorySlug: categoryId });
-      }
+    if (categoryId && this.isUuid(categoryId)) {
+      query.where('product.categoryId = :categoryId', { categoryId });
     }
 
     if (search?.trim()) {
@@ -104,7 +100,11 @@ export class ProductService {
     }
 
     await this.productRepository.update(id, updateData);
-    return this.findOne(id);
+    const product = await this.findOne(id);
+    if (!product) {
+      throw new NotFoundException(`Product ${id} not found`);
+    }
+    return product;
   }
 
   async delete(id: string): Promise<boolean> {

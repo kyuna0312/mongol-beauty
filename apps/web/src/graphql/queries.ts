@@ -94,6 +94,8 @@ export const GET_ADMIN_ORDERS = gql`
       items {
         id
         totalPrice
+        deliveryFee
+        paymentMethod
         status
         paymentReceiptUrl
         deliveryAddress
@@ -252,6 +254,8 @@ export const GET_SITE_SETTINGS = gql`
       phone
       email
       address
+      deliveryFee
+      freeDeliveryThreshold
       updatedAt
     }
   }
