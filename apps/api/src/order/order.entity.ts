@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, JoinColumn, Index } from 'typeorm';
-import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Int, registerEnumType } from '@nestjs/graphql';
 import { User } from '../user/user.entity';
 import { OrderItem } from './order-item.entity';
 
@@ -13,6 +13,13 @@ export enum OrderStatus {
 }
 
 registerEnumType(OrderStatus, { name: 'OrderStatus' });
+
+export enum PaymentMethod {
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  CASH = 'CASH',
+}
+
+registerEnumType(PaymentMethod, { name: 'PaymentMethod' });
 
 @ObjectType()
 @Entity('orders')
@@ -61,6 +68,18 @@ export class Order {
   @Field(() => [String])
   @Column({ type: 'simple-array', default: '' })
   notes: string[];
+
+  @Field(() => Int)
+  @Column({ type: 'int', default: 0 })
+  deliveryFee: number;
+
+  @Field(() => PaymentMethod)
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    default: PaymentMethod.BANK_TRANSFER,
+  })
+  paymentMethod: PaymentMethod;
 
   @Field({ nullable: true })
   @Column({ nullable: true })

@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
@@ -11,6 +12,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { PaymentMethod } from '../order.entity';
 
 @InputType()
 export class CreateOrderItemInput {
@@ -54,4 +56,9 @@ export class CreateOrderInput {
   @IsArray()
   @IsString({ each: true })
   notes?: string[];
+
+  @Field(() => PaymentMethod, { nullable: true, defaultValue: PaymentMethod.BANK_TRANSFER })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
 }

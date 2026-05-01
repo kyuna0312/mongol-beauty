@@ -32,6 +32,8 @@ export const CREATE_ORDER_SIMPLE = gql`
     createOrder(input: $input) {
       id
       totalPrice
+      deliveryFee
+      paymentMethod
       status
     }
   }

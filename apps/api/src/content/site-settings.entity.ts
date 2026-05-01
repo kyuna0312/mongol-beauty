@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 @Entity('site_settings')
@@ -31,6 +31,14 @@ export class SiteSettings {
   @Field()
   @Column({ default: 'Улаанбаатар хот, Монгол улс' })
   address: string;
+
+  @Field(() => Int)
+  @Column({ type: 'int', default: 5000 })
+  deliveryFee: number;
+
+  @Field(() => Int)
+  @Column({ type: 'int', default: 200000 })
+  freeDeliveryThreshold: number;
 
   @Field()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
