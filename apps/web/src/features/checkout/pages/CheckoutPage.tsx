@@ -9,6 +9,7 @@ import { CREATE_ORDER_SIMPLE, UPLOAD_PAYMENT_RECEIPT_SIMPLE } from '@/graphql/or
 import { GET_SITE_SETTINGS, VALIDATE_VOUCHER, GET_ME } from '@/graphql/queries';
 import { CheckoutCartItem } from '@/interfaces/cart';
 import { getCheckoutCreateOrderBlock, isValidCheckoutPhone } from '@/lib/checkout-validation';
+import type { PaymentMethod } from '@/graphql/generated/graphql';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function CheckoutPage() {
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherDiscount, setVoucherDiscount] = useState<number | null>(null);
   const [voucherError, setVoucherError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('BANK_TRANSFER');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -99,20 +101,22 @@ export function CheckoutPage() {
       setShowToast(true);
       return;
     }
-    if (!receiptFile) {
-      setToastMessage('Гүйлгээний баримтын зураг заавал оруулна уу.');
-      setShowToast(true);
-      return;
-    }
-    if (!allowedReceiptMime.has(receiptFile.type)) {
-      setToastMessage('Файлын төрөл буруу байна. JPG, PNG, WEBP, GIF, HEIC зураг оруулна уу.');
-      setShowToast(true);
-      return;
-    }
-    if (receiptFile.size > maxReceiptBytes) {
-      setToastMessage('Баримтын файл хэт том байна. 5MB-аас бага зураг сонгоно уу.');
-      setShowToast(true);
-      return;
+    if (paymentMethod === 'BANK_TRANSFER') {
+      if (!receiptFile) {
+        setToastMessage('Гүйлгээний баримтын зураг заавал оруулна уу.');
+        setShowToast(true);
+        return;
+      }
+      if (!allowedReceiptMime.has(receiptFile.type)) {
+        setToastMessage('Файлын төрөл буруу байна. JPG, PNG, WEBP, GIF, HEIC зураг оруулна уу.');
+        setShowToast(true);
+        return;
+      }
+      if (receiptFile.size > maxReceiptBytes) {
+        setToastMessage('Баримтын файл хэт том байна. 5MB-аас бага зураг сонгоно уу.');
+        setShowToast(true);
+        return;
+      }
     }
 
     try {
@@ -128,6 +132,7 @@ export function CheckoutPage() {
             name: name || undefined,
             deliveryAddress: deliveryAddress || undefined,
             notes: notes.length > 0 ? notes : undefined,
+            paymentMethod,
           },
         },
       });
@@ -136,25 +141,33 @@ export function CheckoutPage() {
       if (!createdOrderId) {
         throw new Error('Захиалга үүсгэж чадсангүй. Дахин оролдоно уу.');
       }
-      try {
-        await uploadReceipt({
-          variables: {
-            file: receiptFile,
-            orderId: createdOrderId,
-          },
-        });
-      } catch (uploadError) {
-        setToastMessage(
-          getErrorMessage(
-            uploadError,
-            `Захиалга үүслээ (#${createdOrderId.slice(0, 8)}), гэхдээ баримт илгээхэд алдаа гарлаа.`,
-          ),
-        );
-        setShowToast(true);
-        return;
+
+      if (paymentMethod === 'BANK_TRANSFER' && receiptFile) {
+        try {
+          await uploadReceipt({
+            variables: {
+              file: receiptFile,
+              orderId: createdOrderId,
+            },
+          });
+        } catch (uploadError) {
+          setToastMessage(
+            getErrorMessage(
+              uploadError,
+              `Захиалга үүслээ (#${createdOrderId.slice(0, 8)}), гэхдээ баримт илгээхэд алдаа гарлаа.`,
+            ),
+          );
+          setShowToast(true);
+          return;
+        }
       }
+
       await clear();
-      setToastMessage('Захиалга амжилттай үүсэж, төлбөрийн баримт илгээгдлээ. Админ шалгасны дараа төлөв "Төлбөр баталгаажсан" болно.');
+      const successMsg =
+        paymentMethod === 'CASH'
+          ? 'Захиалга амжилттай үүслээ. Хүргэлтийн үед бэлэн мөнгөөр төлнө үү.'
+          : 'Захиалга амжилттай үүсэж, төлбөрийн баримт илгээгдлээ. Админ шалгасны дараа төлөв "Төлбөр баталгаажсан" болно.';
+      setToastMessage(successMsg);
       setShowToast(true);
       setTimeout(() => {
         navigate(`/orders/${createdOrderId}`);
@@ -173,7 +186,11 @@ export function CheckoutPage() {
   const vipDiscount = isVip ? 0.2 : 0;
   const voucherDiscountRate = voucherDiscount ? voucherDiscount / 100 : 0;
   const effectiveDiscount = Math.max(vipDiscount, voucherDiscountRate);
-  const totalPrice = Math.round(baseTotal * (1 - effectiveDiscount));
+  const discountedSubtotal = Math.round(baseTotal * (1 - effectiveDiscount));
+  const feeThreshold = settings?.freeDeliveryThreshold ?? 200000;
+  const feeAmount = settings?.deliveryFee ?? 5000;
+  const deliveryFee = discountedSubtotal >= feeThreshold ? 0 : feeAmount;
+  const totalPrice = discountedSubtotal + deliveryFee;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 pb-32">
@@ -295,8 +312,21 @@ export function CheckoutPage() {
               {effectiveDiscount > 0 && (
                 <div className="flex justify-between text-sm bg-green-50 px-4 py-2 rounded-xl text-green-700">
                   <span>Хөнгөлөлт ({Math.round(effectiveDiscount * 100)}%):</span>
-                  <span className="font-semibold">-{(baseTotal - totalPrice).toLocaleString()}₮</span>
+                  <span className="font-semibold">-{(baseTotal - discountedSubtotal).toLocaleString()}₮</span>
                 </div>
+              )}
+              <div className="flex justify-between text-sm bg-white/60 px-4 py-2 rounded-xl">
+                <span className="text-gray-600">Хүргэлтийн төлбөр:</span>
+                {deliveryFee === 0 ? (
+                  <span className="font-semibold text-green-700">Үнэгүй</span>
+                ) : (
+                  <span className="font-semibold text-gray-800">{deliveryFee.toLocaleString()}₮</span>
+                )}
+              </div>
+              {deliveryFee > 0 && (
+                <p className="text-xs text-gray-500 px-4">
+                  {feeThreshold.toLocaleString()}₮-с дээш захиалгад хүргэлт үнэгүй
+                </p>
               )}
               <div className="border-t-2 border-beige-300 pt-4 mt-4 flex justify-between items-center bg-white/80 backdrop-blur-sm px-4 py-3 rounded-xl">
                 <span className="font-bold text-lg text-gray-800">Нийт:</span>
@@ -307,10 +337,40 @@ export function CheckoutPage() {
             </div>
         </div>
 
-        {/* Bank Info - Cute Design */}
+        {/* Payment Method Selector */}
+        <div className="bg-white rounded-2xl p-6 mb-4 border-2 border-beige-200 shadow-sm">
+          <h3 className="font-bold mb-4 text-gray-800 flex items-center gap-2">
+            <span>💳</span>
+            Төлбөрийн арга
+          </h3>
+          <div className="flex gap-3">
+            {(['BANK_TRANSFER', 'CASH'] as const).map((method) => (
+              <button
+                key={method}
+                type="button"
+                onClick={() => setPaymentMethod(method)}
+                className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium text-sm transition-all ${
+                  paymentMethod === method
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                {method === 'BANK_TRANSFER' ? '🏦 Банкны шилжүүлэг' : '💵 Бэлэн мөнгө'}
+              </button>
+            ))}
+          </div>
+          {paymentMethod === 'CASH' && (
+            <p className="mt-3 text-sm text-amber-700 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl">
+              Хүргэлтийн үед бэлэн мөнгөөр төлнө үү.
+            </p>
+          )}
+        </div>
+
+        {/* Bank Info - shown only for BANK_TRANSFER */}
+        {paymentMethod === 'BANK_TRANSFER' && (
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 mb-4 border-2 border-blue-100 shadow-sm">
             <h3 className="font-bold mb-3 text-gray-800 flex items-center gap-2">
-              <span>💳</span>
+              <span>🏦</span>
               Төлбөрийн мэдээлэл
             </h3>
             <p className="text-sm text-gray-700 mb-4 bg-white/60 backdrop-blur-sm px-4 py-3 rounded-xl">
@@ -348,6 +408,7 @@ export function CheckoutPage() {
               <p className="mt-1 text-xs text-gray-500">Дэмжигдэх формат: JPG, PNG, WEBP, GIF, HEIC (max 5MB)</p>
             </div>
         </div>
+        )}
 
         {!isPhoneValid && (
           <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -361,7 +422,7 @@ export function CheckoutPage() {
             fullWidth
             size="lg"
             onClick={handleCreateOrder}
-            disabled={!hasCartItems || !isPhoneValid || !receiptFile || isSubmitting}
+            disabled={!hasCartItems || !isPhoneValid || (paymentMethod === 'BANK_TRANSFER' && !receiptFile) || isSubmitting}
             className="bg-gradient-to-r from-primary-600 via-primary-700 to-primary-800 hover:from-primary-700 hover:via-primary-800 hover:to-primary-900 text-white font-bold text-lg py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-300"
           >
             {isSubmitting ? 'Илгээж байна...' : 'Захиалга үүсгэх ✨'}

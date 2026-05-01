@@ -4,11 +4,16 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Package, CheckCircle, XCircle, Truck, AlertTriangle, X, type LucideIcon } from 'lucide-react';
 import { GET_ADMIN_ORDERS } from '@/graphql/queries';
 import { UPDATE_ORDER_STATUS } from '@/graphql/mutations';
-import { AdminOrder, AdminOrdersPageData, OrderStatus } from '@/interfaces/admin';
+import { AdminOrder, AdminOrdersPageData, OrderStatus, PaymentMethod } from '@/interfaces/admin';
 import { ordersListUrl } from '@/lib/admin-orders-url';
 import { useAdminFeedback } from '../hooks/useAdminFeedback';
 
 const PAGE_SIZE = 20;
+
+const PAYMENT_CONFIG: Record<PaymentMethod, { label: string; badgeCls: string }> = {
+  BANK_TRANSFER: { label: 'Банкны шилжүүлэг', badgeCls: 'bg-blue-100 text-blue-700' },
+  CASH:          { label: 'Бэлэн мөнгө',      badgeCls: 'bg-amber-100 text-amber-700' },
+};
 
 const STATUS_CONFIG: Record<OrderStatus, { label: string; badgeCls: string; icon: LucideIcon }> = {
   WAITING_PAYMENT: { label: 'Хүлээж байна',    badgeCls: 'bg-amber-100 text-amber-700',  icon: Package },
@@ -203,19 +208,28 @@ export function AdminOrdersPage() {
             const cfg   = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.WAITING_PAYMENT;
             const Icon  = cfg.icon;
             const isUpdating = updatingOrderId === order.id;
+            const pmCfg = PAYMENT_CONFIG[order.paymentMethod] ?? PAYMENT_CONFIG.BANK_TRANSFER;
+            const isCash = order.paymentMethod === 'CASH';
 
             return (
               <div
                 key={order.id}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-gray-300 hover:shadow-sm transition-all"
+                className={`border rounded-xl overflow-hidden hover:shadow-sm transition-all ${
+                  isCash
+                    ? 'bg-amber-50 border-amber-200 hover:border-amber-300'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
               >
                 {/* Order header */}
-                <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className={`flex items-start justify-between px-5 py-4 border-b ${isCash ? 'border-amber-200' : 'border-gray-100'}`}>
+                  <div className="flex items-center gap-3 min-w-0 flex-wrap">
                     <span className="text-sm font-mono font-semibold text-gray-800">#{order.id.slice(0, 8)}</span>
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${cfg.badgeCls}`}>
                       <Icon size={11} />
                       {cfg.label}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${pmCfg.badgeCls}`}>
+                      {pmCfg.label}
                     </span>
                   </div>
                   <span className="text-base font-semibold text-gray-900 flex-shrink-0 ml-4">
@@ -307,7 +321,7 @@ export function AdminOrdersPage() {
                       </div>
                     </div>
                   )}
-                  {!order.paymentReceiptUrl && order.status === 'WAITING_PAYMENT' && (
+                  {!order.paymentReceiptUrl && order.status === 'WAITING_PAYMENT' && !isCash && (
                     <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
                       ⚠️ Баримт оруулаагүй байна
                     </p>

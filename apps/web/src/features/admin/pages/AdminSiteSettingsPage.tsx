@@ -17,6 +17,8 @@ export function AdminSiteSettingsPage() {
     phone: '',
     email: '',
     address: '',
+    deliveryFee: 5000,
+    freeDeliveryThreshold: 200000,
   });
 
   useEffect(() => {
@@ -29,6 +31,8 @@ export function AdminSiteSettingsPage() {
         phone: s.phone ?? '',
         email: s.email ?? '',
         address: s.address ?? '',
+        deliveryFee: s.deliveryFee ?? 5000,
+        freeDeliveryThreshold: s.freeDeliveryThreshold ?? 200000,
       });
     }
   }, [data]);
@@ -126,6 +130,37 @@ export function AdminSiteSettingsPage() {
               onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-gray-100 space-y-4">
+          <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Хүргэлтийн тохиргоо</h2>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Хүргэлтийн төлбөр (₮)</label>
+            <input
+              type="number"
+              min={0}
+              value={form.deliveryFee}
+              onChange={(e) => setForm((f) => ({ ...f, deliveryFee: Number(e.target.value) }))}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Үнэгүй хүргэлтийн босго (₮)
+            </label>
+            <input
+              type="number"
+              min={0}
+              value={form.freeDeliveryThreshold}
+              onChange={(e) => setForm((f) => ({ ...f, freeDeliveryThreshold: Number(e.target.value) }))}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Энэ дүнгээс дээш захиалгад хүргэлт үнэгүй болно
+            </p>
           </div>
         </div>
       </div>
