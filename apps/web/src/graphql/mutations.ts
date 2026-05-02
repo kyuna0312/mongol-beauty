@@ -30,6 +30,7 @@ export const CREATE_PRODUCT = gql`
       price
       stock
       description
+      descriptionHtml
       images
       skinType
       features
@@ -50,6 +51,7 @@ export const UPDATE_PRODUCT = gql`
       price
       stock
       description
+      descriptionHtml
       images
       skinType
       features

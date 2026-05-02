@@ -688,14 +688,14 @@ export type CreateProductMutationVariables = Exact<{
 }>;
 
 
-export type CreateProductMutation = { __typename?: 'Mutation', createProduct: { __typename?: 'Product', id: string, name: string, price: number, stock: number, description: string | null, images: Array<string>, skinType: Array<SkinType>, features: Array<Feature>, isVisible: boolean, category: { __typename?: 'Category', id: string, name: string } } };
+export type CreateProductMutation = { __typename?: 'Mutation', createProduct: { __typename?: 'Product', id: string, name: string, price: number, stock: number, description: string | null, descriptionHtml: string | null, images: Array<string>, skinType: Array<SkinType>, features: Array<Feature>, isVisible: boolean, category: { __typename?: 'Category', id: string, name: string } } };
 
 export type UpdateProductMutationVariables = Exact<{
   input: UpdateProductInput;
 }>;
 
 
-export type UpdateProductMutation = { __typename?: 'Mutation', updateProduct: { __typename?: 'Product', id: string, name: string, price: number, stock: number, description: string | null, images: Array<string>, skinType: Array<SkinType>, features: Array<Feature>, isVisible: boolean, category: { __typename?: 'Category', id: string, name: string } } };
+export type UpdateProductMutation = { __typename?: 'Mutation', updateProduct: { __typename?: 'Product', id: string, name: string, price: number, stock: number, description: string | null, descriptionHtml: string | null, images: Array<string>, skinType: Array<SkinType>, features: Array<Feature>, isVisible: boolean, category: { __typename?: 'Category', id: string, name: string } } };
 
 export type DeleteProductMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -819,12 +819,12 @@ export type GetAdminCategoryQueryVariables = Exact<{
 }>;
 
 
-export type GetAdminCategoryQuery = { __typename?: 'Query', category: { __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parent: { __typename?: 'Category', id: string } | null } | null };
+export type GetAdminCategoryQuery = { __typename?: 'Query', category: { __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parent: { __typename?: 'Category', id: string, name: string } | null } | null };
 
 export type GetAdminCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAdminCategoriesQuery = { __typename?: 'Query', categories: Array<{ __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parent: { __typename?: 'Category', id: string } | null, products: Array<{ __typename?: 'Product', id: string }> }> };
+export type GetAdminCategoriesQuery = { __typename?: 'Query', categories: Array<{ __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parent: { __typename?: 'Category', id: string, name: string } | null, children: Array<{ __typename?: 'Category', id: string, name: string }>, products: Array<{ __typename?: 'Product', id: string }> }> };
 
 export type GetCategoriesTreeQueryVariables = Exact<{ [key: string]: never; }>;
 
