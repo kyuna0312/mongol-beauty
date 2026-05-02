@@ -66,4 +66,9 @@ export class CreateOrderInput {
   @IsOptional()
   @IsString()
   deliveryNote?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  voucherCode?: string;
 }

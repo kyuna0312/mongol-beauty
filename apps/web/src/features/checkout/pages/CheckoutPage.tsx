@@ -135,6 +135,7 @@ export function CheckoutPage() {
             deliveryNote: deliveryNote || undefined,
             notes: notes.length > 0 ? notes : undefined,
             paymentMethod,
+            voucherCode: voucherDiscount !== null ? voucherCode.trim() : undefined,
           },
         },
       });

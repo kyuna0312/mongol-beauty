@@ -92,6 +92,7 @@ export type CreateOrderInput = {
   notes?: InputMaybe<Array<Scalars['String']['input']>>;
   paymentMethod?: InputMaybe<PaymentMethod>;
   phone?: InputMaybe<Scalars['String']['input']>;
+  voucherCode?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateOrderItemInput = {

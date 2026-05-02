@@ -71,6 +71,7 @@ input CreateOrderInput {
   notes: [String!] = []
   paymentMethod: PaymentMethod = BANK_TRANSFER
   phone: String
+  voucherCode: String
 }
 
 input CreateOrderItemInput {
