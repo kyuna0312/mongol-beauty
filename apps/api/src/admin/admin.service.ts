@@ -37,7 +37,7 @@ export class AdminService {
       ...(fields.koreaTrackingId !== undefined && { koreaTrackingId: fields.koreaTrackingId }),
       ...(fields.estimatedDays !== undefined && { estimatedDays: fields.estimatedDays }),
     });
-    return this.orderGatewayService.findOne(orderId);
+    return this.orderGatewayService.findOneForRequester(orderId, null);
   }
 
   async getAdminStats(): Promise<AdminStatsResult> {
