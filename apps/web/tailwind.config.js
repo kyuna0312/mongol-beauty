@@ -9,6 +9,10 @@ module.exports = {
       ...tailwindConfig.theme?.extend,
       colors: {
         ...tailwindConfig.theme?.extend?.colors,
+        primary: {
+          ...(tailwindConfig.theme?.extend?.colors?.primary ?? {}),
+          DEFAULT: 'var(--color-primary, #C8A96E)',
+        },
         // Ensure these tokens are always available regardless of TS compilation
         'mb-ink': '#2a2a2a',
         'mb-ink-soft': '#4a4a4a',
