@@ -392,17 +392,17 @@ export function CheckoutPage() {
               Доорх данс руу төлбөрөө шилжүүлээд баримтын зургаа оруулна уу. Админ шалгаад төлбөрийн төлөвийг баталгаажуулна. 💰
             </p>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 space-y-2 text-sm">
-              <div className="flex justify-between items-center py-2 border-b border-blue-100">
-                <span className="font-medium text-gray-600">Банк:</span>
-                <span className="font-bold text-gray-800">{settings?.bankName ?? 'ХХБ'}</span>
+              <div className="flex justify-between items-center gap-2 py-2 border-b border-blue-100">
+                <span className="font-medium text-gray-600 shrink-0">Банк:</span>
+                <span className="font-bold text-gray-800 text-right">{settings?.bankName ?? 'ХХБ'}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-blue-100">
-                <span className="font-medium text-gray-600">Данс:</span>
-                <span className="font-bold text-gray-800 font-mono">{settings?.bankAccount ?? '1234567890'}</span>
+              <div className="flex justify-between items-center gap-2 py-2 border-b border-blue-100">
+                <span className="font-medium text-gray-600 shrink-0">Данс:</span>
+                <span className="font-bold text-gray-800 font-mono text-right break-all">{settings?.bankAccount ?? '1234567890'}</span>
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="font-medium text-gray-600">Эзэмшлийн нэр:</span>
-                <span className="font-bold text-gray-800">{settings?.bankOwner ?? 'Mongol Beauty LLC'}</span>
+              <div className="flex justify-between items-center gap-2 py-2">
+                <span className="font-medium text-gray-600 shrink-0">Эзэмшлийн нэр:</span>
+                <span className="font-bold text-gray-800 text-right break-all">{settings?.bankOwner ?? 'Mongol Beauty LLC'}</span>
               </div>
             </div>
             <div className="mt-4 rounded-xl border-2 border-dashed border-blue-300 bg-white p-4">
