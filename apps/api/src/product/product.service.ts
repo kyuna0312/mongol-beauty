@@ -15,19 +15,31 @@ export class ProductService {
     private productRepository: Repository<Product>,
   ) {}
 
-  private buildProductsQuery(categoryId?: string, limit?: number, offset?: number, search?: string) {
+  private buildProductsQuery(categoryId?: string, limit?: number, offset?: number, search?: string, showHidden = false) {
     const query = this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .orderBy('product.createdAt', 'DESC');
 
+    const conditions: string[] = [];
+    const params: Record<string, unknown> = {};
+
+    if (!showHidden) {
+      conditions.push('product.isVisible = :isVisible');
+      params.isVisible = true;
+    }
+
     if (categoryId && this.isUuid(categoryId)) {
-      query.where('product.categoryId = :categoryId', { categoryId });
+      conditions.push('product.categoryId = :categoryId');
+      params.categoryId = categoryId;
     }
 
     if (search?.trim()) {
-      const term = `%${search.trim()}%`;
-      const method = categoryId ? 'andWhere' : 'where';
-      query[method]('(product.name ILIKE :term OR product.description ILIKE :term)', { term });
+      conditions.push('(product.name ILIKE :term OR product.description ILIKE :term)');
+      params.term = `%${search.trim()}%`;
+    }
+
+    if (conditions.length > 0) {
+      query.where(conditions.join(' AND '), params);
     }
 
     query.take(limit || 20).skip(offset || 0);
@@ -35,11 +47,20 @@ export class ProductService {
   }
 
   async findAll(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
-    return this.buildProductsQuery(categoryId, limit, offset, search).getMany();
+    return this.buildProductsQuery(categoryId, limit, offset, search, false).getMany();
+  }
+
+  async findAllAdmin(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
+    return this.buildProductsQuery(categoryId, limit, offset, search, true).getMany();
   }
 
   async findAllPaginated(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<ProductsPage> {
-    const [items, totalCount] = await this.buildProductsQuery(categoryId, limit, offset, search).getManyAndCount();
+    const [items, totalCount] = await this.buildProductsQuery(categoryId, limit, offset, search, false).getManyAndCount();
+    return { items, totalCount };
+  }
+
+  async findAllPaginatedAdmin(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<ProductsPage> {
+    const [items, totalCount] = await this.buildProductsQuery(categoryId, limit, offset, search, true).getManyAndCount();
     return { items, totalCount };
   }
 
@@ -98,6 +119,8 @@ export class ProductService {
     if (input.images !== undefined) {
       updateData.images = Array.isArray(input.images) ? input.images.join(',') : input.images;
     }
+    if (input.isKoreanProduct !== undefined) updateData.isKoreanProduct = input.isKoreanProduct;
+    if (input.isVisible !== undefined) updateData.isVisible = input.isVisible;
 
     await this.productRepository.update(id, updateData);
     const product = await this.findOne(id);

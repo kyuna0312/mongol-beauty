@@ -36,6 +36,7 @@ export const GET_PRODUCT_DETAIL = gql`
       skinType
       features
       isKoreanProduct
+      isVisible
       category {
         id
         name

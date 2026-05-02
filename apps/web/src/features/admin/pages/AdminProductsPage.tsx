@@ -55,7 +55,7 @@ export function AdminProductsPage() {
     );
   }
 
-  const products = data?.products || [];
+  const products = data?.adminProducts || [];
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">

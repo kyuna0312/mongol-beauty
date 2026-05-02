@@ -155,6 +155,29 @@ export class ProductResolver {
     return null;
   }
 
+  // Admin-only queries (see all products regardless of isVisible)
+  @Query(() => [Product])
+  @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)
+  async adminProducts(
+    @Args('categoryId', { type: () => ID, nullable: true }) categoryId?: string,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('search', { type: () => String, nullable: true }) search?: string,
+  ): Promise<Product[]> {
+    return this.productService.findAllAdmin(categoryId, limit, offset, search);
+  }
+
+  @Query(() => ProductsPage)
+  @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)
+  async adminProductsPaged(
+    @Args('categoryId', { type: () => ID, nullable: true }) categoryId?: string,
+    @Args('limit', { type: () => Int, nullable: true }) limit?: number,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('search', { type: () => String, nullable: true }) search?: string,
+  ): Promise<ProductsPage> {
+    return this.productService.findAllPaginatedAdmin(categoryId, limit, offset, search);
+  }
+
   // Admin mutations
   @Mutation(() => Product)
   @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)

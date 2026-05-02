@@ -33,6 +33,7 @@ export const CREATE_PRODUCT = gql`
       images
       skinType
       features
+      isVisible
       category {
         id
         name
@@ -52,6 +53,7 @@ export const UPDATE_PRODUCT = gql`
       images
       skinType
       features
+      isVisible
       category {
         id
         name

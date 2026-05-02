@@ -88,6 +88,10 @@ export class Product {
   isKoreanProduct: boolean;
 
   @Field()
+  @Column({ default: true })
+  isVisible: boolean;
+
+  @Field()
   @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

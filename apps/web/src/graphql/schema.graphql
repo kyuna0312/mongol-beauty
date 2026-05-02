@@ -45,11 +45,12 @@ input CartItemInput {
 }
 
 type Category {
-  children: [Category!]
+  children: [Category!]!
   description: String
   id: ID!
   imageUrl: String
   name: String!
+  parent: Category
   parentId: ID
   products: [Product!]!
   slug: String!
@@ -59,6 +60,7 @@ input CreateCategoryInput {
   description: String
   imageUrl: String
   name: String!
+  parentId: ID
   slug: String!
 }
 
@@ -79,8 +81,11 @@ input CreateOrderItemInput {
 input CreateProductInput {
   categoryId: ID!
   description: String
+  descriptionHtml: String
   features: [String!]! = []
   images: [String!]! = []
+  isKoreanProduct: Boolean! = false
+  isVisible: Boolean! = true
   name: String!
   price: Int!
   skinType: [String!]! = []
@@ -97,11 +102,6 @@ enum Feature {
   HYDRATING
   ORGANIC
   SUNSCREEN
-}
-
-enum PaymentMethod {
-  BANK_TRANSFER
-  CASH
 }
 
 input ForgotPasswordInput {
@@ -189,6 +189,11 @@ type Page {
   updatedAt: DateTime!
 }
 
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+}
+
 type Product {
   category: Category!
   createdAt: DateTime!
@@ -198,7 +203,8 @@ type Product {
   features: [Feature!]!
   id: ID!
   images: [String!]!
-  isKoreanProduct: Boolean
+  isKoreanProduct: Boolean!
+  isVisible: Boolean!
   name: String!
   price: Float!
   skinType: [SkinType!]!
@@ -215,6 +221,8 @@ type Query {
   adminMe: User
   adminOrders(limit: Int, offset: Int, status: OrderStatus): AdminOrdersPage!
   adminPages: [Page!]!
+  adminProducts(categoryId: ID, limit: Int, offset: Int, search: String): [Product!]!
+  adminProductsPaged(categoryId: ID, limit: Int, offset: Int, search: String): ProductsPage!
   adminStats: AdminStatsResult!
   categories: [Category!]!
   categoriesTree: [Category!]!
@@ -231,11 +239,7 @@ type Query {
   productsPaged(categoryId: ID, limit: Int, offset: Int, search: String): ProductsPage!
   siteSettings: SiteSettings!
   users: [User!]!
-  validateVoucher(code: String!): VoucherResult
-}
-
-type VoucherResult {
-  discountPercent: Float!
+  validateVoucher(code: String!): VoucherValidation!
 }
 
 input RegisterInput {
@@ -277,15 +281,19 @@ input UpdateCategoryInput {
   id: ID!
   imageUrl: String
   name: String
+  parentId: ID
   slug: String
 }
 
 input UpdateProductInput {
   categoryId: ID
   description: String
+  descriptionHtml: String
   features: [String!]
   id: ID!
   images: [String!]
+  isKoreanProduct: Boolean
+  isVisible: Boolean
   name: String
   price: Int
   skinType: [String!]
@@ -349,4 +357,9 @@ enum UserType {
   ADMIN
   SUBSCRIBED_USER
   USER
+  VIP_USER
+}
+
+type VoucherValidation {
+  discountPercent: Int!
 }

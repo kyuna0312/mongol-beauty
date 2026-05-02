@@ -64,6 +64,7 @@ export function AdminProductFormPage() {
     name: '', categoryId: '', price: '', stock: '', description: '', descriptionHtml: '',
     skinType: [] as string[], features: [] as string[], images: [''] as string[],
     isKoreanProduct: false,
+    isVisible: true,
   });
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export function AdminProductFormPage() {
       features: Array.isArray(p.features) ? p.features : [],
       images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [''],
       isKoreanProduct: p.isKoreanProduct ?? false,
+      isVisible: p.isVisible ?? true,
     });
   }, [productData]);
 
@@ -104,6 +106,7 @@ export function AdminProductFormPage() {
       features: form.features,
       images: form.images.filter((img) => img.trim()),
       isKoreanProduct: form.isKoreanProduct,
+      isVisible: form.isVisible,
     };
     await run(async () => {
       if (isEdit) {
@@ -310,6 +313,28 @@ export function AdminProductFormPage() {
               <span
                 className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
                   form.isKoreanProduct ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between py-2 border-t border-gray-100">
+            <div>
+              <p className="text-sm font-medium text-gray-700">Харагдуулах (visible)</p>
+              <p className="text-xs text-gray-500 mt-0.5">Идэвхгүй болгосон бүтээгдэхүүн дэлгүүрт харагдахгүй</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, isVisible: !f.isVisible }))}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                form.isVisible ? 'bg-green-600' : 'bg-gray-200'
+              }`}
+              role="switch"
+              aria-checked={form.isVisible}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                  form.isVisible ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>

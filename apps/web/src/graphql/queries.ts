@@ -171,8 +171,9 @@ export const GET_ADMIN_STATS = gql`
 
 export const GET_ADMIN_PRODUCTS = gql`
   query GetAdminProducts {
-    products {
+    adminProducts {
       ...ProductFragment
+      isVisible
     }
   }
   ${PRODUCT_FRAGMENT}

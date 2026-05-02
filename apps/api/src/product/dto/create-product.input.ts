@@ -50,6 +50,11 @@ export class CreateProductInput {
   @IsOptional()
   @IsBoolean()
   isKoreanProduct?: boolean;
+
+  @Field(() => Boolean, { defaultValue: true })
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
 }
 
 @InputType()
@@ -112,4 +117,9 @@ export class UpdateProductInput {
   @IsOptional()
   @IsBoolean()
   isKoreanProduct?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
 }
