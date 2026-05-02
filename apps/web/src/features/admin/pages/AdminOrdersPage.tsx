@@ -257,6 +257,14 @@ export function AdminOrdersPage() {
                     </div>
                   )}
 
+                  {/* Delivery note */}
+                  {order.deliveryNote && (
+                    <div className="flex items-start gap-2 text-xs bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                      <span className="text-gray-400 mt-0.5">📝</span>
+                      <span className="text-gray-600">{order.deliveryNote}</span>
+                    </div>
+                  )}
+
                   {/* Notes */}
                   {order.notes && order.notes.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">

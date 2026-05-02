@@ -65,6 +65,7 @@ input CreateCategoryInput {
 
 input CreateOrderInput {
   deliveryAddress: String
+  deliveryNote: String
   items: [CreateOrderItemInput!]!
   name: String
   notes: [String!] = []
@@ -147,6 +148,7 @@ type Order {
   createdAt: DateTime!
   deliveryAddress: String
   deliveryFee: Int!
+  deliveryNote: String
   estimatedDays: String
   id: ID!
   items: [OrderItem!]!

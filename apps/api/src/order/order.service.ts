@@ -101,6 +101,7 @@ export class OrderService {
         paymentMethod,
         items,
         deliveryAddress: input.deliveryAddress,
+        deliveryNote: input.deliveryNote ?? null,
         notes,
       });
 

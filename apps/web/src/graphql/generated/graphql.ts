@@ -86,6 +86,7 @@ export type CreateCategoryInput = {
 
 export type CreateOrderInput = {
   deliveryAddress?: InputMaybe<Scalars['String']['input']>;
+  deliveryNote?: InputMaybe<Scalars['String']['input']>;
   items: Array<CreateOrderItemInput>;
   name?: InputMaybe<Scalars['String']['input']>;
   notes?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -282,6 +283,7 @@ export type Order = {
   createdAt: Scalars['DateTime']['output'];
   deliveryAddress: Maybe<Scalars['String']['output']>;
   deliveryFee: Scalars['Int']['output'];
+  deliveryNote: Maybe<Scalars['String']['output']>;
   estimatedDays: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   items: Array<OrderItem>;
@@ -799,7 +801,7 @@ export type CreateOrderMutationVariables = Exact<{
 }>;
 
 
-export type CreateOrderMutation = { __typename?: 'Mutation', createOrder: { __typename?: 'Order', id: string, totalPrice: number, deliveryFee: number, paymentMethod: PaymentMethod, status: OrderStatus } };
+export type CreateOrderMutation = { __typename?: 'Mutation', createOrder: { __typename?: 'Order', id: string, totalPrice: number, deliveryFee: number, paymentMethod: PaymentMethod, deliveryNote: string | null, status: OrderStatus } };
 
 export type UploadPaymentReceiptMutationVariables = Exact<{
   file: Scalars['Upload']['input'];
@@ -843,7 +845,7 @@ export type GetAdminOrdersQueryVariables = Exact<{
 }>;
 
 
-export type GetAdminOrdersQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, limit: number, offset: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, deliveryFee: number, paymentMethod: PaymentMethod, status: OrderStatus, paymentReceiptUrl: string | null, deliveryAddress: string | null, notes: Array<string>, supplierName: string | null, koreaTrackingId: string | null, estimatedDays: string | null, createdAt: any, updatedAt: any, items: Array<{ __typename?: 'OrderItem', id: string, quantity: number, price: number, product: { __typename?: 'Product', id: string, name: string } }>, user: { __typename?: 'User', id: string, name: string | null, phone: string | null } | null }> } };
+export type GetAdminOrdersQuery = { __typename?: 'Query', adminOrders: { __typename?: 'AdminOrdersPage', total: number, limit: number, offset: number, items: Array<{ __typename?: 'Order', id: string, totalPrice: number, deliveryFee: number, paymentMethod: PaymentMethod, status: OrderStatus, paymentReceiptUrl: string | null, deliveryAddress: string | null, deliveryNote: string | null, notes: Array<string>, supplierName: string | null, koreaTrackingId: string | null, estimatedDays: string | null, createdAt: any, updatedAt: any, items: Array<{ __typename?: 'OrderItem', id: string, quantity: number, price: number, product: { __typename?: 'Product', id: string, name: string } }>, user: { __typename?: 'User', id: string, name: string | null, phone: string | null } | null }> } };
 
 export type GetAdminMeQueryVariables = Exact<{ [key: string]: never; }>;
 

@@ -93,6 +93,10 @@ export class Order {
   @Column({ nullable: true })
   estimatedDays?: string;
 
+  @Field({ nullable: true })
+  @Column({ type: 'text', nullable: true })
+  deliveryNote: string | null;
+
   @Field()
   @Index()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })

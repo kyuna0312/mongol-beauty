@@ -19,6 +19,8 @@ export interface AdminOrder {
   paymentMethod: PaymentMethod;
   paymentReceiptUrl?: string | null;
   deliveryAddress?: string | null;
+  deliveryNote?: string | null;
+  deliveryFee?: number;
   notes?: string[];
   supplierName?: string | null;
   koreaTrackingId?: string | null;

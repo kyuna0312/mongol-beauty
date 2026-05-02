@@ -109,6 +109,7 @@ export const GET_ADMIN_ORDERS = gql`
         status
         paymentReceiptUrl
         deliveryAddress
+        deliveryNote
         notes
         supplierName
         koreaTrackingId
