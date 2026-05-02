@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Home, Grid, Search, Menu, X, User, LogOut, Sparkles } from 'lucide-react';
+import { useQuery } from '@apollo/client';
 import { Footer } from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
+import { GET_SITE_SETTINGS } from '@/graphql/queries';
 
 /**
  * Storefront shell: header, main outlet, footer, mobile tab bar.
@@ -43,6 +45,9 @@ export function MainLayout() {
 
   const showMobileNav = !isCartPage && !isCheckoutPage && !isOrderPage;
 
+  const { data: settingsData } = useQuery(GET_SITE_SETTINGS);
+  const logoUrl = settingsData?.siteSettings?.logoUrl ?? null;
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* ── Luxury editorial header ── */}
@@ -57,7 +62,7 @@ export function MainLayout() {
             <Link to="/" className="group flex shrink-0 items-center gap-3 mr-4">
               <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-[10px] bg-gradient-to-br from-[#fdf0ec] to-[#f9e6e0] ring-1 ring-terracotta-200/60 transition-all duration-300 group-hover:ring-terracotta-400/50 group-hover:shadow-md md:h-11 md:w-11">
                 <img
-                  src="/incellderm-logo.png"
+                  src={logoUrl || '/incellderm-logo.png'}
                   alt="Мөнгөн Косметикс ХХК Logo"
                   className="h-full w-full object-cover"
                   onError={(e) => {
