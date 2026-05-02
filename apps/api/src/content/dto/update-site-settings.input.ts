@@ -44,4 +44,14 @@ export class UpdateSiteSettingsInput {
   @IsInt()
   @Min(0)
   freeDeliveryThreshold?: number;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  primaryColor?: string;
 }

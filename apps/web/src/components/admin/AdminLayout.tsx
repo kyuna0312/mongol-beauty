@@ -10,6 +10,8 @@ import {
   ExternalLink,
   ChevronRight,
   Settings,
+  Plane,
+  BookOpen,
 } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 
@@ -21,6 +23,8 @@ const adminNavItems = [
   { path: '/admin/users', label: 'Хэрэглэгчид', icon: Users },
   { path: '/admin/content', label: 'Контент', icon: FileText },
   { path: '/admin/settings', label: 'Тохиргоо', icon: Settings },
+  { path: '/admin/korea-orders', label: 'Солонгос', icon: Plane },
+  { path: '/admin/blog', label: 'Блог', icon: BookOpen },
 ];
 
 function NavItem({ item, isActive }: { item: typeof adminNavItems[0]; isActive: boolean }) {
@@ -122,7 +126,7 @@ export function AdminLayout() {
 
       {/* ── Mobile bottom nav ── */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-gray-200 safe-area-inset-bottom">
-        <div className="grid grid-cols-7 h-14">
+        <div className="grid grid-cols-9 h-14">
           {adminNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.exact

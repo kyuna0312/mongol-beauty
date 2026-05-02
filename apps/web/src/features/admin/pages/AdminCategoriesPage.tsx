@@ -55,7 +55,6 @@ export function AdminCategoriesPage() {
   }
 
   const categories: any[] = data?.categories || [];
-  const categoryMap = new Map<string, string>(categories.map((c: any) => [c.id, c.name]));
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-5">
@@ -150,8 +149,11 @@ export function AdminCategoriesPage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-900 truncate">{category.name}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{category.products?.length ?? 0} бүтээгдэхүүн</p>
-                  {category.parentId && (
-                    <p className="text-xs text-primary-600 mt-0.5">↳ {categoryMap.get(category.parentId) ?? 'Дэд ангилал'}</p>
+                  {category.parent?.name && (
+                    <p className="text-xs text-primary-600 mt-0.5">↳ {category.parent.name}</p>
+                  )}
+                  {category.children?.length > 0 && (
+                    <p className="text-xs text-gray-400 mt-0.5">{category.children.length} дэд ангилал</p>
                   )}
                   {category.description && (
                     <p className="text-xs text-gray-400 mt-1 line-clamp-2">{category.description}</p>

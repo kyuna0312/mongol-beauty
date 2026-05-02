@@ -96,6 +96,10 @@ async function bootstrap() {
   const receiptUploadsDir =
     process.env.RECEIPT_UPLOAD_DIR?.trim() || join(process.cwd(), 'uploads', 'receipts');
   app.use('/uploads/receipts', express.static(receiptUploadsDir));
+
+  const logoUploadsDir =
+    process.env.LOGO_UPLOAD_DIR?.trim() || join(process.cwd(), 'uploads', 'logos');
+  app.use('/uploads/logos', express.static(logoUploadsDir));
   
   const defaultPort =
     serviceMode === 'order' ? 4010 : serviceMode === 'payment' ? 4020 : 4000;

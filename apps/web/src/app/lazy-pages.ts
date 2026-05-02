@@ -86,3 +86,15 @@ export const AdminContentPreviewPage = lazy(() =>
 export const AdminSiteSettingsPage = lazy(() =>
   import('@/features/admin/pages/AdminSiteSettingsPage').then((m) => ({ default: m.AdminSiteSettingsPage })),
 );
+export const AdminKoreaOrdersPage = lazy(() =>
+  import('@/features/admin/pages/AdminKoreaOrdersPage').then((m) => ({ default: m.AdminKoreaOrdersPage })),
+);
+export const AdminBlogPage = lazy(() =>
+  import('@/features/admin/pages/AdminBlogPage').then((m) => ({ default: m.AdminBlogPage })),
+);
+export const BlogPage = lazy(() =>
+  import('@/features/blog/pages/BlogPage').then((m) => ({ default: m.BlogPage })),
+);
+export const BlogPostPage = lazy(() =>
+  import('@/features/blog/pages/BlogPostPage').then((m) => ({ default: m.BlogPostPage })),
+);

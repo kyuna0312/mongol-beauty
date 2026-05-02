@@ -39,6 +39,28 @@ services:
     networks:
       - mongol-beauty-local-network
 
+  # ── DB migrations (runs once, exits) ─────────────────────────────────────
+  migrator:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: mongol-beauty-api:local
+    container_name: mb-local-migrator
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-mongol_beauty}
+    command: ["node", "node_modules/typeorm/cli.js", "migration:run", "-d", "apps/api/.dist/data-source.js"]
+    networks:
+      - mongol-beauty-local-network
+
   # ── Order service ─────────────────────────────────────────────────────────
   order-service:
     build:
@@ -50,6 +72,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: development
       SERVICE_MODE: order
@@ -83,6 +107,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
       order-service:
         condition: service_started
     environment:
@@ -129,6 +155,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
       order-service:
         condition: service_started
       payment-service:

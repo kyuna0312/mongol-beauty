@@ -61,4 +61,14 @@ export class CreateOrderInput {
   @IsOptional()
   @IsEnum(PaymentMethod)
   paymentMethod?: PaymentMethod;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  deliveryNote?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  voucherCode?: string;
 }

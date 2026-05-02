@@ -30,6 +30,20 @@ type AdminUser {
   name: String!
 }
 
+type BlogPost {
+  authorId: String
+  contentHtml: String
+  coverImageUrl: String
+  createdAt: DateTime!
+  excerpt: String
+  id: ID!
+  isPublished: Boolean!
+  publishedAt: DateTime
+  slug: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
 type CartItem {
   createdAt: DateTime!
   id: ID!
@@ -45,30 +59,42 @@ input CartItemInput {
 }
 
 type Category {
-  children: [Category!]
+  children: [Category!]!
   description: String
   id: ID!
   imageUrl: String
   name: String!
-  parentId: ID
+  parent: Category
   products: [Product!]!
   slug: String!
+}
+
+input CreateBlogPostInput {
+  contentHtml: String
+  coverImageUrl: String
+  excerpt: String
+  isPublished: Boolean = false
+  slug: String!
+  title: String!
 }
 
 input CreateCategoryInput {
   description: String
   imageUrl: String
   name: String!
+  parentId: ID
   slug: String!
 }
 
 input CreateOrderInput {
   deliveryAddress: String
+  deliveryNote: String
   items: [CreateOrderItemInput!]!
   name: String
   notes: [String!] = []
   paymentMethod: PaymentMethod = BANK_TRANSFER
   phone: String
+  voucherCode: String
 }
 
 input CreateOrderItemInput {
@@ -79,8 +105,11 @@ input CreateOrderItemInput {
 input CreateProductInput {
   categoryId: ID!
   description: String
+  descriptionHtml: String
   features: [String!]! = []
   images: [String!]! = []
+  isKoreanProduct: Boolean! = false
+  isVisible: Boolean! = true
   name: String!
   price: Int!
   skinType: [String!]! = []
@@ -97,11 +126,6 @@ enum Feature {
   HYDRATING
   ORGANIC
   SUNSCREEN
-}
-
-enum PaymentMethod {
-  BANK_TRANSFER
-  CASH
 }
 
 input ForgotPasswordInput {
@@ -121,9 +145,11 @@ type Mutation {
   adminLogin(input: AdminLoginInput!): LoginResponse!
   clearCart: Boolean!
   confirmPayment(orderId: ID!): Order!
+  createBlogPost(input: CreateBlogPostInput!): BlogPost!
   createCategory(input: CreateCategoryInput!): Category!
   createOrder(input: CreateOrderInput!): Order!
   createProduct(input: CreateProductInput!): Product!
+  deleteBlogPost(id: ID!): Boolean!
   deleteCategory(id: ID!): Boolean!
   deletePage(id: ID!): Boolean!
   deleteProduct(id: ID!): Boolean!
@@ -134,7 +160,9 @@ type Mutation {
   removeCartItem(productId: ID!): [CartItem!]!
   resetPassword(input: ResetPasswordInput!): MessageResponse!
   setCartItem(productId: ID!, quantity: Int!): [CartItem!]!
+  updateBlogPost(input: UpdateBlogPostInput!): BlogPost!
   updateCategory(input: UpdateCategoryInput!): Category!
+  updateKoreaOrderFields(input: UpdateKoreaOrderInput!): Order!
   updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
   updateProduct(input: UpdateProductInput!): Product!
   updateSiteSettings(input: UpdateSiteSettingsInput!): SiteSettings!
@@ -148,6 +176,7 @@ type Order {
   createdAt: DateTime!
   deliveryAddress: String
   deliveryFee: Int!
+  deliveryNote: String
   estimatedDays: String
   id: ID!
   items: [OrderItem!]!
@@ -189,6 +218,11 @@ type Page {
   updatedAt: DateTime!
 }
 
+enum PaymentMethod {
+  BANK_TRANSFER
+  CASH
+}
+
 type Product {
   category: Category!
   createdAt: DateTime!
@@ -198,7 +232,8 @@ type Product {
   features: [Feature!]!
   id: ID!
   images: [String!]!
-  isKoreanProduct: Boolean
+  isKoreanProduct: Boolean!
+  isVisible: Boolean!
   name: String!
   price: Float!
   skinType: [SkinType!]!
@@ -212,10 +247,15 @@ type ProductsPage {
 }
 
 type Query {
+  adminBlogPosts: [BlogPost!]!
   adminMe: User
   adminOrders(limit: Int, offset: Int, status: OrderStatus): AdminOrdersPage!
   adminPages: [Page!]!
+  adminProducts(categoryId: ID, limit: Int, offset: Int, search: String): [Product!]!
+  adminProductsPaged(categoryId: ID, limit: Int, offset: Int, search: String): ProductsPage!
   adminStats: AdminStatsResult!
+  blogPost(slug: String!): BlogPost
+  blogPosts: [BlogPost!]!
   categories: [Category!]!
   categoriesTree: [Category!]!
   category(id: ID!): Category
@@ -231,11 +271,7 @@ type Query {
   productsPaged(categoryId: ID, limit: Int, offset: Int, search: String): ProductsPage!
   siteSettings: SiteSettings!
   users: [User!]!
-  validateVoucher(code: String!): VoucherResult
-}
-
-type VoucherResult {
-  discountPercent: Float!
+  validateVoucher(code: String!): VoucherValidation!
 }
 
 input RegisterInput {
@@ -260,7 +296,9 @@ type SiteSettings {
   email: String!
   freeDeliveryThreshold: Int!
   id: String!
+  logoUrl: String
   phone: String!
+  primaryColor: String
   updatedAt: DateTime!
 }
 
@@ -272,20 +310,41 @@ enum SkinType {
   SENSITIVE
 }
 
+input UpdateBlogPostInput {
+  contentHtml: String
+  coverImageUrl: String
+  excerpt: String
+  id: ID!
+  isPublished: Boolean
+  slug: String
+  title: String
+}
+
 input UpdateCategoryInput {
   description: String
   id: ID!
   imageUrl: String
   name: String
+  parentId: ID
   slug: String
+}
+
+input UpdateKoreaOrderInput {
+  estimatedDays: String
+  koreaTrackingId: String
+  orderId: ID!
+  supplierName: String
 }
 
 input UpdateProductInput {
   categoryId: ID
   description: String
+  descriptionHtml: String
   features: [String!]
   id: ID!
   images: [String!]
+  isKoreanProduct: Boolean
+  isVisible: Boolean
   name: String
   price: Int
   skinType: [String!]
@@ -300,7 +359,9 @@ input UpdateSiteSettingsInput {
   deliveryFee: Int
   email: String
   freeDeliveryThreshold: Int
+  logoUrl: String
   phone: String
+  primaryColor: String
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -349,4 +410,9 @@ enum UserType {
   ADMIN
   SUBSCRIBED_USER
   USER
+  VIP_USER
+}
+
+type VoucherValidation {
+  discountPercent: Int!
 }

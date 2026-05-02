@@ -28,7 +28,10 @@ export const GET_ADMIN_CATEGORY = gql`
       slug
       description
       imageUrl
-      parentId
+      parent {
+        id
+        name
+      }
     }
   }
 `;
@@ -41,7 +44,14 @@ export const GET_ADMIN_CATEGORIES = gql`
       slug
       description
       imageUrl
-      parentId
+      parent {
+        id
+        name
+      }
+      children {
+        id
+        name
+      }
       products {
         id
       }
@@ -99,6 +109,7 @@ export const GET_ADMIN_ORDERS = gql`
         status
         paymentReceiptUrl
         deliveryAddress
+        deliveryNote
         notes
         supplierName
         koreaTrackingId
@@ -171,8 +182,9 @@ export const GET_ADMIN_STATS = gql`
 
 export const GET_ADMIN_PRODUCTS = gql`
   query GetAdminProducts {
-    products {
+    adminProducts(limit: 1000) {
       ...ProductFragment
+      isVisible
     }
   }
   ${PRODUCT_FRAGMENT}
@@ -256,6 +268,54 @@ export const GET_SITE_SETTINGS = gql`
       address
       deliveryFee
       freeDeliveryThreshold
+      logoUrl
+      primaryColor
+      updatedAt
+    }
+  }
+`;
+
+
+export const GET_BLOG_POSTS = gql`
+  query GetBlogPosts {
+    blogPosts {
+      id
+      title
+      slug
+      excerpt
+      coverImageUrl
+      publishedAt
+      createdAt
+    }
+  }
+`;
+
+export const GET_BLOG_POST = gql`
+  query GetBlogPost($slug: String!) {
+    blogPost(slug: $slug) {
+      id
+      title
+      slug
+      excerpt
+      contentHtml
+      coverImageUrl
+      publishedAt
+      createdAt
+    }
+  }
+`;
+
+export const GET_ADMIN_BLOG_POSTS = gql`
+  query GetAdminBlogPosts {
+    adminBlogPosts {
+      id
+      title
+      slug
+      excerpt
+      coverImageUrl
+      isPublished
+      publishedAt
+      createdAt
       updatedAt
     }
   }

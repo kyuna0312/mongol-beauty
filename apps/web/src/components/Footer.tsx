@@ -9,6 +9,7 @@ export function Footer() {
   const phone = settingsData?.siteSettings?.phone ?? '9911-2233';
   const email = settingsData?.siteSettings?.email ?? 'info@incellderm.mn';
   const address = settingsData?.siteSettings?.address ?? 'Улаанбаатар хот, Монгол улс';
+  const logoUrl = settingsData?.siteSettings?.logoUrl ?? null;
 
   return (
     <footer className="mt-auto border-t border-primary-100/90 bg-gradient-to-b from-white/90 via-primary-50/40 to-amber-50/25 text-stone-600">
@@ -20,7 +21,7 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-50 to-amber-50/60 ring-1 ring-primary-100/90 flex items-center justify-center overflow-hidden p-1 shadow-sm">
                 <img
-                  src="/incellderm-logo.png"
+                  src={logoUrl || '/incellderm-logo.png'}
                   alt="Мөнгөн Косметикс ХХК Logo"
                   className="h-full w-full object-cover"
                   onError={(e) => {

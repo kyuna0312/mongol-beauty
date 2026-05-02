@@ -21,6 +21,18 @@ export const UPDATE_ORDER_STATUS = gql`
   }
 `;
 
+export const UPDATE_KOREA_ORDER_FIELDS = gql`
+  mutation UpdateKoreaOrderFields($input: UpdateKoreaOrderInput!) {
+    updateKoreaOrderFields(input: $input) {
+      id
+      supplierName
+      koreaTrackingId
+      estimatedDays
+      updatedAt
+    }
+  }
+`;
+
 // Admin Product Mutations
 export const CREATE_PRODUCT = gql`
   mutation CreateProduct($input: CreateProductInput!) {
@@ -30,9 +42,11 @@ export const CREATE_PRODUCT = gql`
       price
       stock
       description
+      descriptionHtml
       images
       skinType
       features
+      isVisible
       category {
         id
         name
@@ -49,9 +63,11 @@ export const UPDATE_PRODUCT = gql`
       price
       stock
       description
+      descriptionHtml
       images
       skinType
       features
+      isVisible
       category {
         id
         name
@@ -201,7 +217,45 @@ export const UPDATE_SITE_SETTINGS = gql`
       phone
       email
       address
+      deliveryFee
+      freeDeliveryThreshold
+      logoUrl
+      primaryColor
       updatedAt
     }
+  }
+`;
+
+export const CREATE_BLOG_POST = gql`
+  mutation CreateBlogPost($input: CreateBlogPostInput!) {
+    createBlogPost(input: $input) {
+      id
+      title
+      slug
+      isPublished
+      createdAt
+    }
+  }
+`;
+
+export const UPDATE_BLOG_POST = gql`
+  mutation UpdateBlogPost($input: UpdateBlogPostInput!) {
+    updateBlogPost(input: $input) {
+      id
+      title
+      slug
+      excerpt
+      contentHtml
+      coverImageUrl
+      isPublished
+      publishedAt
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_BLOG_POST = gql`
+  mutation DeleteBlogPost($id: ID!) {
+    deleteBlogPost(id: $id)
   }
 `;

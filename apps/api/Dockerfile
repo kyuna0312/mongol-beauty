@@ -14,11 +14,16 @@ RUN yarn workspace @mongol-beauty/api build
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Copy only what's needed to run
+ENV NODE_ENV=production
+
+# Copy manifests and install production deps only
 COPY --from=builder /app/package.json /app/yarn.lock ./
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/ ./packages/
+RUN yarn install --frozen-lockfile --production
+
+# Copy compiled output (.dist, not dist)
+COPY --from=builder /app/apps/api/.dist ./apps/api/.dist
 
 # Create upload dir and non-root user in one layer
 RUN addgroup -S app && adduser -S app -G app \
@@ -27,4 +32,4 @@ RUN addgroup -S app && adduser -S app -G app \
 USER app
 
 EXPOSE 4000
-CMD ["node", "apps/api/dist/main.js"]
+CMD ["node", "apps/api/.dist/main.js"]

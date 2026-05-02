@@ -40,6 +40,14 @@ export class SiteSettings {
   @Column({ type: 'int', default: 200000 })
   freeDeliveryThreshold: number;
 
+  @Field({ nullable: true })
+  @Column({ nullable: true, type: 'varchar' })
+  logoUrl: string | null;
+
+  @Field({ nullable: true })
+  @Column({ nullable: true, type: 'varchar' })
+  primaryColor: string | null;
+
   @Field()
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updatedAt: Date;

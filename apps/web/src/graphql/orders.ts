@@ -34,6 +34,7 @@ export const CREATE_ORDER_SIMPLE = gql`
       totalPrice
       deliveryFee
       paymentMethod
+      deliveryNote
       status
     }
   }

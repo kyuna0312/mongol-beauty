@@ -28,6 +28,18 @@ export class AdminService {
     return this.orderGatewayService.updateStatus(orderId, status);
   }
 
+  async updateKoreaOrderFields(
+    orderId: string,
+    fields: { supplierName?: string; koreaTrackingId?: string; estimatedDays?: string },
+  ) {
+    await this.orderRepository.update(orderId, {
+      ...(fields.supplierName !== undefined && { supplierName: fields.supplierName }),
+      ...(fields.koreaTrackingId !== undefined && { koreaTrackingId: fields.koreaTrackingId }),
+      ...(fields.estimatedDays !== undefined && { estimatedDays: fields.estimatedDays }),
+    });
+    return this.orderGatewayService.findOneForRequester(orderId, null);
+  }
+
   async getAdminStats(): Promise<AdminStatsResult> {
     const [
       totalOrders,

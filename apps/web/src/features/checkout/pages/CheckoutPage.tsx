@@ -17,6 +17,7 @@ export function CheckoutPage() {
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryNote, setDeliveryNote] = useState('');
   const [notes, setNotes] = useState<string[]>([]);
   const [voucherCode, setVoucherCode] = useState('');
   const [voucherDiscount, setVoucherDiscount] = useState<number | null>(null);
@@ -131,8 +132,10 @@ export function CheckoutPage() {
             phone: phone || undefined,
             name: name || undefined,
             deliveryAddress: deliveryAddress || undefined,
+            deliveryNote: deliveryNote || undefined,
             notes: notes.length > 0 ? notes : undefined,
             paymentMethod,
+            voucherCode: voucherDiscount !== null ? voucherCode.trim() : undefined,
           },
         },
       });
@@ -239,6 +242,18 @@ export function CheckoutPage() {
                   onChange={(e) => setDeliveryAddress(e.target.value)}
                   placeholder="Дүүрэг, хороо, байр, тоот..."
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Хүргэлтийн тэмдэглэл
+                </label>
+                <textarea
+                  value={deliveryNote}
+                  onChange={(e) => setDeliveryNote(e.target.value)}
+                  placeholder="Байрны тоот, орц, давхар, утасны дугаар..."
+                  rows={3}
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
               <div>
@@ -377,17 +392,17 @@ export function CheckoutPage() {
               Доорх данс руу төлбөрөө шилжүүлээд баримтын зургаа оруулна уу. Админ шалгаад төлбөрийн төлөвийг баталгаажуулна. 💰
             </p>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 space-y-2 text-sm">
-              <div className="flex justify-between items-center py-2 border-b border-blue-100">
-                <span className="font-medium text-gray-600">Банк:</span>
-                <span className="font-bold text-gray-800">{settings?.bankName ?? 'ХХБ'}</span>
+              <div className="flex justify-between items-center gap-2 py-2 border-b border-blue-100">
+                <span className="font-medium text-gray-600 shrink-0">Банк:</span>
+                <span className="font-bold text-gray-800 text-right">{settings?.bankName ?? 'ХХБ'}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-blue-100">
-                <span className="font-medium text-gray-600">Данс:</span>
-                <span className="font-bold text-gray-800 font-mono">{settings?.bankAccount ?? '1234567890'}</span>
+              <div className="flex justify-between items-center gap-2 py-2 border-b border-blue-100">
+                <span className="font-medium text-gray-600 shrink-0">Данс:</span>
+                <span className="font-bold text-gray-800 font-mono text-right break-all">{settings?.bankAccount ?? '1234567890'}</span>
               </div>
-              <div className="flex justify-between items-center py-2">
-                <span className="font-medium text-gray-600">Эзэмшлийн нэр:</span>
-                <span className="font-bold text-gray-800">{settings?.bankOwner ?? 'Mongol Beauty LLC'}</span>
+              <div className="flex justify-between items-center gap-2 py-2">
+                <span className="font-medium text-gray-600 shrink-0">Эзэмшлийн нэр:</span>
+                <span className="font-bold text-gray-800 text-right break-all">{settings?.bankOwner ?? 'Mongol Beauty LLC'}</span>
               </div>
             </div>
             <div className="mt-4 rounded-xl border-2 border-dashed border-blue-300 bg-white p-4">

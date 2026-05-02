@@ -35,12 +35,34 @@ function isUuidLike(value?: string): boolean {
 
 export const ProductsPage = memo(function ProductsPage() {
   const { categoryId } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') ?? '';
   const safeCategoryId = isUuidLike(categoryId) ? categoryId : null;
   const [showFilters, setShowFilters] = useState(false);
-  const [sortBy, setSortBy] = useState<SortOption>('default');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const sortByParam = searchParams.get('sort') as SortOption | null;
+  const sortBy: SortOption = sortByParam && ['default', 'price-asc', 'price-desc', 'name-asc'].includes(sortByParam)
+    ? sortByParam
+    : 'default';
+  const viewModeParam = searchParams.get('view') as ViewMode | null;
+  const viewMode: ViewMode = viewModeParam === 'list' ? 'list' : 'grid';
+
+  const setSortBy = useCallback((val: SortOption) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (val === 'default') next.delete('sort');
+      else next.set('sort', val);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
+
+  const setViewMode = useCallback((val: ViewMode) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (val === 'grid') next.delete('view');
+      else next.set('view', val);
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const { items: cartItems, setItem } = useCart();

@@ -269,8 +269,8 @@ export function ProductDetailPage() {
             </button>
           </div>
         </div>
-        <div className="flex items-baseline gap-2 mb-6">
-          <div className="flex items-baseline gap-3">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 mb-6">
+          <div className="flex items-baseline gap-3 flex-wrap">
             <p className={`text-4xl font-bold ${product.discountedPrice ? 'text-green-600' : 'bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent'}`}>
               {(product.discountedPrice || product.price).toLocaleString()}₮
             </p>
@@ -282,7 +282,7 @@ export function ProductDetailPage() {
           </div>
           <span className="text-sm text-gray-500">/ ширхэг</span>
           {product.discountedPrice && (
-            <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
               {discountPercent}% хөнгөлөлт
             </span>
           )}

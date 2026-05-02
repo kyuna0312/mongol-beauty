@@ -12,12 +12,15 @@ import { Product } from '../product/product.entity';
 import { CreateOrderInput } from './dto/create-order.input';
 import { User } from '../user/user.entity';
 import { SiteSettings } from '../content/site-settings.entity';
+import { Voucher } from '../user/voucher.entity';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
+    @InjectRepository(Voucher)
+    private voucherRepository: Repository<Voucher>,
     @InjectDataSource()
     private dataSource: DataSource,
   ) {}
@@ -83,8 +86,28 @@ export class OrderService {
       const settings = await settingsRepo.findOne({ where: { id: 'default' } });
       const feeThreshold = settings?.freeDeliveryThreshold ?? 200000;
       const feeAmount = settings?.deliveryFee ?? 5000;
-      const deliveryFee = subtotal >= feeThreshold ? 0 : feeAmount;
-      const totalPrice = subtotal + deliveryFee;
+
+      let discountPercent = 0;
+      if (input.voucherCode) {
+        const voucher = await manager.getRepository(Voucher).findOne({
+          where: { code: input.voucherCode },
+        });
+        if (
+          voucher &&
+          !voucher.usedById &&
+          (!voucher.expiresAt || voucher.expiresAt >= new Date())
+        ) {
+          discountPercent = voucher.discountPercent;
+          await manager
+            .getRepository(Voucher)
+            .update({ code: input.voucherCode }, { usedById: userId ?? 'guest' });
+        }
+      }
+
+      const discountAmount = Math.round(subtotal * (discountPercent / 100));
+      const discountedSubtotal = subtotal - discountAmount;
+      const deliveryFee = discountedSubtotal >= feeThreshold ? 0 : feeAmount;
+      const totalPrice = discountedSubtotal + deliveryFee;
 
       const paymentMethod = input.paymentMethod ?? PaymentMethod.BANK_TRANSFER;
       const notes = [...(input.notes ?? [])];
@@ -101,6 +124,7 @@ export class OrderService {
         paymentMethod,
         items,
         deliveryAddress: input.deliveryAddress,
+        deliveryNote: input.deliveryNote ?? null,
         notes,
       });
 

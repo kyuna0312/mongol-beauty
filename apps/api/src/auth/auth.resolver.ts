@@ -24,8 +24,8 @@ class AdminUser {
   @Field()
   email: string;
 
-  @Field()
-  name: string;
+  @Field({ nullable: true })
+  name: string | null;
 
   @Field()
   isAdmin: boolean;
