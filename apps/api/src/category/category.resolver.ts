@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID, ResolveField, Parent } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { Category } from './category.entity';
 import { CategoryService } from './category.service';
@@ -43,5 +43,10 @@ export class CategoryResolver {
   @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)
   async deleteCategory(@Args('id', { type: () => ID }) id: string): Promise<boolean> {
     return this.categoryService.delete(id);
+  }
+
+  @ResolveField(() => [Category])
+  async children(@Parent() cat: Category): Promise<Category[]> {
+    return this.categoryService.findChildren(cat.id);
   }
 }

@@ -30,6 +30,7 @@ export const GET_ADMIN_CATEGORY = gql`
       imageUrl
       parent {
         id
+        name
       }
     }
   }
@@ -45,6 +46,11 @@ export const GET_ADMIN_CATEGORIES = gql`
       imageUrl
       parent {
         id
+        name
+      }
+      children {
+        id
+        name
       }
       products {
         id

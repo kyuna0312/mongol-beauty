@@ -53,4 +53,8 @@ export class CategoryService {
     const result = await this.categoryRepository.delete(id);
     return (result.affected || 0) > 0;
   }
+
+  async findChildren(parentId: string): Promise<Category[]> {
+    return this.categoryRepository.find({ where: { parentId } });
+  }
 }
