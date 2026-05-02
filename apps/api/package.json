@@ -8,7 +8,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node .dist/main",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "type-check": "tsc --noEmit",
@@ -18,8 +18,8 @@
     "create-admin": "ts-node -r tsconfig-paths/register src/scripts/create-admin.ts",
     "create-demo-user": "ts-node -r tsconfig-paths/register src/scripts/create-demo-user.ts",
     "migration:generate": "npx typeorm-ts-node-commonjs -d src/data-source.ts migration:generate",
-    "migration:run": "npm run build && npx typeorm migration:run -d dist/data-source.js",
-    "migration:revert": "npx typeorm migration:revert -d dist/data-source.js"
+    "migration:run": "npm run build && npx typeorm migration:run -d .dist/data-source.js",
+    "migration:revert": "npx typeorm migration:revert -d .dist/data-source.js"
   },
   "dependencies": {
     "@apollo/server": "^4.9.5",
