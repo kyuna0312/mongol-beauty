@@ -182,7 +182,7 @@ export const GET_ADMIN_STATS = gql`
 
 export const GET_ADMIN_PRODUCTS = gql`
   query GetAdminProducts {
-    adminProducts {
+    adminProducts(limit: 1000) {
       ...ProductFragment
       isVisible
     }
