@@ -785,7 +785,7 @@ export type UpdateSiteSettingsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateSiteSettingsMutation = { __typename?: 'Mutation', updateSiteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, logoUrl: string | null, primaryColor: string | null, updatedAt: any } };
+export type UpdateSiteSettingsMutation = { __typename?: 'Mutation', updateSiteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, deliveryFee: number, freeDeliveryThreshold: number, logoUrl: string | null, primaryColor: string | null, updatedAt: any } };
 
 export type GetOrderQueryVariables = Exact<{
   id: Scalars['ID']['input'];
