@@ -28,7 +28,9 @@ export const GET_ADMIN_CATEGORY = gql`
       slug
       description
       imageUrl
-      parentId
+      parent {
+        id
+      }
     }
   }
 `;
@@ -41,7 +43,9 @@ export const GET_ADMIN_CATEGORIES = gql`
       slug
       description
       imageUrl
-      parentId
+      parent {
+        id
+      }
       products {
         id
       }
@@ -257,6 +261,8 @@ export const GET_SITE_SETTINGS = gql`
       address
       deliveryFee
       freeDeliveryThreshold
+      logoUrl
+      primaryColor
       updatedAt
     }
   }

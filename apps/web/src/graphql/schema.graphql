@@ -51,7 +51,6 @@ type Category {
   imageUrl: String
   name: String!
   parent: Category
-  parentId: ID
   products: [Product!]!
   slug: String!
 }
@@ -264,7 +263,9 @@ type SiteSettings {
   email: String!
   freeDeliveryThreshold: Int!
   id: String!
+  logoUrl: String
   phone: String!
+  primaryColor: String
   updatedAt: DateTime!
 }
 
@@ -308,7 +309,9 @@ input UpdateSiteSettingsInput {
   deliveryFee: Int
   email: String
   freeDeliveryThreshold: Int
+  logoUrl: String
   phone: String
+  primaryColor: String
 }
 
 """The `Upload` scalar type represents a file upload."""

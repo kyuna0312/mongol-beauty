@@ -203,6 +203,8 @@ export const UPDATE_SITE_SETTINGS = gql`
       phone
       email
       address
+      logoUrl
+      primaryColor
       updatedAt
     }
   }

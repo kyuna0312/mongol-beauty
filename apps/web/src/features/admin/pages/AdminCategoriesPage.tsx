@@ -150,8 +150,8 @@ export function AdminCategoriesPage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-gray-900 truncate">{category.name}</p>
                   <p className="text-xs text-gray-500 mt-0.5">{category.products?.length ?? 0} бүтээгдэхүүн</p>
-                  {category.parentId && (
-                    <p className="text-xs text-primary-600 mt-0.5">↳ {categoryMap.get(category.parentId) ?? 'Дэд ангилал'}</p>
+                  {category.parent?.id && (
+                    <p className="text-xs text-primary-600 mt-0.5">↳ {categoryMap.get(category.parent.id) ?? 'Дэд ангилал'}</p>
                   )}
                   {category.description && (
                     <p className="text-xs text-gray-400 mt-1 line-clamp-2">{category.description}</p>

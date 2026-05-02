@@ -37,7 +37,7 @@ export function AdminCategoryFormPage() {
         slug: category.slug || '',
         description: category.description || '',
         imageUrl: category.imageUrl || '',
-        parentId: category.parentId || '',
+        parentId: category.parent?.id || '',
       });
     }
   }, [categoryData]);

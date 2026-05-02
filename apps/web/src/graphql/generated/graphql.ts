@@ -72,7 +72,6 @@ export type Category = {
   imageUrl: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   parent: Maybe<Category>;
-  parentId: Maybe<Scalars['ID']['output']>;
   products: Array<Product>;
   slug: Scalars['String']['output'];
 };
@@ -478,7 +477,9 @@ export type SiteSettings = {
   email: Scalars['String']['output'];
   freeDeliveryThreshold: Scalars['Int']['output'];
   id: Scalars['String']['output'];
+  logoUrl: Maybe<Scalars['String']['output']>;
   phone: Scalars['String']['output'];
+  primaryColor: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['DateTime']['output'];
 };
 
@@ -521,7 +522,9 @@ export type UpdateSiteSettingsInput = {
   deliveryFee?: InputMaybe<Scalars['Int']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
   freeDeliveryThreshold?: InputMaybe<Scalars['Int']['input']>;
+  logoUrl?: InputMaybe<Scalars['String']['input']>;
   phone?: InputMaybe<Scalars['String']['input']>;
+  primaryColor?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpsertPageInput = {
@@ -782,7 +785,7 @@ export type UpdateSiteSettingsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateSiteSettingsMutation = { __typename?: 'Mutation', updateSiteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, updatedAt: any } };
+export type UpdateSiteSettingsMutation = { __typename?: 'Mutation', updateSiteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, logoUrl: string | null, primaryColor: string | null, updatedAt: any } };
 
 export type GetOrderQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -816,12 +819,12 @@ export type GetAdminCategoryQueryVariables = Exact<{
 }>;
 
 
-export type GetAdminCategoryQuery = { __typename?: 'Query', category: { __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parentId: string | null } | null };
+export type GetAdminCategoryQuery = { __typename?: 'Query', category: { __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parent: { __typename?: 'Category', id: string } | null } | null };
 
 export type GetAdminCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAdminCategoriesQuery = { __typename?: 'Query', categories: Array<{ __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parentId: string | null, products: Array<{ __typename?: 'Product', id: string }> }> };
+export type GetAdminCategoriesQuery = { __typename?: 'Query', categories: Array<{ __typename?: 'Category', id: string, name: string, slug: string, description: string | null, imageUrl: string | null, parent: { __typename?: 'Category', id: string } | null, products: Array<{ __typename?: 'Product', id: string }> }> };
 
 export type GetCategoriesTreeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -896,4 +899,4 @@ export type ValidateVoucherQuery = { __typename?: 'Query', validateVoucher: { __
 export type GetSiteSettingsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetSiteSettingsQuery = { __typename?: 'Query', siteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, deliveryFee: number, freeDeliveryThreshold: number, updatedAt: any } };
+export type GetSiteSettingsQuery = { __typename?: 'Query', siteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, deliveryFee: number, freeDeliveryThreshold: number, logoUrl: string | null, primaryColor: string | null, updatedAt: any } };
