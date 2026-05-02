@@ -30,6 +30,20 @@ type AdminUser {
   name: String!
 }
 
+type BlogPost {
+  authorId: String
+  contentHtml: String
+  coverImageUrl: String
+  createdAt: DateTime!
+  excerpt: String
+  id: ID!
+  isPublished: Boolean!
+  publishedAt: DateTime
+  slug: String!
+  title: String!
+  updatedAt: DateTime!
+}
+
 type CartItem {
   createdAt: DateTime!
   id: ID!
@@ -53,6 +67,15 @@ type Category {
   parent: Category
   products: [Product!]!
   slug: String!
+}
+
+input CreateBlogPostInput {
+  contentHtml: String
+  coverImageUrl: String
+  excerpt: String
+  isPublished: Boolean = false
+  slug: String!
+  title: String!
 }
 
 input CreateCategoryInput {
@@ -118,20 +141,15 @@ type MessageResponse {
   message: String!
 }
 
-input UpdateKoreaOrderInput {
-  estimatedDays: String
-  koreaTrackingId: String
-  orderId: ID!
-  supplierName: String
-}
-
 type Mutation {
   adminLogin(input: AdminLoginInput!): LoginResponse!
   clearCart: Boolean!
   confirmPayment(orderId: ID!): Order!
+  createBlogPost(input: CreateBlogPostInput!): BlogPost!
   createCategory(input: CreateCategoryInput!): Category!
   createOrder(input: CreateOrderInput!): Order!
   createProduct(input: CreateProductInput!): Product!
+  deleteBlogPost(id: ID!): Boolean!
   deleteCategory(id: ID!): Boolean!
   deletePage(id: ID!): Boolean!
   deleteProduct(id: ID!): Boolean!
@@ -142,6 +160,7 @@ type Mutation {
   removeCartItem(productId: ID!): [CartItem!]!
   resetPassword(input: ResetPasswordInput!): MessageResponse!
   setCartItem(productId: ID!, quantity: Int!): [CartItem!]!
+  updateBlogPost(input: UpdateBlogPostInput!): BlogPost!
   updateCategory(input: UpdateCategoryInput!): Category!
   updateKoreaOrderFields(input: UpdateKoreaOrderInput!): Order!
   updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
@@ -228,12 +247,15 @@ type ProductsPage {
 }
 
 type Query {
+  adminBlogPosts: [BlogPost!]!
   adminMe: User
   adminOrders(limit: Int, offset: Int, status: OrderStatus): AdminOrdersPage!
   adminPages: [Page!]!
   adminProducts(categoryId: ID, limit: Int, offset: Int, search: String): [Product!]!
   adminProductsPaged(categoryId: ID, limit: Int, offset: Int, search: String): ProductsPage!
   adminStats: AdminStatsResult!
+  blogPost(slug: String!): BlogPost
+  blogPosts: [BlogPost!]!
   categories: [Category!]!
   categoriesTree: [Category!]!
   category(id: ID!): Category
@@ -288,6 +310,16 @@ enum SkinType {
   SENSITIVE
 }
 
+input UpdateBlogPostInput {
+  contentHtml: String
+  coverImageUrl: String
+  excerpt: String
+  id: ID!
+  isPublished: Boolean
+  slug: String
+  title: String
+}
+
 input UpdateCategoryInput {
   description: String
   id: ID!
@@ -295,6 +327,13 @@ input UpdateCategoryInput {
   name: String
   parentId: ID
   slug: String
+}
+
+input UpdateKoreaOrderInput {
+  estimatedDays: String
+  koreaTrackingId: String
+  orderId: ID!
+  supplierName: String
 }
 
 input UpdateProductInput {

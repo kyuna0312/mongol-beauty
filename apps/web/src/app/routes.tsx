@@ -49,6 +49,8 @@ export function AppRoutes() {
           <Route path="forgot-password" element={<Pages.ForgotPasswordPage />} />
           <Route path="reset-password" element={<Pages.ResetPasswordPage />} />
           <Route path="profile" element={<Pages.ProfilePage />} />
+          <Route path="blog" element={<Pages.BlogPage />} />
+          <Route path="blog/:slug" element={<Pages.BlogPostPage />} />
           <Route path="about" element={<Pages.AboutPage />} />
           <Route path="faq" element={<Pages.FaqPage />} />
           <Route path="shipping" element={<Pages.ShippingPage />} />
@@ -75,6 +77,7 @@ export function AppRoutes() {
             <Route path="preview/:slug" element={<Pages.AdminContentPreviewPage />} />
             <Route path="settings" element={<Pages.AdminSiteSettingsPage />} />
             <Route path="korea-orders" element={<Pages.AdminKoreaOrdersPage />} />
+            <Route path="blog" element={<Pages.AdminBlogPage />} />
           </Route>
         </Route>
       </Routes>

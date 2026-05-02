@@ -274,3 +274,49 @@ export const GET_SITE_SETTINGS = gql`
     }
   }
 `;
+
+
+export const GET_BLOG_POSTS = gql`
+  query GetBlogPosts {
+    blogPosts {
+      id
+      title
+      slug
+      excerpt
+      coverImageUrl
+      publishedAt
+      createdAt
+    }
+  }
+`;
+
+export const GET_BLOG_POST = gql`
+  query GetBlogPost($slug: String!) {
+    blogPost(slug: $slug) {
+      id
+      title
+      slug
+      excerpt
+      contentHtml
+      coverImageUrl
+      publishedAt
+      createdAt
+    }
+  }
+`;
+
+export const GET_ADMIN_BLOG_POSTS = gql`
+  query GetAdminBlogPosts {
+    adminBlogPosts {
+      id
+      title
+      slug
+      excerpt
+      coverImageUrl
+      isPublished
+      publishedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;

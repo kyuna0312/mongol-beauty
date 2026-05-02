@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Home, Grid, Search, Menu, X, User, LogOut, Sparkles } from 'lucide-react';
+import { ShoppingCart, Home, Grid, Search, Menu, X, User, LogOut, Sparkles, BookOpen } from 'lucide-react';
 import { useQuery } from '@apollo/client';
 import { Footer } from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +95,7 @@ export function MainLayout() {
               {[
                 { to: '/', label: 'Нүүр', exact: true },
                 { to: '/products', label: 'Бүтээгдэхүүн', exact: false },
+                { to: '/blog', label: 'Блог', exact: false },
               ].map(({ to, label, exact }) => {
                 const active = exact ? location.pathname === to : location.pathname.startsWith(to);
                 return (
@@ -303,6 +304,14 @@ export function MainLayout() {
                 >
                   <Grid className="h-4 w-4 text-terracotta-400" />
                   Бүтээгдэхүүн
+                </Link>
+                <Link
+                  to="/blog"
+                  className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-stone-600 transition-colors hover:bg-terracotta-50/70 hover:text-terracotta-700"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  <BookOpen className="h-4 w-4 text-terracotta-400" />
+                  Блог
                 </Link>
               </div>
             </div>

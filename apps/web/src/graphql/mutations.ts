@@ -225,3 +225,37 @@ export const UPDATE_SITE_SETTINGS = gql`
     }
   }
 `;
+
+export const CREATE_BLOG_POST = gql`
+  mutation CreateBlogPost($input: CreateBlogPostInput!) {
+    createBlogPost(input: $input) {
+      id
+      title
+      slug
+      isPublished
+      createdAt
+    }
+  }
+`;
+
+export const UPDATE_BLOG_POST = gql`
+  mutation UpdateBlogPost($input: UpdateBlogPostInput!) {
+    updateBlogPost(input: $input) {
+      id
+      title
+      slug
+      excerpt
+      contentHtml
+      coverImageUrl
+      isPublished
+      publishedAt
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_BLOG_POST = gql`
+  mutation DeleteBlogPost($id: ID!) {
+    deleteBlogPost(id: $id)
+  }
+`;

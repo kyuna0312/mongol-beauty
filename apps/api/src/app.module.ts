@@ -28,6 +28,7 @@ import type { Request, Response } from 'express';
 import { InternalResilienceModule } from './common/internal-resilience.module';
 import { PrometheusModule } from './common/prometheus/prometheus.module';
 import { UploadModule } from './upload/upload.module';
+import { BlogModule } from './blog/blog.module';
 
 const serviceMode = process.env.SERVICE_MODE || 'gateway';
 const isGateway = serviceMode === 'gateway';
@@ -146,6 +147,7 @@ const isPaymentService = serviceMode === 'payment';
           CartModule,
           ContentModule,
           UploadModule,
+          BlogModule,
         ]
       : []),
     ...(isOrderService ? [OrderModule] : []),

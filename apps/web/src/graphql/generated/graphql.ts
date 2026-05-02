@@ -49,6 +49,21 @@ export type AdminUser = {
   name: Scalars['String']['output'];
 };
 
+export type BlogPost = {
+  __typename?: 'BlogPost';
+  authorId: Maybe<Scalars['String']['output']>;
+  contentHtml: Maybe<Scalars['String']['output']>;
+  coverImageUrl: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['DateTime']['output'];
+  excerpt: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isPublished: Scalars['Boolean']['output'];
+  publishedAt: Maybe<Scalars['DateTime']['output']>;
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
 export type CartItem = {
   __typename?: 'CartItem';
   createdAt: Scalars['DateTime']['output'];
@@ -74,6 +89,15 @@ export type Category = {
   parent: Maybe<Category>;
   products: Array<Product>;
   slug: Scalars['String']['output'];
+};
+
+export type CreateBlogPostInput = {
+  contentHtml?: InputMaybe<Scalars['String']['input']>;
+  coverImageUrl?: InputMaybe<Scalars['String']['input']>;
+  excerpt?: InputMaybe<Scalars['String']['input']>;
+  isPublished?: InputMaybe<Scalars['Boolean']['input']>;
+  slug: Scalars['String']['input'];
+  title: Scalars['String']['input'];
 };
 
 export type CreateCategoryInput = {
@@ -142,9 +166,11 @@ export type Mutation = {
   adminLogin: LoginResponse;
   clearCart: Scalars['Boolean']['output'];
   confirmPayment: Order;
+  createBlogPost: BlogPost;
   createCategory: Category;
   createOrder: Order;
   createProduct: Product;
+  deleteBlogPost: Scalars['Boolean']['output'];
   deleteCategory: Scalars['Boolean']['output'];
   deletePage: Scalars['Boolean']['output'];
   deleteProduct: Scalars['Boolean']['output'];
@@ -155,6 +181,7 @@ export type Mutation = {
   removeCartItem: Array<CartItem>;
   resetPassword: MessageResponse;
   setCartItem: Array<CartItem>;
+  updateBlogPost: BlogPost;
   updateCategory: Category;
   updateKoreaOrderFields: Order;
   updateOrderStatus: Order;
@@ -177,6 +204,11 @@ export type MutationConfirmPaymentArgs = {
 };
 
 
+export type MutationCreateBlogPostArgs = {
+  input: CreateBlogPostInput;
+};
+
+
 export type MutationCreateCategoryArgs = {
   input: CreateCategoryInput;
 };
@@ -189,6 +221,11 @@ export type MutationCreateOrderArgs = {
 
 export type MutationCreateProductArgs = {
   input: CreateProductInput;
+};
+
+
+export type MutationDeleteBlogPostArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -235,6 +272,11 @@ export type MutationResetPasswordArgs = {
 export type MutationSetCartItemArgs = {
   productId: Scalars['ID']['input'];
   quantity: Scalars['Int']['input'];
+};
+
+
+export type MutationUpdateBlogPostArgs = {
+  input: UpdateBlogPostInput;
 };
 
 
@@ -364,12 +406,15 @@ export type ProductsPage = {
 
 export type Query = {
   __typename?: 'Query';
+  adminBlogPosts: Array<BlogPost>;
   adminMe: Maybe<User>;
   adminOrders: AdminOrdersPage;
   adminPages: Array<Page>;
   adminProducts: Array<Product>;
   adminProductsPaged: ProductsPage;
   adminStats: AdminStatsResult;
+  blogPost: Maybe<BlogPost>;
+  blogPosts: Array<BlogPost>;
   categories: Array<Category>;
   categoriesTree: Array<Category>;
   category: Maybe<Category>;
@@ -409,6 +454,11 @@ export type QueryAdminProductsPagedArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryBlogPostArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
@@ -498,6 +548,16 @@ export type SkinType =
   | 'NORMAL'
   | 'OILY'
   | 'SENSITIVE';
+
+export type UpdateBlogPostInput = {
+  contentHtml?: InputMaybe<Scalars['String']['input']>;
+  coverImageUrl?: InputMaybe<Scalars['String']['input']>;
+  excerpt?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  isPublished?: InputMaybe<Scalars['Boolean']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+};
 
 export type UpdateCategoryInput = {
   description?: InputMaybe<Scalars['String']['input']>;
@@ -699,6 +759,13 @@ export type UpdateOrderStatusMutationVariables = Exact<{
 
 export type UpdateOrderStatusMutation = { __typename?: 'Mutation', updateOrderStatus: { __typename?: 'Order', id: string, status: OrderStatus, updatedAt: any } };
 
+export type UpdateKoreaOrderFieldsMutationVariables = Exact<{
+  input: UpdateKoreaOrderInput;
+}>;
+
+
+export type UpdateKoreaOrderFieldsMutation = { __typename?: 'Mutation', updateKoreaOrderFields: { __typename?: 'Order', id: string, supplierName: string | null, koreaTrackingId: string | null, estimatedDays: string | null, updatedAt: any } };
+
 export type CreateProductMutationVariables = Exact<{
   input: CreateProductInput;
 }>;
@@ -802,6 +869,27 @@ export type UpdateSiteSettingsMutationVariables = Exact<{
 
 
 export type UpdateSiteSettingsMutation = { __typename?: 'Mutation', updateSiteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, deliveryFee: number, freeDeliveryThreshold: number, logoUrl: string | null, primaryColor: string | null, updatedAt: any } };
+
+export type CreateBlogPostMutationVariables = Exact<{
+  input: CreateBlogPostInput;
+}>;
+
+
+export type CreateBlogPostMutation = { __typename?: 'Mutation', createBlogPost: { __typename?: 'BlogPost', id: string, title: string, slug: string, isPublished: boolean, createdAt: any } };
+
+export type UpdateBlogPostMutationVariables = Exact<{
+  input: UpdateBlogPostInput;
+}>;
+
+
+export type UpdateBlogPostMutation = { __typename?: 'Mutation', updateBlogPost: { __typename?: 'BlogPost', id: string, title: string, slug: string, excerpt: string | null, contentHtml: string | null, coverImageUrl: string | null, isPublished: boolean, publishedAt: any | null, updatedAt: any } };
+
+export type DeleteBlogPostMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type DeleteBlogPostMutation = { __typename?: 'Mutation', deleteBlogPost: boolean };
 
 export type GetOrderQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -916,3 +1004,20 @@ export type GetSiteSettingsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetSiteSettingsQuery = { __typename?: 'Query', siteSettings: { __typename?: 'SiteSettings', id: string, bankName: string, bankAccount: string, bankOwner: string, phone: string, email: string, address: string, deliveryFee: number, freeDeliveryThreshold: number, logoUrl: string | null, primaryColor: string | null, updatedAt: any } };
+
+export type GetBlogPostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetBlogPostsQuery = { __typename?: 'Query', blogPosts: Array<{ __typename?: 'BlogPost', id: string, title: string, slug: string, excerpt: string | null, coverImageUrl: string | null, publishedAt: any | null, createdAt: any }> };
+
+export type GetBlogPostQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type GetBlogPostQuery = { __typename?: 'Query', blogPost: { __typename?: 'BlogPost', id: string, title: string, slug: string, excerpt: string | null, contentHtml: string | null, coverImageUrl: string | null, publishedAt: any | null, createdAt: any } | null };
+
+export type GetAdminBlogPostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetAdminBlogPostsQuery = { __typename?: 'Query', adminBlogPosts: Array<{ __typename?: 'BlogPost', id: string, title: string, slug: string, excerpt: string | null, coverImageUrl: string | null, isPublished: boolean, publishedAt: any | null, createdAt: any, updatedAt: any }> };
