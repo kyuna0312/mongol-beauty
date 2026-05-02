@@ -21,6 +21,18 @@ export const UPDATE_ORDER_STATUS = gql`
   }
 `;
 
+export const UPDATE_KOREA_ORDER_FIELDS = gql`
+  mutation UpdateKoreaOrderFields($input: UpdateKoreaOrderInput!) {
+    updateKoreaOrderFields(input: $input) {
+      id
+      supplierName
+      koreaTrackingId
+      estimatedDays
+      updatedAt
+    }
+  }
+`;
+
 // Admin Product Mutations
 export const CREATE_PRODUCT = gql`
   mutation CreateProduct($input: CreateProductInput!) {

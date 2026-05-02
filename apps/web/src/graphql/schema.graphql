@@ -118,6 +118,13 @@ type MessageResponse {
   message: String!
 }
 
+input UpdateKoreaOrderInput {
+  estimatedDays: String
+  koreaTrackingId: String
+  orderId: ID!
+  supplierName: String
+}
+
 type Mutation {
   adminLogin(input: AdminLoginInput!): LoginResponse!
   clearCart: Boolean!
@@ -136,6 +143,7 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): MessageResponse!
   setCartItem(productId: ID!, quantity: Int!): [CartItem!]!
   updateCategory(input: UpdateCategoryInput!): Category!
+  updateKoreaOrderFields(input: UpdateKoreaOrderInput!): Order!
   updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
   updateProduct(input: UpdateProductInput!): Product!
   updateSiteSettings(input: UpdateSiteSettingsInput!): SiteSettings!

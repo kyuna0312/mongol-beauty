@@ -156,6 +156,7 @@ export type Mutation = {
   resetPassword: MessageResponse;
   setCartItem: Array<CartItem>;
   updateCategory: Category;
+  updateKoreaOrderFields: Order;
   updateOrderStatus: Order;
   updateProduct: Product;
   updateSiteSettings: SiteSettings;
@@ -239,6 +240,11 @@ export type MutationSetCartItemArgs = {
 
 export type MutationUpdateCategoryArgs = {
   input: UpdateCategoryInput;
+};
+
+
+export type MutationUpdateKoreaOrderFieldsArgs = {
+  input: UpdateKoreaOrderInput;
 };
 
 
@@ -500,6 +506,13 @@ export type UpdateCategoryInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   parentId?: InputMaybe<Scalars['ID']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateKoreaOrderInput = {
+  estimatedDays?: InputMaybe<Scalars['String']['input']>;
+  koreaTrackingId?: InputMaybe<Scalars['String']['input']>;
+  orderId: Scalars['ID']['input'];
+  supplierName?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateProductInput = {

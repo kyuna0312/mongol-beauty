@@ -6,6 +6,7 @@ import { AdminStatsResult } from './admin-stats.object';
 import { AdminService } from './admin.service';
 import { GqlJwtAuthGuard } from '../common/guards/gql-jwt-auth.guard';
 import { GqlAdminGuard } from '../common/guards/gql-admin.guard';
+import { UpdateKoreaOrderInput } from './dto/update-korea-order.input';
 
 @Resolver(() => Order)
 @UseGuards(GqlJwtAuthGuard, GqlAdminGuard)
@@ -39,5 +40,16 @@ export class AdminResolver {
     @Args('status', { type: () => OrderStatus }) status: OrderStatus,
   ): Promise<Order> {
     return this.adminService.updateOrderStatus(orderId, status);
+  }
+
+  @Mutation(() => Order)
+  async updateKoreaOrderFields(
+    @Args('input') input: UpdateKoreaOrderInput,
+  ): Promise<Order> {
+    return this.adminService.updateKoreaOrderFields(input.orderId, {
+      supplierName: input.supplierName,
+      koreaTrackingId: input.koreaTrackingId,
+      estimatedDays: input.estimatedDays,
+    });
   }
 }
