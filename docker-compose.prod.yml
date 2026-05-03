@@ -189,7 +189,8 @@ services:
       VIRTUAL_HOST: ${DOMAIN}
       LETSENCRYPT_HOST: ${DOMAIN}
     depends_on:
-      - nginx-proxy
+      nginx-proxy:
+        condition: service_started
       gateway:
         condition: service_healthy
     networks:
