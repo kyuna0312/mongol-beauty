@@ -104,7 +104,7 @@ services:
       <<: *db-env
       NODE_ENV: production
       DB_SYNCHRONIZE: "false"
-    command: ["node", "apps/api/node_modules/typeorm/cli.js", "migration:run", "-d", "apps/api/.dist/data-source.js"]
+    command: ["node", "node_modules/typeorm/cli.js", "migration:run", "-d", "apps/api/.dist/data-source.js"]
     networks:
       - mongol-beauty-prod-network
 
