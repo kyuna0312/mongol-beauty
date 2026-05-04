@@ -14,6 +14,29 @@
 
 name: mongol-beauty-local
 
+# ── Reusable env anchors ──────────────────────────────────────────────────────
+x-db-env: &db-env
+  DB_HOST: postgres
+  DB_PORT: 5432
+  DB_USER: ${DB_USER:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_NAME: ${DB_NAME:-mongol_beauty}
+
+x-api-build: &api-build
+  build:
+    context: .
+    dockerfile: apps/api/Dockerfile
+  image: mongol-beauty-api:local
+
+x-api-base-env: &api-base-env
+  <<: *db-env
+  NODE_ENV: development
+  DB_SYNCHRONIZE: "true"
+  JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-prod}
+  INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET:-dev-internal-secret}
+  INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
+  FRONTEND_URL: http://localhost:3000
+
 services:
 
   # ── Database ─────────────────────────────────────────────────────────────
@@ -41,32 +64,23 @@ services:
 
   # ── DB migrations (runs once, exits) ─────────────────────────────────────
   migrator:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    image: mongol-beauty-api:local
+    <<: *api-build
     container_name: mb-local-migrator
     restart: "no"
     depends_on:
       postgres:
         condition: service_healthy
     environment:
+      <<: *db-env
       NODE_ENV: development
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-mongol_beauty}
+      DB_SYNCHRONIZE: "false"
     command: ["node", "node_modules/typeorm/cli.js", "migration:run", "-d", "apps/api/.dist/data-source.js"]
     networks:
       - mongol-beauty-local-network
 
   # ── Order service ─────────────────────────────────────────────────────────
   order-service:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    image: mongol-beauty-api:local
+    <<: *api-build
     container_name: mb-local-order-service
     restart: unless-stopped
     depends_on:
@@ -75,16 +89,9 @@ services:
       migrator:
         condition: service_completed_successfully
     environment:
-      NODE_ENV: development
+      <<: *api-base-env
       SERVICE_MODE: order
       PORT: 4010
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-mongol_beauty}
-      DB_SYNCHRONIZE: "true"
-      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
     ports:
       - "4010:4010"
     healthcheck:
@@ -98,10 +105,7 @@ services:
 
   # ── Payment service ───────────────────────────────────────────────────────
   payment-service:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    image: mongol-beauty-api:local
+    <<: *api-build
     container_name: mb-local-payment-service
     restart: unless-stopped
     depends_on:
@@ -112,16 +116,9 @@ services:
       order-service:
         condition: service_started
     environment:
-      NODE_ENV: development
+      <<: *api-base-env
       SERVICE_MODE: payment
       PORT: 4020
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-mongol_beauty}
-      DB_SYNCHRONIZE: "true"
-      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
       ORDER_SERVICE_URL: http://order-service:4010
       # ── Receipt storage (local disk inside container) ─────────────────────
       RECEIPT_STORAGE_DRIVER: ${RECEIPT_STORAGE_DRIVER:-local}
@@ -146,10 +143,7 @@ services:
 
   # ── Gateway (GraphQL API) ─────────────────────────────────────────────────
   gateway:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    image: mongol-beauty-api:local
+    <<: *api-build
     container_name: mb-local-gateway
     restart: unless-stopped
     depends_on:
@@ -162,19 +156,9 @@ services:
       payment-service:
         condition: service_started
     environment:
-      NODE_ENV: development
+      <<: *api-base-env
       SERVICE_MODE: gateway
       PORT: 4000
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASSWORD: ${DB_PASSWORD:-postgres}
-      DB_NAME: ${DB_NAME:-mongol_beauty}
-      DB_SYNCHRONIZE: "true"
-      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-prod}
-      INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET:-dev-internal-secret}
-      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-dev-internal-token}
-      FRONTEND_URL: http://localhost:3000
       ORDER_SERVICE_URL: http://order-service:4010
       PAYMENT_SERVICE_URL: http://payment-service:4020
     ports:
