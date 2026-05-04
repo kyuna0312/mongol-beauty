@@ -211,7 +211,7 @@ services:
       DB_NAME: ${DB_NAME}
     volumes:
       - ${BACKUP_DIR:-/home/backups/mongol-beauty}:/backups
-      - ./scripts/db-backup.sh:/scripts/db-backup.sh:ro
+      - ./scripts/db-backup.sh:/scripts/db-backup.sh
     command: >
       sh -c "
         chmod +x /scripts/db-backup.sh &&
