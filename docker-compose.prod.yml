@@ -36,14 +36,25 @@ x-api-base-env: &api-base-env
   FRONTEND_URL: ${FRONTEND_URL}
   JWT_SECRET: ${JWT_SECRET}
   INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_SECRET}
+  INTERNAL_SERVICE_SECRET: ${INTERNAL_SERVICE_SECRET}
+
+# Cap log size on every service to prevent disk exhaustion
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: "20m"
+      max-file: "5"
 
 services:
 
   # ── Reverse proxy + SSL ──────────────────────────────────────────────────
   nginx-proxy:
+    <<: *logging
     image: nginxproxy/nginx-proxy:alpine
     container_name: mb-nginx-proxy
     restart: unless-stopped
+    stop_grace_period: 10s
     ports:
       - "80:80"
       - "443:443"
@@ -56,6 +67,7 @@ services:
       - mongol-beauty-prod-network
 
   acme-companion:
+    <<: *logging
     image: nginxproxy/acme-companion
     container_name: mb-acme
     restart: unless-stopped
@@ -73,9 +85,11 @@ services:
 
   # ── Database ─────────────────────────────────────────────────────────────
   postgres:
+    <<: *logging
     image: postgres:15-alpine
     container_name: mb-postgres
     restart: unless-stopped
+    stop_grace_period: 30s
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -94,7 +108,7 @@ services:
 
   # ── DB migrations (runs once, exits) ─────────────────────────────────────
   migrator:
-    <<: *api-build
+    <<: [*api-build, *logging]
     container_name: mb-migrator
     restart: "no"
     depends_on:
@@ -110,9 +124,10 @@ services:
 
   # ── Backend services ─────────────────────────────────────────────────────
   order-service:
-    <<: *api-build
+    <<: [*api-build, *logging]
     container_name: mb-order-service
     restart: unless-stopped
+    stop_grace_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -126,9 +141,10 @@ services:
       - mongol-beauty-prod-network
 
   payment-service:
-    <<: *api-build
+    <<: [*api-build, *logging]
     container_name: mb-payment-service
     restart: unless-stopped
+    stop_grace_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -147,9 +163,10 @@ services:
       - mongol-beauty-prod-network
 
   gateway:
-    <<: *api-build
+    <<: [*api-build, *logging]
     container_name: mb-gateway
     restart: unless-stopped
+    stop_grace_period: 30s
     depends_on:
       postgres:
         condition: service_healthy
@@ -178,6 +195,7 @@ services:
 
   # ── Frontend ─────────────────────────────────────────────────────────────
   web:
+    <<: *logging
     build:
       context: .
       dockerfile: apps/web/Dockerfile
@@ -185,8 +203,7 @@ services:
         VITE_GRAPHQL_URL: https://${DOMAIN}/graphql
     container_name: mb-web
     restart: unless-stopped
-    expose:
-      - "80"
+    stop_grace_period: 10s
     environment:
       VIRTUAL_HOST: ${DOMAIN}
       VIRTUAL_PORT: "80"
@@ -201,6 +218,7 @@ services:
 
   # ── Weekly DB backup ─────────────────────────────────────────────────────
   db-backup:
+    <<: *logging
     image: postgres:15-alpine
     container_name: mb-db-backup
     restart: unless-stopped
@@ -214,7 +232,7 @@ services:
       DB_NAME: ${DB_NAME}
     volumes:
       - ${BACKUP_DIR:-/home/backups/mongol-beauty}:/backups
-      - ./scripts/db-backup.sh:/scripts/db-backup.sh:ro
+      - ./scripts/db-backup.sh:/scripts/db-backup.sh
     command: >
       sh -c "
         chmod +x /scripts/db-backup.sh &&
