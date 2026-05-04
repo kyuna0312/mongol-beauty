@@ -16,7 +16,7 @@ echo "==> Building images..."
 $COMPOSE build
 
 echo "==> Starting containers..."
-$COMPOSE up -d
+$COMPOSE up -d --force-recreate --remove-orphans
 
 echo "==> Waiting for gateway to be healthy..."
 RETRIES=20
