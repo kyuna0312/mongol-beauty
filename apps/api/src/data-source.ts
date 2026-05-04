@@ -29,4 +29,5 @@ export default new DataSource({
   logging: process.env.NODE_ENV === 'development',
   entities: [User, Category, Product, Order, OrderItem, CartItem],
   migrations: [join(__dirname, 'migrations', '*.{ts,js}')],
+  migrationsTransactionMode: 'each',
 });

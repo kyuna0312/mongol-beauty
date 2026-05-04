@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "docker:up": "./scripts/docker-compose.sh up -d",
+    "docker:up:db": "./scripts/docker-compose.sh up -d postgres",
     "docker:down": "./scripts/docker-compose.sh down",
     "docker:logs": "./scripts/docker-compose.sh logs -f postgres",
     "docker:restart": "./scripts/docker-compose.sh restart postgres",
@@ -15,7 +16,7 @@
     "dev:web": "yarn workspace @mongol-beauty/web dev",
     "dev:api": "yarn workspace @mongol-beauty/api start:dev",
     "dev": "concurrently -k \"yarn dev:api\" \"wait-on -t 120000 http://127.0.0.1:4000/health && yarn dev:web\"",
-    "dev:full": "yarn docker:up && yarn db:wait && yarn dev",
+    "dev:full": "yarn docker:up:db && yarn db:wait && yarn dev",
     "build": "npm run build -w @mongol-beauty/api && npm run build -w @mongol-beauty/web",
     "build:web:ci": "yarn workspace @mongol-beauty/web build:ci",
     "type-check": "npm run type-check -w @mongol-beauty/api && npm run type-check -w @mongol-beauty/web && npm run type-check -w @mongol-beauty/ui && npm run type-check -w @mongol-beauty/types && npm run type-check -w @mongol-beauty/config",

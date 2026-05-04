@@ -1,6 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddVipUserType1745600003000 implements MigrationInterface {
+  // ALTER TYPE ... ADD VALUE cannot run inside a transaction in PostgreSQL
+  transaction = false;
+
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Must run outside transaction — PostgreSQL does not allow ADD VALUE inside a transaction block
     await queryRunner.query(
