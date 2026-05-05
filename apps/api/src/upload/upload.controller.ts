@@ -32,7 +32,7 @@ export class UploadController {
           cb(null, true);
         }
       },
-      limits: { fileSize: 2 * 1024 * 1024 },
+      limits: { fileSize: 10 * 1024 * 1024 },
     }),
   )
   uploadLogo(@UploadedFile() file: { filename: string; mimetype: string; size: number }) {
