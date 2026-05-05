@@ -146,13 +146,9 @@ export class ProductResolver {
     return null;
   }
 
-  @ResolveField(() => Int, { nullable: true })
-  async stock(@Root() product: Product, @Context() context?: GraphqlContext): Promise<number | null> {
-    const user = await this.requestUser(context);
-    if (user?.isAdmin) {
-      return product.stock;
-    }
-    return null;
+  @ResolveField(() => Int)
+  async stock(@Root() product: Product): Promise<number> {
+    return product.stock;
   }
 
   // Admin-only queries (see all products regardless of isVisible)
