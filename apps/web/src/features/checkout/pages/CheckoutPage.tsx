@@ -402,7 +402,7 @@ export function CheckoutPage() {
               </div>
               <div className="flex justify-between items-center gap-2 py-2">
                 <span className="font-medium text-gray-600 shrink-0">Эзэмшлийн нэр:</span>
-                <span className="font-bold text-gray-800 text-right break-all">{settings?.bankOwner ?? 'Mongol Beauty LLC'}</span>
+                <span className="font-bold text-gray-800 text-right break-all">{settings?.bankOwner ?? 'Мөнгөн Косметикс ХХК'}</span>
               </div>
             </div>
             <div className="mt-4 rounded-xl border-2 border-dashed border-blue-300 bg-white p-4">

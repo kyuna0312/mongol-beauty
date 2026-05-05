@@ -11,7 +11,7 @@ export function plainTextExcerptFromMarkdown(markdown: string, maxLen = 160): st
   return `${t.slice(0, maxLen - 1).trim()}…`;
 }
 
-export const SITE_NAME = 'Mongol Beauty';
+export const SITE_NAME = 'Мөнгөн Косметикс';
 
 /** Fallback when page has no SEO or extractable body text (matches `index.html` default). */
 export const DEFAULT_META_DESCRIPTION = 'Gen Z-д зориулсан гоо сайхны бүтээгдэхүүн';

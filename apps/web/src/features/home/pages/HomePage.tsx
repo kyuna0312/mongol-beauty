@@ -86,7 +86,7 @@ export const HomePage = memo(function HomePage() {
     <div className="mb-page">
       <PageHead
         pageTitle="Нүүр"
-        metaTitle="Mongol Beauty - Гоо сайхны бүтээгдэхүүн"
+        metaTitle="Мөнгөн Косметикс - Гоо сайхны бүтээгдэхүүн"
         metaDescription="Арьс арчилгааны найдвартай бүтээгдэхүүн, онцлох коллекцууд болон ангиллаар хайлт."
         contentMarkdown=""
         canonicalUrl={typeof window !== 'undefined' ? window.location.href : undefined}

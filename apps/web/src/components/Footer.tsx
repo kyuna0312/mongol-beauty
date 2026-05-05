@@ -21,7 +21,7 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary-50 to-amber-50/60 ring-1 ring-primary-100/90 flex items-center justify-center overflow-hidden p-1 shadow-sm">
                 <img
-                  src={logoUrl || '/incellderm-logo.png'}
+                  src={logoUrl || '/page_1_rotated.png'}
                   alt="Мөнгөн Косметикс ХХК Logo"
                   className="h-full w-full object-cover"
                   onError={(e) => {
