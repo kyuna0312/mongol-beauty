@@ -22,14 +22,14 @@
     "migration:revert": "npx typeorm migration:revert -d .dist/data-source.js"
   },
   "dependencies": {
-    "@apollo/server": "^4.13.0",
+    "@apollo/server": "^5.5.0",
     "@aws-sdk/client-s3": "^3.1037.0",
     "@aws-sdk/lib-storage": "^3.1037.0",
-    "@nestjs/apollo": "^12.2.2",
+    "@nestjs/apollo": "^13.4.0",
     "@nestjs/common": "^11.1.19",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.19",
-    "@nestjs/graphql": "^12.2.2",
+    "@nestjs/graphql": "^13.4.0",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.1.19",
     "@nestjs/terminus": "^11.0.21",

@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { ApolloServerPluginLandingPageLocalDefault, ApolloServerPluginLandingPageDisabled } from '@apollo/server/plugin/landingPage/default';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { join } from 'path';
@@ -121,8 +122,12 @@ const isPaymentService = serviceMode === 'payment';
                 ? true
                 : join(process.cwd(), 'src/schema.gql'),
               sortSchema: true,
-              playground: process.env.NODE_ENV !== 'production',
               introspection: process.env.NODE_ENV !== 'production',
+              plugins: [
+                process.env.NODE_ENV !== 'production'
+                  ? ApolloServerPluginLandingPageLocalDefault()
+                  : ApolloServerPluginLandingPageDisabled(),
+              ],
               context: ({ req, res }: { req: Request; res?: Response }): GraphqlContext => ({
                 req,
                 res,
