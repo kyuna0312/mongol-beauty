@@ -65,11 +65,15 @@
   "resolutions": {
     "qs": "^6.14.2",
     "path-to-regexp": "^0.1.13",
-    "brace-expansion": "^2.0.1",
+    "brace-expansion": "^2.0.3",
     "ajv": "^8.18.0",
     "yaml": "^1.10.3",
     "uuid": "^11.1.1",
     "nodemailer": "^8.0.5",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "picomatch": "^2.3.2",
+    "lodash": "^4.18.0",
+    "axios": "^1.15.2",
+    "follow-redirects": "^1.16.0"
   }
 }
