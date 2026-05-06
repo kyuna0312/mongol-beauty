@@ -61,5 +61,15 @@
     "typescript-eslint": "^8.58.1",
     "wait-on": "^8.0.1"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "resolutions": {
+    "qs": "^6.14.2",
+    "path-to-regexp": "^0.1.13",
+    "brace-expansion": "^2.0.1",
+    "ajv": "^8.18.0",
+    "yaml": "^1.10.3",
+    "uuid": "^11.1.1",
+    "nodemailer": "^8.0.5",
+    "reflect-metadata": "^0.2.2"
+  }
 }
