@@ -52,3 +52,6 @@ apps/api/src/schema.gql
 
 # Claude Code
 CLAUDE.md
+.claude/
+.remember/
+.superpowers/
