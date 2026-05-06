@@ -43,7 +43,7 @@
     "graphql": "^16.8.1",
     "graphql-depth-limit": "^1.1.0",
     "graphql-query-complexity": "^1.1.0",
-    "graphql-upload": "^13.0.0",
+    "graphql-upload": "^15.0.2",
     "nodemailer": "^8.0.5",
     "pg": "^8.11.3",
     "prom-client": "^15.1.3",
