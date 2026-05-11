@@ -24,7 +24,7 @@ const adminNavItems = [
   { path: '/admin/content', label: 'Контент', icon: FileText },
   { path: '/admin/settings', label: 'Тохиргоо', icon: Settings },
   { path: '/admin/korea-orders', label: 'Солонгос', icon: Plane },
-  { path: '/admin/blog', label: 'Блог', icon: BookOpen },
+  { path: '/admin/blog', label: 'Зөвлөгөө', icon: BookOpen },
 ];
 
 function NavItem({ item, isActive }: { item: typeof adminNavItems[0]; isActive: boolean }) {

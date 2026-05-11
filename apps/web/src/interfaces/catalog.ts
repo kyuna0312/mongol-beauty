@@ -5,6 +5,8 @@ export interface ProductCardRaw {
   discountedPrice?: number | null;
   stock?: number;
   images?: string[] | null;
+  skinType?: string[];
+  features?: string[];
   category: {
     id: string;
   };
@@ -18,12 +20,15 @@ export interface ProductCardView {
   image: string;
   categoryId: string;
   stock: number;
+  skinType?: string[];
+  features?: string[];
 }
 
 export interface ProductDetailView {
   id: string;
   name: string;
   price: number;
+  salePrice?: number | null;
   discountedPrice?: number | null;
   stock: number;
   description?: string | null;
@@ -31,7 +36,10 @@ export interface ProductDetailView {
   images: string[];
   skinType: string[];
   features: string[];
+  variants: string[];
+  size?: string | null;
   isKoreanProduct?: boolean;
+  isVisible?: boolean;
   category: {
     id: string;
     name: string;

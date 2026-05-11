@@ -31,9 +31,10 @@ function slugify(s: string) {
 
 export function AdminBlogPage() {
   const { data, loading, refetch } = useQuery(GET_ADMIN_BLOG_POSTS, { fetchPolicy: 'cache-and-network' });
-  const [createPost, { loading: creating }] = useMutation(CREATE_BLOG_POST);
-  const [updatePost, { loading: updating }] = useMutation(UPDATE_BLOG_POST);
-  const [deletePost] = useMutation(DELETE_BLOG_POST);
+  const refetchOptions = { refetchQueries: ['GetAdminBlogPosts', 'GetBlogPosts'], awaitRefetchQueries: true };
+  const [createPost, { loading: creating }] = useMutation(CREATE_BLOG_POST, refetchOptions);
+  const [updatePost, { loading: updating }] = useMutation(UPDATE_BLOG_POST, refetchOptions);
+  const [deletePost] = useMutation(DELETE_BLOG_POST, refetchOptions);
 
   const posts: any[] = data?.adminBlogPosts ?? [];
 
@@ -80,7 +81,7 @@ export function AdminBlogPage() {
   return (
     <div className="p-6 max-w-5xl">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Блог нийтлэл</h1>
+        <h1 className="text-xl font-bold text-gray-900">Зөвлөгөө нийтлэл</h1>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors"

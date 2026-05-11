@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Plus, X, AlertTriangle, CheckCircle, Eye, Code } from 'lucide-react';
+import { ArrowLeft, Plus, X, AlertTriangle, CheckCircle, Eye, Code, ImagePlus } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { CREATE_PRODUCT, UPDATE_PRODUCT } from '@/graphql/mutations';
 import { GET_PRODUCT_DETAIL } from '@/graphql/catalog';
@@ -60,9 +60,34 @@ export function AdminProductFormPage() {
   const [updateProduct] = useMutation(UPDATE_PRODUCT, { refetchQueries: [{ query: GET_ADMIN_PRODUCTS }] });
 
   const [htmlPreview, setHtmlPreview] = useState(false);
+  const [imgUrlInput, setImgUrlInput] = useState('');
+  const [showImgInsert, setShowImgInsert] = useState(false);
+  const descHtmlRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertImageAtCursor = (url: string) => {
+    if (!url.trim()) return;
+    const ta = descHtmlRef.current;
+    const tag = `<img src="${url.trim()}" alt="" style="max-width:100%;border-radius:8px;margin:8px 0;" />`;
+    if (ta) {
+      const start = ta.selectionStart ?? ta.value.length;
+      const end = ta.selectionEnd ?? ta.value.length;
+      const newVal = ta.value.slice(0, start) + tag + ta.value.slice(end);
+      setForm((f) => ({ ...f, descriptionHtml: newVal }));
+      // Restore cursor after inserted tag
+      requestAnimationFrame(() => {
+        ta.selectionStart = ta.selectionEnd = start + tag.length;
+        ta.focus();
+      });
+    } else {
+      setForm((f) => ({ ...f, descriptionHtml: f.descriptionHtml + tag }));
+    }
+    setImgUrlInput('');
+    setShowImgInsert(false);
+  };
   const [form, setForm] = useState({
-    name: '', categoryId: '', price: '', stock: '', description: '', descriptionHtml: '',
-    skinType: [] as string[], features: [] as string[], images: [''] as string[],
+    name: '', categoryId: '', price: '', salePrice: '', stock: '', description: '', descriptionHtml: '',
+    size: '',
+    skinType: [] as string[], features: [] as string[], variants: [] as string[], images: [''] as string[],
     isKoreanProduct: false,
     isVisible: true,
   });
@@ -74,18 +99,21 @@ export function AdminProductFormPage() {
       name: p.name || '',
       categoryId: p.category?.id || '',
       price: p.price?.toString() || '',
+      salePrice: p.salePrice?.toString() || '',
       stock: p.stock?.toString() || '',
       description: p.description || '',
       descriptionHtml: p.descriptionHtml || '',
+      size: p.size || '',
       skinType: Array.isArray(p.skinType) ? p.skinType : [],
       features: Array.isArray(p.features) ? p.features : [],
+      variants: Array.isArray(p.variants) ? p.variants : [],
       images: Array.isArray(p.images) && p.images.length > 0 ? p.images : [''],
       isKoreanProduct: p.isKoreanProduct ?? false,
       isVisible: p.isVisible ?? true,
     });
   }, [productData]);
 
-  const toggle = (field: 'skinType' | 'features', value: string) => {
+  const toggle = (field: 'skinType' | 'features' | 'variants', value: string) => {
     setForm((f) => ({
       ...f,
       [field]: f[field].includes(value) ? f[field].filter((v) => v !== value) : [...f[field], value],
@@ -99,11 +127,14 @@ export function AdminProductFormPage() {
       name: form.name,
       categoryId: form.categoryId,
       price: parseInt(form.price),
+      salePrice: form.salePrice ? parseInt(form.salePrice) : undefined,
       stock: parseInt(form.stock) || 0,
       description: form.description,
       descriptionHtml: form.descriptionHtml || undefined,
+      size: form.size || undefined,
       skinType: form.skinType,
       features: form.features,
+      variants: form.variants,
       images: form.images.filter((img) => img.trim()),
       isKoreanProduct: form.isKoreanProduct,
       isVisible: form.isVisible,
@@ -192,7 +223,7 @@ export function AdminProductFormPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <FieldLabel required>Үнэ (₮)</FieldLabel>
               <TextInput
@@ -201,6 +232,15 @@ export function AdminProductFormPage() {
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
                 placeholder="0"
                 required
+              />
+            </div>
+            <div>
+              <FieldLabel>Хямдралтай үнэ (₮)</FieldLabel>
+              <TextInput
+                type="number" min="0"
+                value={form.salePrice}
+                onChange={(e) => setForm({ ...form, salePrice: e.target.value })}
+                placeholder="Заавал биш"
               />
             </div>
             <div>
@@ -213,6 +253,15 @@ export function AdminProductFormPage() {
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <FieldLabel>Хэмжээ (жишээ: 15ml, 50g)</FieldLabel>
+            <TextInput
+              value={form.size}
+              onChange={(e) => setForm({ ...form, size: e.target.value })}
+              placeholder="Заавал биш — жишээ: 30ml, 50g"
+            />
           </div>
 
           <div>
@@ -229,19 +278,54 @@ export function AdminProductFormPage() {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <FieldLabel>HTML тайлбар (форматтай)</FieldLabel>
-              <button
-                type="button"
-                onClick={() => setHtmlPreview((v) => !v)}
-                className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700"
-              >
-                {htmlPreview ? <Code size={12} /> : <Eye size={12} />}
-                {htmlPreview ? 'HTML засах' : 'Харах'}
-              </button>
+              <div className="flex items-center gap-2">
+                {!htmlPreview && (
+                  <button
+                    type="button"
+                    onClick={() => setShowImgInsert((v) => !v)}
+                    className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-700"
+                    title="Зураг оруулах"
+                  >
+                    <ImagePlus size={12} />
+                    Зураг
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setHtmlPreview((v) => !v)}
+                  className="flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700"
+                >
+                  {htmlPreview ? <Code size={12} /> : <Eye size={12} />}
+                  {htmlPreview ? 'HTML засах' : 'Харах'}
+                </button>
+              </div>
             </div>
+            {showImgInsert && !htmlPreview && (
+              <div className="flex gap-2 mb-2">
+                <TextInput
+                  type="url"
+                  placeholder="Зургийн URL: https://..."
+                  value={imgUrlInput}
+                  onChange={(e) => setImgUrlInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); insertImageAtCursor(imgUrlInput); }
+                    if (e.key === 'Escape') setShowImgInsert(false);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => insertImageAtCursor(imgUrlInput)}
+                  className="px-3 py-2 text-xs font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 whitespace-nowrap"
+                >
+                  Оруулах
+                </button>
+              </div>
+            )}
             {htmlPreview ? (
               <HtmlPreview html={form.descriptionHtml} />
             ) : (
               <textarea
+                ref={descHtmlRef}
                 value={form.descriptionHtml}
                 onChange={(e) => setForm({ ...form, descriptionHtml: e.target.value })}
                 rows={5}
@@ -293,6 +377,53 @@ export function AdminProductFormPage() {
                   {FeatureLabels[feature]}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <FieldLabel>Өнгө / Дугаарын сонголтууд</FieldLabel>
+            <p className="text-xs text-gray-500 mb-2">Дарж нэмэх эсвэл хасах. Жишээ: #21, #23, Light, Medium</p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {form.variants.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => toggle('variants', v)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white flex items-center gap-1"
+                >
+                  {v} <X size={10} />
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <TextInput
+                id="variantInput"
+                placeholder="Дугаар/өнгө нэмэх (жишээ: #21)"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = (e.target as HTMLInputElement).value.trim();
+                    if (val && !form.variants.includes(val)) {
+                      setForm((f) => ({ ...f, variants: [...f.variants, val] }));
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.getElementById('variantInput') as HTMLInputElement;
+                  const val = input?.value.trim();
+                  if (val && !form.variants.includes(val)) {
+                    setForm((f) => ({ ...f, variants: [...f.variants, val] }));
+                    input.value = '';
+                  }
+                }}
+                className="px-3 py-2 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors whitespace-nowrap"
+              >
+                + Нэмэх
+              </button>
             </div>
           </div>
 

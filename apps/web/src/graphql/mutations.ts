@@ -40,12 +40,15 @@ export const CREATE_PRODUCT = gql`
       id
       name
       price
+      salePrice
       stock
       description
       descriptionHtml
       images
       skinType
       features
+      size
+      variants
       isVisible
       category {
         id
@@ -61,12 +64,15 @@ export const UPDATE_PRODUCT = gql`
       id
       name
       price
+      salePrice
       stock
       description
       descriptionHtml
       images
       skinType
       features
+      size
+      variants
       isVisible
       category {
         id

@@ -145,34 +145,71 @@ export const HomePage = memo(function HomePage() {
             <p className="mb-section-eyebrow">Ангилал</p>
             <h2 className="mb-section-title">Өөрийнхөө хэрэгцээг сонгоно уу</h2>
           </div>
+          <Link to="/products" className="text-sm font-semibold text-primary-700 hover:text-primary-900 flex items-center gap-1 shrink-0">
+            Бүгд <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+        {/* Mobile: horizontal scroll row */}
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-none md:hidden">
           {categories.map((category) => (
             <Link
               key={category.id}
               to={`/products/${category.id}`}
-              className="mb-focus-ring group mb-card-surface p-3 md:p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary-200/90 hover:shadow-lg"
+              className="group relative flex-shrink-0 w-32 snap-start overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5"
               onMouseEnter={prefetchProductsPage}
               onFocus={prefetchProductsPage}
             >
-              <div className="relative mb-3 aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-primary-50 via-amber-50/40 to-beige-50 ring-1 ring-primary-100/80">
+              <div className="aspect-[3/4] bg-gradient-to-br from-primary-50 via-amber-50/40 to-beige-50">
                 {category.imageUrl ? (
                   <OptimizedImage
                     src={category.imageUrl}
                     alt={category.name}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    aspectRatio="square"
-                    sizes="(max-width: 768px) 50vw, 25vw"
+                    aspectRatio="tall"
+                    sizes="128px"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">
-                    <Sparkles className="h-10 w-10 text-primary-300/80" strokeWidth={1.25} />
+                    <Sparkles className="h-8 w-8 text-primary-300/80" strokeWidth={1.25} />
                   </div>
                 )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <p className="absolute bottom-0 left-0 right-0 p-2.5 text-center text-xs font-semibold text-white leading-tight">
+                  {category.name}
+                </p>
               </div>
-              <p className="text-center text-sm font-semibold text-stone-800 group-hover:text-primary-800 transition-colors">
-                {category.name}
-              </p>
+            </Link>
+          ))}
+        </div>
+        {/* Desktop: grid */}
+        <div className="hidden md:grid grid-cols-3 gap-4 lg:grid-cols-4 xl:grid-cols-5">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              to={`/products/${category.id}`}
+              className="mb-focus-ring group relative overflow-hidden rounded-2xl shadow-sm ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+              onMouseEnter={prefetchProductsPage}
+              onFocus={prefetchProductsPage}
+            >
+              <div className="aspect-[3/4] bg-gradient-to-br from-primary-50 via-amber-50/40 to-beige-50">
+                {category.imageUrl ? (
+                  <OptimizedImage
+                    src={category.imageUrl}
+                    alt={category.name}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    aspectRatio="tall"
+                    sizes="(max-width: 1280px) 33vw, 20vw"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Sparkles className="h-12 w-12 text-primary-300/80" strokeWidth={1.25} />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
+                <p className="absolute bottom-0 left-0 right-0 p-3 text-center text-sm font-semibold text-white leading-tight">
+                  {category.name}
+                </p>
+              </div>
             </Link>
           ))}
         </div>

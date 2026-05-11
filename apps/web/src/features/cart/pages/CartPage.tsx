@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
 import { Button } from '@mongol-beauty/ui';
-import { Trash2, ShoppingBag, ArrowLeft, Truck, Shield } from 'lucide-react';
+import { Trash2, ShoppingBag, ArrowLeft, Shield } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { GET_PRODUCTS_FOR_CART } from '@/graphql/cart';
 import { CartLine, CartProduct } from '@/interfaces/cart';
@@ -154,11 +154,7 @@ export function CartPage() {
       </div>
 
       {/* Trust Badges */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-gradient-to-br from-beige-50 to-beige-100 rounded-xl p-3 text-center border border-beige-200">
-          <Truck className="w-6 h-6 text-primary-600 mx-auto mb-1" />
-          <p className="text-xs font-medium text-gray-700">Үнэгүй хүргэлт</p>
-        </div>
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <div className="bg-gradient-to-br from-beige-50 to-beige-100 rounded-xl p-3 text-center border border-beige-200">
           <Shield className="w-6 h-6 text-primary-600 mx-auto mb-1" />
           <p className="text-xs font-medium text-gray-700">Баталгаатай</p>

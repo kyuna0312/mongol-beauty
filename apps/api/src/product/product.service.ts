@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Product, ProductsPage } from './product.entity';
+import { Category } from '../category/category.entity';
 
 @Injectable()
 export class ProductService {
@@ -13,9 +14,27 @@ export class ProductService {
   constructor(
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
   ) {}
 
-  private buildProductsQuery(categoryId?: string, limit?: number, offset?: number, search?: string, showHidden = false) {
+  private async getCategoryIdsIncludingChildren(categoryId: string): Promise<string[]> {
+    const all = await this.categoryRepository.find({ select: ['id', 'parentId'] });
+    const result: string[] = [categoryId];
+    const queue = [categoryId];
+    while (queue.length) {
+      const current = queue.shift()!;
+      for (const cat of all) {
+        if (cat.parentId === current) {
+          result.push(cat.id);
+          queue.push(cat.id);
+        }
+      }
+    }
+    return result;
+  }
+
+  private async buildProductsQuery(categoryId?: string, limit?: number, offset?: number, search?: string, showHidden = false) {
     const query = this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .orderBy('product.createdAt', 'DESC');
@@ -29,8 +48,9 @@ export class ProductService {
     }
 
     if (categoryId && this.isUuid(categoryId)) {
-      conditions.push('product.categoryId = :categoryId');
-      params.categoryId = categoryId;
+      const categoryIds = await this.getCategoryIdsIncludingChildren(categoryId);
+      conditions.push('product.categoryId IN (:...categoryIds)');
+      params.categoryIds = categoryIds;
     }
 
     if (search?.trim()) {
@@ -47,20 +67,20 @@ export class ProductService {
   }
 
   async findAll(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
-    return this.buildProductsQuery(categoryId, limit, offset, search, false).getMany();
+    return (await this.buildProductsQuery(categoryId, limit, offset, search, false)).getMany();
   }
 
   async findAllAdmin(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<Product[]> {
-    return this.buildProductsQuery(categoryId, limit, offset, search, true).getMany();
+    return (await this.buildProductsQuery(categoryId, limit, offset, search, true)).getMany();
   }
 
   async findAllPaginated(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<ProductsPage> {
-    const [items, totalCount] = await this.buildProductsQuery(categoryId, limit, offset, search, false).getManyAndCount();
+    const [items, totalCount] = await (await this.buildProductsQuery(categoryId, limit, offset, search, false)).getManyAndCount();
     return { items, totalCount };
   }
 
   async findAllPaginatedAdmin(categoryId?: string, limit?: number, offset?: number, search?: string): Promise<ProductsPage> {
-    const [items, totalCount] = await this.buildProductsQuery(categoryId, limit, offset, search, true).getManyAndCount();
+    const [items, totalCount] = await (await this.buildProductsQuery(categoryId, limit, offset, search, true)).getManyAndCount();
     return { items, totalCount };
   }
 
@@ -95,6 +115,7 @@ export class ProductService {
       skinType: Array.isArray(input.skinType) ? input.skinType.join(',') : input.skinType || '',
       features: Array.isArray(input.features) ? input.features.join(',') : input.features || '',
       images: Array.isArray(input.images) ? input.images.join(',') : input.images || '',
+      variants: Array.isArray(input.variants) ? input.variants.join(',') : input.variants || '',
     };
     const product = this.productRepository.create(productData);
     const saved = await this.productRepository.save(product) as unknown as Product;
@@ -107,6 +128,7 @@ export class ProductService {
     if (input.name !== undefined) updateData.name = input.name;
     if (input.categoryId !== undefined) updateData.categoryId = input.categoryId;
     if (input.price !== undefined) updateData.price = input.price;
+    if (input.salePrice !== undefined) updateData.salePrice = input.salePrice;
     if (input.stock !== undefined) updateData.stock = input.stock;
     if (input.description !== undefined) updateData.description = input.description;
     if (input.descriptionHtml !== undefined) updateData.descriptionHtml = input.descriptionHtml;
@@ -118,6 +140,10 @@ export class ProductService {
     }
     if (input.images !== undefined) {
       updateData.images = Array.isArray(input.images) ? input.images.join(',') : input.images;
+    }
+    if (input.size !== undefined) updateData.size = input.size;
+    if (input.variants !== undefined) {
+      updateData.variants = Array.isArray(input.variants) ? input.variants.join(',') : input.variants;
     }
     if (input.isKoreanProduct !== undefined) updateData.isKoreanProduct = input.isKoreanProduct;
     if (input.isVisible !== undefined) updateData.isVisible = input.isVisible;

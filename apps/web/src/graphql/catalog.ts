@@ -28,6 +28,7 @@ export const GET_PRODUCT_DETAIL = gql`
       id
       name
       price
+      salePrice
       discountedPrice
       stock
       description
@@ -35,6 +36,8 @@ export const GET_PRODUCT_DETAIL = gql`
       images
       skinType
       features
+      size
+      variants
       isKoreanProduct
       isVisible
       category {

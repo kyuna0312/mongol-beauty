@@ -27,6 +27,7 @@ export function ProductDetailPage() {
   const location = useLocation();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedVariant, setSelectedVariant] = useState<string | null>(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -331,6 +332,40 @@ export function ProductDetailPage() {
           </div>
         )}
 
+        {product.variants?.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-semibold mb-3 text-gray-800 flex items-center gap-2">
+              <span>🎨</span>
+              Өнгө / Дугаар сонгох
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {product.variants.map((v: string) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => setSelectedVariant(selectedVariant === v ? null : v)}
+                  className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all duration-200 ${
+                    selectedVariant === v
+                      ? 'border-primary-500 bg-primary-50 text-primary-700 shadow-md scale-105'
+                      : 'border-beige-300 bg-white text-gray-700 hover:border-primary-300 hover:bg-beige-50'
+                  }`}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {product.size && (
+          <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
+            <span className="font-semibold text-gray-700">Хэмжээ:</span>
+            <span className="px-3 py-1 bg-beige-100 border border-beige-200 rounded-full font-medium text-primary-700">
+              {product.size}
+            </span>
+          </div>
+        )}
+
         {/* Quantity Selector - INCELLDERM Style */}
         <div className="mb-6 p-4 bg-gradient-to-br from-beige-50 to-gold-50 rounded-2xl border border-beige-200">
           <h3 className="font-semibold mb-3 text-gray-800 flex items-center gap-2">
@@ -359,10 +394,6 @@ export function ProductDetailPage() {
             >
               +
             </button>
-            <div className="ml-auto text-right">
-              <span className="text-gray-600 text-sm block">Нөөц</span>
-              <span className="text-primary-600 font-bold text-lg">{product.stock}</span>
-            </div>
           </div>
         </div>
       </div>

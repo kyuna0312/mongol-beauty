@@ -28,6 +28,8 @@ export const PRODUCT_CARD_FRAGMENT = gql`
     discountedPrice
     stock
     images
+    skinType
+    features
     category {
       id
     }
