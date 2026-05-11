@@ -1,8 +1,6 @@
 # Production Operations
 
-Server: `103.168.178.174`, SSH port `1314`  
-Domain: `https://mcosmetics.mn`  
-Project root on server: `/home/khatnaa/project/mongol-beauty`
+Domain: `https://mcosmetics.mn`
 
 ---
 
@@ -13,18 +11,18 @@ Project root on server: `/home/khatnaa/project/mongol-beauty`
 git push origin main
 
 # 2. SSH into the server
-ssh -p 1314 khatnaa@103.168.178.174
+ssh -p <SSH_PORT> <user>@<SERVER_IP>
 
-# 3. Pull latest code (owned by root, so use sudo)
-sudo git -C /home/khatnaa/project/mongol-beauty pull
+# 3. Pull latest code
+sudo git -C <PROJECT_ROOT> pull
 
 # 4. Rebuild and restart only the changed service
-cd /home/khatnaa/project/mongol-beauty
+cd <PROJECT_ROOT>
 sudo docker compose -f docker-compose.prod.yml --env-file .env.prod build gateway
 sudo docker compose -f docker-compose.prod.yml --env-file .env.prod up -d gateway
 ```
 
-For frontend-only changes replace `gateway` with `web`. For full redeploy, omit the service name.
+For frontend-only changes replace `gateway` with `web`. For a full redeploy, omit the service name.
 
 ---
 
@@ -97,7 +95,7 @@ Default credentials when no env vars are set:
 | Password | `admin123` |
 | Name | `Админ` |
 
-To override, set env vars before running:
+To override, pass env vars:
 
 ```bash
 sudo docker exec -e ADMIN_EMAIL=you@example.com \
@@ -107,7 +105,7 @@ sudo docker exec -e ADMIN_EMAIL=you@example.com \
 
 If the admin already exists, the script **updates the password** rather than failing.
 
-**Change the password immediately after first deploy.**
+**Change the default password immediately after first deploy.**
 
 ---
 
@@ -136,10 +134,7 @@ Default demo user: `demo@mongol-beauty.local` / `demo1234`
 Migrations run automatically via the `mb-migrator` container on every `docker compose up`. To run manually:
 
 ```bash
-sudo docker exec mb-gateway node /app/apps/api/.dist/data-source.js
-# or trigger migrator directly
-sudo docker compose -f docker-compose.prod.yml --env-file .env.prod \
-  run --rm migrator
+sudo docker compose -f docker-compose.prod.yml --env-file .env.prod run --rm migrator
 ```
 
 ---
@@ -166,7 +161,7 @@ sudo docker exec mb-acme /app/force_renew
 
 ## Backup and Restore
 
-Automated daily backups via `mb-db-backup` are stored at the `BACKUP_DIR` path configured in `.env.prod` (default: `/home/ubuntu/backups/mongol-beauty`).
+Automated daily backups via `mb-db-backup` are stored at the `BACKUP_DIR` path configured in `.env.prod`.
 
 Manual backup:
 
@@ -179,7 +174,7 @@ Restore from backup:
 
 ```bash
 sudo docker exec -i mb-postgres psql -U mongol_beauty_prod mongol_beauty \
-  < backup-20260505.sql
+  < backup-YYYYMMDD.sql
 ```
 
 ---
@@ -188,14 +183,14 @@ sudo docker exec -i mb-postgres psql -U mongol_beauty_prod mongol_beauty \
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Homepage shows "Мэдээлэл ачаалахад алдаа гарлаа" | GraphQL query error (non-nullable null, or DB issue) | Check `sudo docker logs mb-gateway --tail 50` for the specific error |
-| "Invalid email or password" for all users | `users` table is empty (DB reset or fresh deploy) | Run `create-admin` script (see above) |
-| `git pull` gives permission denied | `.git` owned by root | Use `sudo git -C /path pull` |
+| Homepage shows "Мэдээлэл ачаалахад алдаа гарлаа" | GraphQL non-nullable null or DB issue | `sudo docker logs mb-gateway --tail 50` |
+| "Invalid email or password" for all users | `users` table empty (fresh deploy or DB reset) | Run `create-admin` script |
+| `git pull` gives permission denied | `.git` owned by root | Use `sudo git -C <path> pull` |
 | `docker compose build` env var warnings | `.env.prod` not passed | Always include `--env-file .env.prod` |
 | Receipt upload fails | Missing `CF_R2_*` env vars or wrong bucket | Check `.env.prod` R2 values and bucket public access |
-| `mb-web` container exits immediately | Gateway not healthy yet | Wait for `mb-gateway` to be healthy, then `sudo docker start mb-web` |
+| `mb-web` exits immediately | Gateway not healthy yet | Wait for `mb-gateway`, then `sudo docker start mb-web` |
 | Port 80/443 not responding | `mb-nginx-proxy` not running | `sudo docker start mb-nginx-proxy` |
-| GraphQL returns null for entire query | Non-nullable field resolver returning null | Check resolver code — all `@Field()` (no `nullable: true`) must never return null |
+| GraphQL returns null for entire query | Non-nullable resolver returning null | Check resolvers — `@Field()` without `nullable: true` must never return null |
 
 ---
 
@@ -232,7 +227,7 @@ ADMIN_PASSWORD=<strong-password>
 ADMIN_NAME=Админ
 
 # Backup directory on host
-BACKUP_DIR=/home/khatnaa/backups/mongol-beauty
+BACKUP_DIR=/path/to/backups/mongol-beauty
 
 # Node
 NODE_ENV=production

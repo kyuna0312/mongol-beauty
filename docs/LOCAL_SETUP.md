@@ -1,142 +1,122 @@
-# Local development setup
+# Local Setup
 
 Monorepo: **React (Vite)** + **NestJS (Apollo GraphQL)** + **PostgreSQL** (Docker).
 
 ## Prerequisites
 
-- Docker (or Docker Desktop) with Compose
-- Node.js 18+ (20+ recommended)
-- `npm` or `yarn` (package manager is `yarn@1` in `package.json`; `npm` works with workspaces)
+- Node.js 20+
+- Yarn 1.22+
+- Docker with Compose
 
 ## 1. Environment files
-
-From the repo root:
-
-```bash
-npm run setup-env
-```
-
-Or manually:
 
 ```bash
 cp .env.example .env
 cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
 ```
 
-- **Root `.env`** — `DB_*` for Docker Compose (see `docker-compose.yml`).
-- **`apps/api/.env`** — NestJS, DB connection, JWT, CORS. Must match Docker DB credentials.
-- **`apps/web/.env`** — optional; leave `VITE_GRAPHQL_URL` unset in dev to use the Vite `/graphql` proxy.
+Or use the automated setup:
+
+```bash
+yarn setup
+```
+
+- **Root `.env`** — `DB_*` for Docker Compose
+- **`apps/api/.env`** — NestJS DB connection, JWT secret, CORS. Must match root `.env` DB credentials.
+- **`apps/web/.env`** — optional; leave `VITE_GRAPHQL_URL` unset in dev to use the Vite `/graphql` proxy
 
 ## 2. Start PostgreSQL
 
 ```bash
-npm run docker:up
-# or: yarn docker:up
-# or: ./scripts/docker-compose.sh up -d
+yarn docker:up
 ```
 
-Wait until healthy:
+Wait until the container is healthy:
 
 ```bash
-npm run db:wait
+yarn db:wait
 ```
 
-Logs: `npm run docker:logs` · Stop: `npm run docker:down` · **Remove data volume:** `npm run docker:clean`
+Other DB commands:
+
+```bash
+yarn docker:logs   # View logs
+yarn docker:down   # Stop
+yarn docker:clean  # Wipe data volume (destructive — fresh start)
+```
 
 ## 3. Database schema
 
-**Local default (development):** TypeORM `synchronize` is **on** when `NODE_ENV !== production` and `DB_SYNCHRONIZE` is not set to `false`. The API creates/updates tables from entities on startup.
+In development, TypeORM `synchronize` is on by default — the API creates and updates tables from entities on startup. No migration step needed for local dev.
 
-**Migrations (production-style or explicit schema):**
-
-```bash
-cd apps/api
-npm run migration:generate -- src/migrations/DescribeYourChange
-npm run migration:run
-```
-
-From repo root (workspace):
+To use migrations explicitly (production-style):
 
 ```bash
-npm run migration:run -w @mongol-beauty/api
+# Generate from entity changes
+npm run migration:generate -w @mongol-beauty/api -- src/migrations/DescribeYourChange
+
+# Run pending migrations
+yarn db:migrate
 ```
 
-If you use migrations only, set `DB_SYNCHRONIZE=false` in `apps/api/.env` and run migrations before the app.
+Set `DB_SYNCHRONIZE=false` in `apps/api/.env` if you want migration-only mode locally.
 
-## 4. Seed & demo accounts (optional)
+## 4. Seed and demo accounts (optional)
 
 ```bash
-npm run seed
-npm run create-admin
-npm run create-demo-user
+yarn seed              # Demo products and categories
+yarn create-admin      # Admin account
+yarn create-demo-user  # Storefront user
 ```
 
-### Demo credentials (after running the scripts above)
+| Role | Login URL | Email | Password |
+|------|-----------|-------|----------|
+| Admin | `/admin/login` | `admin@incellderm.mn` | `admin123` |
+| Storefront user | `/login` | `demo@mongol-beauty.local` | `demo1234` |
 
-| Role | Where to log in | Default email | Default password |
-|------|-----------------|---------------|------------------|
-| **Admin** | `/admin/login` | `admin@incellderm.mn` | `admin123` |
-| **Storefront user** | `/login` | `demo@mongol-beauty.local` | `demo1234` |
+Override defaults via `apps/api/.env`: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`.
 
-Override via **`apps/api/.env`** (or env when running the script):
-
-- Admin: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`
-- Demo user: `DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`, `DEMO_USER_NAME`
-
-If the admin or demo user already exists, the scripts **update the password** to match your env (or defaults).
+If accounts already exist, the scripts update the password to match the env (or defaults).
 
 ## 5. Run API + web
 
-**Terminal (recommended):** one command that waits for Postgres then starts both apps:
-
 ```bash
-npm run dev:full
-# or: yarn dev:full
+yarn dev:full
 ```
 
-**Or** separately:
-
-```bash
-npm run docker:up
-npm run db:wait
-```
-
-Then:
+Or separately:
 
 ```bash
 # Terminal 1
-npm run dev:api
-# or: yarn dev:api
+yarn dev:api
 
 # Terminal 2
-npm run dev:web
-# or: yarn dev:web
+yarn dev:web
 ```
 
-| Service    | URL                         |
-|-----------|-----------------------------|
-| Frontend  | http://localhost:5173       |
-| GraphQL   | http://localhost:4000/graphql |
-| Health    | http://localhost:4000/health (if enabled) |
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| GraphQL | http://localhost:4000/graphql |
+| Health | http://localhost:4000/health |
 
-## 6. How the frontend talks to the API
+## 6. Frontend → API communication
 
-- **Development:** Vite proxies `/graphql` → `http://localhost:4000` (see `apps/web/vite.config.ts`). Apollo uses the relative URL `/graphql` when `VITE_GRAPHQL_URL` is unset.
-- **Production build:** point `VITE_GRAPHQL_URL` at your deployed API (e.g. `https://api.example.com/graphql`).
+- **Development**: Vite proxies `/graphql` → `http://localhost:4000` (see `apps/web/vite.config.ts`). Leave `VITE_GRAPHQL_URL` unset.
+- **Production build**: set `VITE_GRAPHQL_URL` to the deployed API URL (e.g. `https://api.example.com/graphql`).
 
 ## 7. Troubleshooting
 
-| Issue | What to try |
-|-------|-----------|
-| `ECONNREFUSED` on DB | `docker ps` — ensure `mongol-beauty-db` is up; `npm run db:wait` |
-| Port 5432 in use | Change `DB_PORT` in `.env` and `apps/api/.env` (same value) |
+| Issue | Fix |
+|-------|-----|
+| `ECONNREFUSED` on DB | Run `docker ps` to confirm `mongol-beauty-db` is up; run `yarn db:wait` |
+| Port 5432 in use | Change `DB_PORT` in `.env` and `apps/api/.env` (same value in both) |
 | CORS errors | Set `FRONTEND_URL` in `apps/api/.env` to your Vite origin |
-| GraphQL 404 in dev | Use `/graphql` or proxy; ensure API is on port `4000` |
+| GraphQL 404 in dev | Ensure API is on port 4000 and `VITE_GRAPHQL_URL` is unset |
 
-## 8. Workflow tips
+## 8. Tips
 
-- Use **`npm run dev:full`** (or `yarn dev:full`) instead of `sleep` + dev — it runs `db:wait` after Docker.
-- Keep **root `.env` and `apps/api/.env` DB credentials aligned** with Compose.
-- Prefer **migrations** for anything beyond local experiments; keep **`synchronize` off** in production (`NODE_ENV=production` already disables it unless overridden).
-- Run **`npm run docker:clean`** only when you want a **fresh empty database** (deletes the volume).
+- Use `yarn dev:full` instead of starting services manually — it waits for Postgres before starting the API.
+- Keep root `.env` and `apps/api/.env` DB credentials in sync with `docker-compose.yml`.
+- Use migrations for anything beyond local experiments. `synchronize` is automatically off in production (`NODE_ENV=production`).
+- `yarn docker:clean` deletes the DB volume — use only when you want a completely fresh database.

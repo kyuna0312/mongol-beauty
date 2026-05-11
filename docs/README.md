@@ -1,20 +1,13 @@
 # Documentation Index
 
-This repo keeps documentation focused around a small canonical set.
-
-## Core docs
-
-- `README.md` - project overview, architecture, features, and API summary.
-- `QUICK_START.md` - fastest way to run locally.
-- `docs/LOCAL_SETUP.md` - full local setup, migrations, troubleshooting, and workflow tips.
-- `docs/DOCKER.md` - Docker Compose guide (local full-stack, production), Cloudflare R2 setup, Dockerfile overview.
-- `ADMIN_PANEL.md` - admin panel capabilities and usage.
-- `DEMO_PRODUCTS.md` - demo seed data reference.
-
-## Frontend/public docs
-
-- `apps/web/public/REM_RAM_IMAGES_README.md` - notes for optional themed image assets.
-
-## Package docs
-
-- `packages/ui/README.md` - shared UI package usage and component references.
+| Doc | Contents |
+|-----|---------|
+| [../README.md](../README.md) | Project overview, stack, local dev, production deploy, order flow, GraphQL API summary |
+| [../QUICK_START.md](../QUICK_START.md) | Fastest path to running locally |
+| [LOCAL_SETUP.md](LOCAL_SETUP.md) | Full local setup: env files, Docker, migrations, seeding, troubleshooting |
+| [DOCKER.md](DOCKER.md) | All three Compose files, Dockerfile overview, Cloudflare R2 setup, common issues |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture, module breakdown, auth, DataLoader, service modes, pricing tiers |
+| [PRODUCTION_OPS.md](PRODUCTION_OPS.md) | Deploy runbook, logs, DB access, admin scripts, env variable reference |
+| [../ADMIN_PANEL.md](../ADMIN_PANEL.md) | Admin panel features, access, file structure, GraphQL operations |
+| [../DEMO_PRODUCTS.md](../DEMO_PRODUCTS.md) | Demo seed data reference |
+| [../packages/ui/README.md](../packages/ui/README.md) | Shared UI package components and usage |

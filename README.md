@@ -11,7 +11,7 @@ E-commerce platform for Mongolian beauty products (INCELLDERM · Mongolia). Cust
 | Layer | Tech |
 |-------|------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, Apollo Client |
-| Backend | NestJS, GraphQL code-first (Apollo Server), TypeORM |
+| Backend | NestJS, GraphQL code-first (Apollo Server v5), TypeORM |
 | Database | PostgreSQL 15 |
 | Infra | Docker Compose, nginx-proxy, Let's Encrypt |
 | Storage | Cloudflare R2 (payment receipts) |
@@ -90,7 +90,7 @@ All services run inside Docker — no Node.js needed on the host. See [docs/DOCK
 ### 1. Server requirements
 
 - VPS with Docker + Compose installed
-- DNS A-record: `mcosmetics.mn` → server IP
+- DNS A-record pointing to server IP
 - Ports 80 and 443 open in the firewall
 
 ### 2. Configure environment
@@ -157,6 +157,8 @@ Browse → Add to cart → Create order (WAITING_PAYMENT)
 - Product and category CRUD (create, edit, delete, toggle visibility)
 - Site settings (delivery fee, free delivery threshold, bank account info)
 - User management with subscription tier control
+
+Protected by JWT-based authentication — access requires an admin account.
 
 ---
 
