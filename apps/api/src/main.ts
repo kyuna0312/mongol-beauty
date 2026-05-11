@@ -9,12 +9,10 @@ import express from 'express';
 import { join } from 'path';
 import { requestContext } from './common/request-context';
 
-const { graphqlUploadExpress } = require('graphql-upload/graphqlUploadExpress.js') as {
-  graphqlUploadExpress: (options?: {
-    maxFileSize?: number;
-    maxFiles?: number;
-  }) => express.RequestHandler;
-};
+const graphqlUploadExpress = require('graphql-upload/graphqlUploadExpress.js') as (options?: {
+  maxFileSize?: number;
+  maxFiles?: number;
+}) => express.RequestHandler;
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');

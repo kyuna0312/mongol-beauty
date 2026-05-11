@@ -14,7 +14,7 @@ interface FileUpload {
   createReadStream: () => NodeJS.ReadableStream;
 }
 
-const { GraphQLUpload } = require('graphql-upload/GraphQLUpload.js');
+const GraphQLUpload = require('graphql-upload/GraphQLUpload.js');
 
 @Resolver(() => Order)
 export class PaymentResolver {
