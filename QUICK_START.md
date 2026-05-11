@@ -1,40 +1,38 @@
-# 🚀 Quick Start Guide
+# Quick Start
 
-Get up and running in 5 minutes!
-
-For a **full local stack runbook** (Docker, env, migrations, troubleshooting), see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
+Get up and running in minutes. For a full local stack runbook (Docker, env, migrations, troubleshooting), see [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md).
 
 ## Prerequisites
 
-- **Node.js** 18+ and **Yarn** 1.22+
-- **Docker** & **Docker Compose**
+- Node.js 20+ and Yarn 1.22+
+- Docker and Docker Compose
 
 **Don't have Docker?**
-- **Fedora**: See [INSTALL_DOCKER_FEDORA.md](./INSTALL_DOCKER_FEDORA.md)
-- **Other Linux**: https://docs.docker.com/engine/install/
-- **macOS/Windows**: https://docs.docker.com/desktop/
+- Linux: https://docs.docker.com/engine/install/
+- macOS/Windows: https://docs.docker.com/desktop/
 
-## Step 1: Install Dependencies
+## Steps
+
+### 1. Install dependencies
 
 ```bash
 yarn install
 ```
 
-## Step 2: Set Up Environment
+### 2. Set up environment
 
 ```bash
-# Copy example files
 cp .env.example .env
 cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
 ```
 
 Or use the automated setup:
+
 ```bash
 yarn setup
 ```
 
-## Step 3: Start Database
+### 3. Start the database
 
 ```bash
 yarn docker:up
@@ -42,34 +40,27 @@ yarn docker:up
 
 Wait a few seconds for PostgreSQL to initialize.
 
-## Step 4: Start Development Servers
+### 4. Start development servers
 
 ```bash
-yarn dev
+yarn dev:full
 ```
 
 This starts:
-- ✅ Backend API on http://localhost:4000
-- ✅ Frontend on http://localhost:5173
+- Backend API at http://localhost:4000
+- Frontend at http://localhost:5173
 
-## Step 5: Verify
+### 5. Verify
 
-1. **GraphQL Playground**: http://localhost:4000/graphql
-2. **Web App**: http://localhost:5173
-
-## 🎉 You're Ready!
-
-Start coding! The servers will auto-reload on file changes.
+- GraphQL endpoint: http://localhost:4000/graphql
+- Web app: http://localhost:5173
 
 ---
 
-### Common Commands
+## Common Commands
 
 ```bash
-# Stop everything
-Ctrl+C (in terminal)
-
-# Stop database
+# Stop the database
 yarn docker:down
 
 # View database logs
@@ -77,9 +68,14 @@ yarn docker:logs
 
 # Check environment files
 yarn check-env
+
+# Seed demo data and create demo accounts
+yarn seed
+yarn create-admin
+yarn create-demo-user
 ```
 
-### Troubleshooting
+## Troubleshooting
 
 **Database won't start?**
 ```bash
@@ -90,4 +86,4 @@ yarn docker:logs
 - Change `PORT` in `apps/api/.env`
 - Change `DB_PORT` in `.env` and `docker-compose.yml`
 
-**Need help?** See [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md) for the full guide.
+See [docs/LOCAL_SETUP.md](./docs/LOCAL_SETUP.md) for the full guide.

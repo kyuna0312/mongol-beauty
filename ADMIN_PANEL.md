@@ -1,176 +1,117 @@
-# Admin Panel Documentation
+# Admin Panel
 
-## Overview
-
-A complete admin panel has been created for managing products, categories, and orders in the Mongol Beauty e-commerce platform.
-
-## Features
-
-### 🎯 Dashboard
-- **Statistics Overview**: Total orders, pending orders, products count, revenue
-- **Quick Actions**: Create new products/categories
-- **Recent Orders**: Latest 5 orders with status
-- **Low Stock Alerts**: Warnings for products with stock < 10
-
-### 📦 Products Management
-- **List View**: All products with images, prices, stock, categories
-- **Create Product**: Full form with:
-  - Name, category, price, stock
-  - Description
-  - Skin type selection (OILY, DRY, COMBINATION, SENSITIVE, NORMAL)
-  - Features (ANTI_AGING, HYDRATING, BRIGHTENING, etc.)
-  - Multiple image URLs
-- **Edit Product**: Update existing products
-- **Delete Product**: Remove products with confirmation
-
-### 📁 Categories Management
-- **List View**: All categories with images and product counts
-- **Create Category**: Name, slug, description, image URL
-- **Edit Category**: Update category details
-- **Delete Category**: Remove categories with confirmation
-
-### 🛒 Orders Management
-- **List View**: All orders with:
-  - Order ID, status, total price
-  - Customer information
-  - Order items
-  - Payment receipt links
-- **Status Filtering**: Filter by order status
-- **Status Updates**: 
-  - Confirm payment (WAITING_PAYMENT → payment confirmed `PAID_CONFIRMED`)
-  - Ship order (`PAID_CONFIRMED` → SHIPPING)
-  - Complete order (SHIPPING → COMPLETED)
-  - Cancel order
+The admin panel runs at `/admin` and is protected by JWT-based authentication. Admin accounts are separate from storefront user accounts.
 
 ## Access
 
-Visit: `http://localhost:5173/admin`
+- URL: `http://localhost:5173/admin`
+- Login: `http://localhost:5173/admin/login`
+- Default credentials (after running `yarn create-admin`): `admin@incellderm.mn` / `admin123`
+
+**Change the default password immediately in any non-local environment.**
+
+## Features
+
+### Dashboard
+
+- Order statistics: total, pending, revenue
+- Recent orders (latest 5 with status)
+- Low stock alerts (products with stock < 10)
+- Quick links to create products and categories
+
+### Products
+
+- List all products with images, prices, stock, and categories
+- Create and edit products: name, category, price, stock, description, skin types, features, images
+- Delete products (with confirmation)
+- Toggle product visibility
+
+### Categories
+
+- List all categories with images and product counts
+- Create, edit, and delete categories
+- Fields: name, slug, description, image URL
+
+### Orders
+
+- List all orders with customer info, items, totals, and receipt links
+- Filter by status
+- Status transitions:
+  - `WAITING_PAYMENT` → confirm payment → `PAID_CONFIRMED`
+  - `PAID_CONFIRMED` → ship → `SHIPPING`
+  - `SHIPPING` → complete → `COMPLETED`
+  - Any active status → `CANCELLED`
+
+### Site Settings
+
+- Delivery fee and free-delivery threshold
+- Bank account information for transfers
+
+### User Management
+
+- View all users
+- Update subscription tier (`FREE` / `PREMIUM`)
 
 ## Navigation
 
-### Desktop
-- Sidebar navigation on the left
-- All admin sections accessible
-
-### Mobile
-- Bottom navigation bar
-- Mobile-optimized layouts
-- Touch-friendly buttons
-
-## GraphQL Mutations
-
-### Products
-```graphql
-mutation CreateProduct($input: CreateProductInput!) {
-  createProduct(input: $input) { ... }
-}
-
-mutation UpdateProduct($input: UpdateProductInput!) {
-  updateProduct(input: $input) { ... }
-}
-
-mutation DeleteProduct($id: ID!) {
-  deleteProduct(id: $id)
-}
-```
-
-### Categories
-```graphql
-mutation CreateCategory($input: CreateCategoryInput!) {
-  createCategory(input: $input) { ... }
-}
-
-mutation UpdateCategory($input: UpdateCategoryInput!) {
-  updateCategory(input: $input) { ... }
-}
-
-mutation DeleteCategory($id: ID!) {
-  deleteCategory(id: $id)
-}
-```
-
-### Orders
-```graphql
-query GetAdminOrders {
-  adminOrders { ... }
-}
-
-mutation UpdateOrderStatus($orderId: ID!, $status: OrderStatus!) {
-  updateOrderStatus(orderId: $orderId, status: $status) { ... }
-}
-```
+- **Desktop**: Sidebar on the left
+- **Mobile**: Bottom navigation bar
 
 ## File Structure
 
 ```
 apps/web/src/
-├── pages/admin/
-│   ├── AdminDashboard.tsx          # Dashboard with stats
-│   ├── AdminProductsPage.tsx       # Products list
-│   ├── AdminProductFormPage.tsx    # Create/Edit product
-│   ├── AdminCategoriesPage.tsx     # Categories list
-│   ├── AdminCategoryFormPage.tsx   # Create/Edit category
-│   └── AdminOrdersPage.tsx         # Orders management
+├── features/admin/
+│   └── pages/
+│       ├── AdminDashboardPage.tsx
+│       ├── AdminProductsPage.tsx
+│       ├── AdminProductFormPage.tsx
+│       ├── AdminCategoriesPage.tsx
+│       ├── AdminCategoryFormPage.tsx
+│       └── AdminOrdersPage.tsx
 └── components/admin/
-    └── AdminLayout.tsx              # Admin layout with navigation
+    └── AdminLayout.tsx
 
 apps/api/src/
+├── admin/
+│   ├── admin.resolver.ts
+│   └── admin.service.ts
 ├── product/
-│   ├── dto/create-product.input.ts  # Product input types
-│   ├── product.resolver.ts         # Product mutations
-│   └── product.service.ts           # Product CRUD logic
-├── category/
-│   ├── dto/create-category.input.ts # Category input types
-│   ├── category.resolver.ts         # Category mutations
-│   └── category.service.ts          # Category CRUD logic
-└── admin/
-    ├── admin.resolver.ts            # Admin queries
-    └── admin.service.ts             # Admin logic
+│   ├── dto/create-product.input.ts
+│   ├── product.resolver.ts
+│   └── product.service.ts
+└── category/
+    ├── dto/create-category.input.ts
+    ├── category.resolver.ts
+    └── category.service.ts
 ```
 
-## Usage Examples
+## GraphQL Operations
 
-### Create a Product
-1. Navigate to `/admin/products`
-2. Click "Шинэ бүтээгдэхүүн" (New Product)
-3. Fill in the form:
-   - Name: "Vitamin C Serum"
-   - Category: Select from dropdown
-   - Price: 45000
-   - Stock: 50
-   - Select skin types and features
-   - Add image URLs
-4. Click "Үүсгэх" (Create)
+```graphql
+# Queries
+adminOrders(status: OrderStatus, limit: Int, offset: Int): [Order!]!
+adminOrderStats: OrderStats!
+adminProducts(...): [Product!]!
+adminProductsPaged(...): ProductPage!
 
-### Update Order Status
-1. Navigate to `/admin/orders`
-2. Find the order
-3. Click status button:
-   - "Баталгаажуулах" (Confirm) for WAITING_PAYMENT
-   - "Хүргэлтэд гаргах" (Ship) for payment confirmed (`PAID_CONFIRMED`)
-   - "Дуусгах" (Complete) for SHIPPING
+# Product mutations
+createProduct(input: CreateProductInput!): Product!
+updateProduct(input: UpdateProductInput!): Product!
+deleteProduct(id: ID!): Boolean!
 
-## Security Note
+# Category mutations
+createCategory(input: CreateCategoryInput!): Category!
+updateCategory(input: UpdateCategoryInput!): Category!
+deleteCategory(id: ID!): Boolean!
 
-⚠️ **Important**: Currently, the admin panel has no authentication. In production, you should:
-- Add authentication/authorization
-- Protect admin routes with guards
-- Add role-based access control
-- Implement session management
+# Order mutations
+confirmPayment(orderId: ID!): Order!
+updateOrderStatus(orderId: ID!, status: OrderStatus!): Order!
 
-## Mobile-First Design
+# User mutations
+updateUserSubscription(userId: ID!, userType: UserType!): User!
 
-The admin panel is fully responsive:
-- Mobile: Bottom navigation, stacked layouts
-- Desktop: Sidebar navigation, grid layouts
-- Touch-friendly buttons and forms
-- Optimized for small screens
-
-## Next Steps
-
-1. Add authentication
-2. Add user management
-3. Add analytics/reports
-4. Add bulk operations
-5. Add image upload (currently uses URLs)
-6. Add export functionality
+# Settings mutations
+updateSiteSettings(input: SiteSettingsInput!): SiteSettings!
+```
