@@ -9,7 +9,7 @@ import express from 'express';
 import { join } from 'path';
 import { requestContext } from './common/request-context';
 
-const { graphqlUploadExpress } = require('graphql-upload') as {
+const { graphqlUploadExpress } = require('graphql-upload/graphqlUploadExpress.js') as {
   graphqlUploadExpress: (options?: {
     maxFileSize?: number;
     maxFiles?: number;
