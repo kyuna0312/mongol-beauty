@@ -56,6 +56,10 @@ export class Product {
   @Column('int')
   price: number;
 
+  @Field(() => Int, { nullable: true })
+  @Column('int', { nullable: true })
+  salePrice?: number;
+
   @Field({ nullable: true })
   discountedPrice?: number; // Calculated field for subscribed users
 
@@ -82,6 +86,14 @@ export class Product {
   @Field(() => [String])
   @Column('simple-array', { default: '' })
   images: string[];
+
+  @Field({ nullable: true })
+  @Column({ nullable: true })
+  size?: string;
+
+  @Field(() => [String])
+  @Column('simple-array', { default: '' })
+  variants: string[];
 
   @Field()
   @Column({ default: false })

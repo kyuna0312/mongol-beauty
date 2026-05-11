@@ -8,12 +8,12 @@ function formatDate(iso: string) {
 }
 
 export function BlogPage() {
-  const { data, loading } = useQuery(GET_BLOG_POSTS, { fetchPolicy: 'cache-and-network' });
+  const { data, loading } = useQuery(GET_BLOG_POSTS, { fetchPolicy: 'network-only' });
   const posts: any[] = data?.blogPosts ?? [];
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="mb-8 text-2xl font-bold text-stone-800">Блог</h1>
+      <h1 className="mb-8 text-2xl font-bold text-stone-800">Зөвлөгөө</h1>
 
       {loading && (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -24,7 +24,7 @@ export function BlogPage() {
       )}
 
       {!loading && posts.length === 0 && (
-        <p className="text-stone-500">Блог нийтлэл байхгүй байна.</p>
+        <p className="text-stone-500">Зөвлөгөө нийтлэл байхгүй байна.</p>
       )}
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

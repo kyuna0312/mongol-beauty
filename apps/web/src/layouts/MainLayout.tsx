@@ -95,7 +95,7 @@ export function MainLayout() {
               {[
                 { to: '/', label: 'Нүүр', exact: true },
                 { to: '/products', label: 'Бүтээгдэхүүн', exact: false },
-                { to: '/blog', label: 'Блог', exact: false },
+                { to: '/blog', label: 'Зөвлөгөө', exact: false },
               ].map(({ to, label, exact }) => {
                 const active = exact ? location.pathname === to : location.pathname.startsWith(to);
                 return (
@@ -311,7 +311,7 @@ export function MainLayout() {
                   onClick={() => setShowMobileMenu(false)}
                 >
                   <BookOpen className="h-4 w-4 text-terracotta-400" />
-                  Блог
+                  Зөвлөгөө
                 </Link>
               </div>
             </div>

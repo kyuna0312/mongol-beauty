@@ -16,6 +16,12 @@ export class CreateProductInput {
   @Min(0)
   price: number;
 
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  salePrice?: number;
+
   @Field(() => Int, { defaultValue: 0 })
   @IsInt()
   @Min(0)
@@ -45,6 +51,16 @@ export class CreateProductInput {
   @IsArray()
   @IsString({ each: true })
   images: string[];
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  size?: string;
+
+  @Field(() => [String], { defaultValue: [] })
+  @IsArray()
+  @IsString({ each: true })
+  variants: string[];
 
   @Field({ defaultValue: false })
   @IsOptional()
@@ -83,6 +99,12 @@ export class UpdateProductInput {
   @IsOptional()
   @IsInt()
   @Min(0)
+  salePrice?: number;
+
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
   stock?: number;
 
   @Field({ nullable: true })
@@ -112,6 +134,17 @@ export class UpdateProductInput {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  size?: string;
+
+  @Field(() => [String], { nullable: true })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  variants?: string[];
 
   @Field({ nullable: true })
   @IsOptional()

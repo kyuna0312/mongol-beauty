@@ -15,6 +15,14 @@ import { ProductCardRaw, ProductCardView } from '@/interfaces/catalog';
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc';
 type ViewMode = 'grid' | 'list';
 const PAGE_SIZE = 24;
+
+const SKIN_TYPE_LABELS: Record<string, string> = {
+  OILY: 'Тосолог', DRY: 'Хуурай', COMBINATION: 'Холимог', SENSITIVE: 'Мэдрэмтгий', NORMAL: 'Хэвийн',
+};
+const FEATURE_LABELS: Record<string, string> = {
+  ANTI_AGING: 'Хөгширлийн эсрэг', HYDRATING: 'Чийгшүүлэх', BRIGHTENING: 'Цайруулах',
+  ACNE_FIGHTING: 'Акнений эсрэг', SUNSCREEN: 'Наранд хамгаалах', ORGANIC: 'Органик',
+};
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function toProductCardView(product: ProductCardRaw): ProductCardView {
@@ -26,6 +34,8 @@ function toProductCardView(product: ProductCardRaw): ProductCardView {
     image: product.images?.[0] || '/placeholder-product.jpg',
     categoryId: product.category.id,
     stock: product.stock ?? 0,
+    skinType: product.skinType,
+    features: product.features,
   };
 }
 
@@ -39,6 +49,9 @@ export const ProductsPage = memo(function ProductsPage() {
   const searchQuery = searchParams.get('search') ?? '';
   const safeCategoryId = isUuidLike(categoryId) ? categoryId : null;
   const [showFilters, setShowFilters] = useState(false);
+  const [filterSkinTypes, setFilterSkinTypes] = useState<string[]>([]);
+  const [filterFeatures, setFilterFeatures] = useState<string[]>([]);
+  const [filterPriceMax, setFilterPriceMax] = useState<string>('');
   const sortByParam = searchParams.get('sort') as SortOption | null;
   const sortBy: SortOption = sortByParam && ['default', 'price-asc', 'price-desc', 'name-asc'].includes(sortByParam)
     ? sortByParam
@@ -144,7 +157,15 @@ export const ProductsPage = memo(function ProductsPage() {
     return () => observer.disconnect();
   }, [loadMoreProducts, hasMore]);
 
-  // Memoize, map to UI view model and sort products
+  const activeFilterCount = filterSkinTypes.length + filterFeatures.length + (filterPriceMax ? 1 : 0);
+
+  const clearFilters = useCallback(() => {
+    setFilterSkinTypes([]);
+    setFilterFeatures([]);
+    setFilterPriceMax('');
+  }, []);
+
+  // Memoize, map to UI view model, sort and filter products
   const products = useMemo(() => {
     const allProducts: ProductCardRaw[] = productsData?.productsPaged?.items || [];
     const mapped = allProducts.map(toProductCardView);
@@ -161,12 +182,18 @@ export const ProductsPage = memo(function ProductsPage() {
         sorted.sort((a, b) => a.name.localeCompare(b.name));
         break;
       default:
-        // Keep original order
         break;
     }
 
-    return sorted;
-  }, [productsData, sortBy]);
+    const priceMaxNum = filterPriceMax ? Number(filterPriceMax) : null;
+
+    return sorted.filter((p) => {
+      if (filterSkinTypes.length > 0 && !filterSkinTypes.some((s) => p.skinType?.includes(s))) return false;
+      if (filterFeatures.length > 0 && !filterFeatures.some((f) => p.features?.includes(f))) return false;
+      if (priceMaxNum !== null && p.price > priceMaxNum) return false;
+      return true;
+    });
+  }, [productsData, sortBy, filterSkinTypes, filterFeatures, filterPriceMax]);
 
   if (productsLoading && !productsData) {
     return (
@@ -240,10 +267,15 @@ export const ProductsPage = memo(function ProductsPage() {
               variant="outline"
               size="sm"
               onClick={() => setShowFilters(true)}
-              className="flex items-center gap-2 rounded-full border-beige-300 font-semibold text-primary-800 hover:bg-beige-50"
+              className="relative flex items-center gap-2 rounded-full border-beige-300 font-semibold text-primary-800 hover:bg-beige-50"
             >
               <Filter className="w-4 h-4" />
               <span className="hidden sm:inline">Шүүлт</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary-600 text-white text-xs flex items-center justify-center font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
             </Button>
           </div>
         </div>
@@ -357,20 +389,92 @@ export const ProductsPage = memo(function ProductsPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-2xl">🔍</span>
                   <h3 className="text-xl font-bold text-gray-800">Шүүлт</h3>
+                  {activeFilterCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-primary-600 text-white text-xs font-bold">
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </div>
-                <button
-                  onClick={() => setShowFilters(false)}
-                  className="w-10 h-10 rounded-full bg-white border-2 border-beige-300 flex items-center justify-center text-primary-600 hover:bg-beige-50 hover:scale-110 transition-all duration-200"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-2">
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm text-primary-600 underline font-medium hover:text-primary-800"
+                    >
+                      Цэвэрлэх
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowFilters(false)}
+                    className="w-10 h-10 rounded-full bg-white border-2 border-beige-300 flex items-center justify-center text-primary-600 hover:bg-beige-50 hover:scale-110 transition-all duration-200"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="p-6">
-              <div className="text-center py-8">
-                <span className="text-4xl mb-3 block">🎨</span>
-                <p className="text-gray-600">Шүүлтийн сонголтууд энд байна</p>
-                <p className="text-sm text-gray-400 mt-2">Удахгүй нэмэгдэх болно</p>
+            <div className="p-6 space-y-8">
+              {/* Price filter */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-3">Дээд үнэ (₮)</h4>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Жишээ: 50000"
+                  value={filterPriceMax}
+                  onChange={(e) => setFilterPriceMax(e.target.value)}
+                  className="w-full border-2 border-beige-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary-400"
+                />
+              </div>
+
+              {/* Skin type filter */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-3">Арьсны төрөл</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(SKIN_TYPE_LABELS).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() =>
+                        setFilterSkinTypes((prev) =>
+                          prev.includes(key) ? prev.filter((s) => s !== key) : [...prev, key]
+                        )
+                      }
+                      className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-150 ${
+                        filterSkinTypes.includes(key)
+                          ? 'border-primary-500 bg-primary-600 text-white shadow-sm'
+                          : 'border-beige-200 bg-white text-gray-700 hover:border-primary-300'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Feature filter */}
+              <div>
+                <h4 className="font-semibold text-gray-800 mb-3">Онцлог</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(FEATURE_LABELS).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() =>
+                        setFilterFeatures((prev) =>
+                          prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]
+                        )
+                      }
+                      className={`px-4 py-2 rounded-full text-sm font-medium border-2 transition-all duration-150 ${
+                        filterFeatures.includes(key)
+                          ? 'border-primary-500 bg-primary-600 text-white shadow-sm'
+                          : 'border-beige-200 bg-white text-gray-700 hover:border-primary-300'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="p-6 border-t-2 border-beige-200 bg-white sticky bottom-0">

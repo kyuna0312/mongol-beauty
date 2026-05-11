@@ -186,7 +186,7 @@ export function CheckoutPage() {
   const baseTotal = (cart as CheckoutCartItem[]).reduce((sum: number, item: CheckoutCartItem) => {
     return sum + (item.price || 0) * item.quantity;
   }, 0);
-  const vipDiscount = isVip ? 0.2 : 0;
+  const vipDiscount = isVip ? 0.15 : 0;
   const voucherDiscountRate = voucherDiscount ? voucherDiscount / 100 : 0;
   const effectiveDiscount = Math.max(vipDiscount, voucherDiscountRate);
   const discountedSubtotal = Math.round(baseTotal * (1 - effectiveDiscount));
@@ -283,7 +283,7 @@ export function CheckoutPage() {
           </h3>
           {isVip && (
             <div className="mb-3 rounded-xl bg-purple-50 border border-purple-200 px-4 py-2 text-sm text-purple-800 font-medium">
-              VIP хэрэглэгч — 20% хөнгөлөлт автоматаар нэмэгдсэн
+              VIP хэрэглэгч — 15% хөнгөлөлт автоматаар нэмэгдсэн
             </div>
           )}
           <div className="flex gap-2">

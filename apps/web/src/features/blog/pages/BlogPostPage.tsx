@@ -38,7 +38,7 @@ export function BlogPostPage() {
         <p className="text-stone-500">Нийтлэл олдсонгүй.</p>
         <Link to="/blog" className="mt-4 inline-flex items-center gap-1.5 text-sm text-terracotta-600 hover:underline">
           <ArrowLeft className="h-4 w-4" />
-          Блог руу буцах
+          Зөвлөгөө руу буцах
         </Link>
       </div>
     );
@@ -50,7 +50,7 @@ export function BlogPostPage() {
     <article className="mx-auto max-w-2xl px-4 py-10">
       <Link to="/blog" className="mb-6 inline-flex items-center gap-1.5 text-sm text-terracotta-600 hover:underline">
         <ArrowLeft className="h-4 w-4" />
-        Блог руу буцах
+        Зөвлөгөө руу буцах
       </Link>
 
       {post.coverImageUrl && (
